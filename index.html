@@ -13,14 +13,14 @@
     
     <!--- Seo Part-->
     
-    <link rel="canonical" href="http://example.com/404.html"/>
+    <link rel="canonical" href="http://example.com/"/>
     <meta name="robots" content="index,follow">
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
     
         <meta property="og:type" content="website">
-<meta property="og:title" content="Page Not Found">
-<meta property="og:url" content="http://example.com/404.html">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:author" content="AAAAAZBX">
@@ -36,7 +36,7 @@
     
     <title>
         
-            Page Not Found | Theme Redefine
+            Theme Redefine - Redefine Your Hexo Journey.
         
     </title>
 
@@ -115,19 +115,76 @@
 <main class="page-container" id="swup">
 
     
+        
+    <style>
+        .home-banner-container {
+            background: none !important;
+        }
+        .home-article-item,
+        .sidebar-links,
+        .sidebar-content,
+        a.page-number,
+        a.extend,
+        .sidebar-links .links:hover,
+        .right-bottom-tools,
+        footer.footer {
+            background-color: var(--background-color-transparent-80) !important;
+        }
+        .right-bottom-tools:hover,
+        a.page-number:hover,
+        a.extend:hover {
+            background-color: var(--primary-color) !important;
+        }
+        .site-info,
+        .home-article-sticky-label {
+            background-color: var(--background-color-transparent-15) !important;
+        }
+        .home-article-sticky-label {
+            backdrop-filter: none !important;
+        }
+    </style>
+    <div class="home-banner-background transition-fade fixed top-0 left-0 w-screen h-screen scale-125 sm:scale-110 box-border will-change-transform bg-cover">
+        <img src="/images/wallhaven-wqery6-light.webp" alt="home-banner-background" class="w-full h-full object-cover dark:hidden">
+        <img src="/images/wallhaven-wqery6-dark.webp" alt="home-banner-background" class="w-full h-full object-cover hidden dark:block">
+    </div>
+
+
+<div class="home-banner-container flex justify-center items-center transition-fade relative">
+    
+    <div class="content mt-8 flex flex-col justify-center items-center">
+        <div class="description flex flex-col justify-center items-center w-screen font-medium text-center"
+        
+        >
+            Theme Redefine
+            
+            
+                <p><i id="subtitle"></i></p>
+            
+        </div>
+        
+    </div>
+    <script>
+        const scrollToMain = ()=> {
+            console.log('scroll');
+            const target = document.querySelector('.main-content-container');
+            target.scrollIntoView({ behavior: 'smooth'});
+        }
+    </script>
+</div>
+    
 
     <div class="main-content-container flex flex-col justify-between min-h-dvh">
 
 
         <div class="main-content-header">
             <header class="navbar-container px-6 md:px-12">
-    <div class="navbar-content transition-navbar ">
+    <div class="navbar-content transition-navbar has-home-banner">
         <div class="left">
             
             <a class="logo-title" href="/">
-                
+                <h1>
                 Theme Redefine
-                
+                </h1>
             </a>
         </div>
 
@@ -141,7 +198,7 @@
 
                             <li class="navbar-item">
                                 <!-- Menu -->
-                                <a class=""
+                                <a class="active"
                                    href="/"
                                         >
                                     <i class="fa-regular fa-house fa-fw"></i>
@@ -175,7 +232,7 @@
 
                     <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
                         
-                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
                            href="/"
                         >
                             <span>
@@ -221,20 +278,355 @@
         <div class="main-content-body">
 
             
+                <div class="home-sidebar-container">
+    <div class="sticky-container sticky">
+        
+        
+            
+            <div class="sidebar-content" >
+                <div class="avatar flex justify-center">
+    <img src="/images/redefine-avatar.svg">
+</div>
+                <div class="author flex flex-col justify-center my-2.5 mx-0">
+    <div class="name">The Redefine Team</div>
+    
+        <div class="label">Lv1</div>
+    
+</div>
+                <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">7</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+            </div>
+        
+
+    </div>
+</div>
+
+            
 
             <div class="main-content">
 
                 
-                    <div class="nf-container">
-    <div class="nf-text">
-        <h1>404<br>Page Not Found</h1>
+                    <div class="home-content-container">
+    <ul class="home-article-list">
+        
+            <li class="home-article-item">
+
+                
+
+                
+
+                
+                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
+                    <h3 class="home-article-title">
+                        <a href="/2024/11/01/2024SCCPC/">
+                            _posts/2024SCCPC
+                        </a>
+                    </h3>
+
+                    <div class="home-article-content markdown-body">
+                        
+                            
+                            2024 SCCPCB 连接召唤需要分多钟情况讨论，漏掉一种情况都不行，匹配的时候优先考虑匹配个数少的。
+E L 型覆盖检查器使用并查集模拟一下即可。
+F 小球进洞：平面版考虑将小球的位置情况分为四类，一类是圆心横坐标为$l_x + r$,第二类为圆心横坐标为$r_x-r$,第三类为纵坐标为$l_y + r$,第四类为纵坐标为$r_y-r$,算出四种情况下到达该点需要的时间，并判断到达时间是...
+                        
+                    </div>
+
+                    <div class="home-article-meta-info-container">
+    <div class="home-article-meta-info">
+        <span><i class="fa-solid fa-calendars"></i>&nbsp;
+            <span class="home-article-date" data-date="Fri Nov 01 2024 22:28:52 GMT+0800">
+                
+                    2024-11-01
+                
+            </span>
+        </span>
+        
+        
     </div>
-    <div class="nf-button">
-        <a href="/" class="button large center"><i class="fa-regular fa-house"></i> 回到首页</a>
+
+    <a href="/2024/11/01/2024SCCPC/">阅读全文<span class="seo-reader-text">_posts/2024SCCPC</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
+</div>
+
+                </div>
+            </li>
+        
+            <li class="home-article-item">
+
+                
+
+                
+
+                
+                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
+                    <h3 class="home-article-title">
+                        <a href="/2024/11/01/2024%E4%B8%9C%E5%8C%97%E5%9B%9B%E7%9C%81%E8%81%94%E8%B5%9B/">
+                            _posts/2024东北四省联赛
+                        </a>
+                    </h3>
+
+                    <div class="home-article-content markdown-body">
+                        
+                            
+                            2024东北省赛A Paper Watering不断开根号模拟即可，如果被开根的数是完全平方数，或者已经为1，那么其平方的结果已经被算过了，直接加1即可，否则需要加k+1，表示这个数以及还在这个数基础上进行开平方的次数，不到次后x就会减为1,所以直接枚举k减小的情况即可。
+D nIM gAME模拟n为1-6的情况发现皆为失败，可以直接输出“lose”.
+E Checksum题目看不太懂，交给...
+                        
+                    </div>
+
+                    <div class="home-article-meta-info-container">
+    <div class="home-article-meta-info">
+        <span><i class="fa-solid fa-calendars"></i>&nbsp;
+            <span class="home-article-date" data-date="Fri Nov 01 2024 22:28:52 GMT+0800">
+                
+                    2024-11-01
+                
+            </span>
+        </span>
+        
+        
+    </div>
+
+    <a href="/2024/11/01/2024%E4%B8%9C%E5%8C%97%E5%9B%9B%E7%9C%81%E8%81%94%E8%B5%9B/">阅读全文<span class="seo-reader-text">_posts/2024东北四省联赛</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
+</div>
+
+                </div>
+            </li>
+        
+            <li class="home-article-item">
+
+                
+
+                
+
+                
+                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
+                    <h3 class="home-article-title">
+                        <a href="/2024/11/01/2024%E6%B2%B3%E5%8C%97%E7%9C%81%E8%B5%9B/">
+                            _posts/2024河北省赛
+                        </a>
+                    </h3>
+
+                    <div class="home-article-content markdown-body">
+                        
+                            
+                            2024河北省赛A Update统计和i不同的字母类别的数量即可
+C Goose Goose Duck考虑从$0-n-1$枚举当前人数$k$，用优先队列维护可以放在第$k$个位置上的人，排序原则为$r_i$越小越放前面，每次从符合要求的人中取出$r_i$最小的即可
+E Breakfast II背包问题，枚举每个学生去1个食堂，2个食堂，3个食堂所需要走的路程的找最小值，由于要买的包子和鸡蛋个...
+                        
+                    </div>
+
+                    <div class="home-article-meta-info-container">
+    <div class="home-article-meta-info">
+        <span><i class="fa-solid fa-calendars"></i>&nbsp;
+            <span class="home-article-date" data-date="Fri Nov 01 2024 22:28:52 GMT+0800">
+                
+                    2024-11-01
+                
+            </span>
+        </span>
+        
+        
+    </div>
+
+    <a href="/2024/11/01/2024%E6%B2%B3%E5%8C%97%E7%9C%81%E8%B5%9B/">阅读全文<span class="seo-reader-text">_posts/2024河北省赛</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
+</div>
+
+                </div>
+            </li>
+        
+            <li class="home-article-item">
+
+                
+
+                
+
+                
+                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
+                    <h3 class="home-article-title">
+                        <a href="/2024/11/01/2023CCPC%E6%B2%B3%E5%8D%97/">
+                            _posts/2023CCPC河南
+                        </a>
+                    </h3>
+
+                    <div class="home-article-content markdown-body">
+                        
+                            
+                            2023CCPC河南省赛题解A 小水獭游河南签到题，最多枚举27次，略
+B  Art for Rest知识点：ST表
+两种做法，一种st表做法，一种是题目给的正解
+st表做法先使用st表预处理区间最值，时间复杂度$O(nlogn)$。
+然后从$1$开始枚举到$n-1$，查询每个区间的最大值和最小值，前面一个分快的最大值必须小于等于后面一个区间的最小值，这样才能保证每一个分块排序后，序列是非递...
+                        
+                    </div>
+
+                    <div class="home-article-meta-info-container">
+    <div class="home-article-meta-info">
+        <span><i class="fa-solid fa-calendars"></i>&nbsp;
+            <span class="home-article-date" data-date="Fri Nov 01 2024 22:28:52 GMT+0800">
+                
+                    2024-11-01
+                
+            </span>
+        </span>
+        
+        
+    </div>
+
+    <a href="/2024/11/01/2023CCPC%E6%B2%B3%E5%8D%97/">阅读全文<span class="seo-reader-text">_posts/2023CCPC河南</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
+</div>
+
+                </div>
+            </li>
+        
+            <li class="home-article-item">
+
+                
+
+                
+
+                
+                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
+                    <h3 class="home-article-title">
+                        <a href="/2024/11/01/2023ICPC%E5%8D%97%E4%BA%AC%E5%8C%BA%E5%9F%9F%E8%B5%9B/">
+                            _posts/2023ICPC南京区域赛
+                        </a>
+                    </h3>
+
+                    <div class="home-article-content markdown-body">
+                        
+                            
+                            2023ICPC南京区域赛A Cool, It’s Yesterday Four Times More 还没想通怎么对$(i,j,i’,j’)$bfs的，比较迷，过几天回来再看看
+C Primitive Root 若$m&lt;p2$直接遍历所有的$kp+1$即可，若$(k*p+1) \oplus (p-1)&lt;&#x3D;m $，则$ans$++,遍历四次便可十分确定后面的值均大于$m...
+                        
+                    </div>
+
+                    <div class="home-article-meta-info-container">
+    <div class="home-article-meta-info">
+        <span><i class="fa-solid fa-calendars"></i>&nbsp;
+            <span class="home-article-date" data-date="Fri Nov 01 2024 22:28:52 GMT+0800">
+                
+                    2024-11-01
+                
+            </span>
+        </span>
+        
+        
+    </div>
+
+    <a href="/2024/11/01/2023ICPC%E5%8D%97%E4%BA%AC%E5%8C%BA%E5%9F%9F%E8%B5%9B/">阅读全文<span class="seo-reader-text">_posts/2023ICPC南京区域赛</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
+</div>
+
+                </div>
+            </li>
+        
+            <li class="home-article-item">
+
+                
+
+                
+
+                
+                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
+                    <h3 class="home-article-title">
+                        <a href="/2024/11/01/2023ICPC%E6%B5%8E%E5%8D%97%E5%8C%BA%E5%9F%9F%E8%B5%9B/">
+                            _posts/2023ICPC济南区域赛
+                        </a>
+                    </h3>
+
+                    <div class="home-article-content markdown-body">
+                        
+                            
+                            2022 ICPC 济南区域赛A Tower枚举每个数不断除以2是否是答案即可，证明较为玄学，可以通过观察得出。
+D Frozen Scoreboard未知原因还未调出。
+E Identical Parity观察可以发现，判断间隔为k的数奇偶性相同，整个序列被分为k组，设x为n&#x2F;k，要判断合法，题意可以等价为用n%k组x和k-n%k组x+1能否凑成$\lfloor n&#x2F;2...
+                        
+                    </div>
+
+                    <div class="home-article-meta-info-container">
+    <div class="home-article-meta-info">
+        <span><i class="fa-solid fa-calendars"></i>&nbsp;
+            <span class="home-article-date" data-date="Fri Nov 01 2024 22:28:52 GMT+0800">
+                
+                    2024-11-01
+                
+            </span>
+        </span>
+        
+        
+    </div>
+
+    <a href="/2024/11/01/2023ICPC%E6%B5%8E%E5%8D%97%E5%8C%BA%E5%9F%9F%E8%B5%9B/">阅读全文<span class="seo-reader-text">_posts/2023ICPC济南区域赛</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
+</div>
+
+                </div>
+            </li>
+        
+            <li class="home-article-item">
+
+                
+
+                
+
+                
+                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
+                    <h3 class="home-article-title">
+                        <a href="/2024/11/01/2023ICPC%E7%BD%91%E7%BB%9C%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA/">
+                            _posts/2023ICPC网络赛第二场
+                        </a>
+                    </h3>
+
+                    <div class="home-article-content markdown-body">
+                        
+                            
+                            2023ICPC网络赛第二场D Project Manhattan贪心，将所有的负数加进答案里面后，置为0，然比较每行最小值的和以及每列最小值的和即可。
+E Another Bus Route Problem从1开始对每条链进行bfs即可，每次将链上没有被标记的结点标记上距离，并将以这个结点为起始节点的铁路加入到队列中。
+I Impatient Patient无穷级数求和，显然最优解是在某一...
+                        
+                    </div>
+
+                    <div class="home-article-meta-info-container">
+    <div class="home-article-meta-info">
+        <span><i class="fa-solid fa-calendars"></i>&nbsp;
+            <span class="home-article-date" data-date="Fri Nov 01 2024 22:28:52 GMT+0800">
+                
+                    2024-11-01
+                
+            </span>
+        </span>
+        
+        
+    </div>
+
+    <a href="/2024/11/01/2023ICPC%E7%BD%91%E7%BB%9C%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA/">阅读全文<span class="seo-reader-text">_posts/2023ICPC网络赛第二场</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
+</div>
+
+                </div>
+            </li>
+        
+    </ul>
+
+    <div class="home-paginator px-7 py-5">
+        <div class="paginator">
+    <span class="page-number current">1</span>
+</div>
+
     </div>
 </div>
 
-
+                    <div class="comment-container pjax"></div>
                 
 
             </div>
@@ -399,6 +791,7 @@
         containers: ["#swup"],
     });
 </script>
+
 
 
 
