@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    <meta name="author" content="The Redefine Team">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="http://example.com/2024/11/01/2023ccpc河南-张博轩题解/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="2023CCPC河南省赛题解A 小水獭游河南签到题，最多枚举27次，略 B  Art for Rest知识点：ST表 两种做法，一种st表做法，一种是题目给的正解 st表做法先使用st表预处理区间最值，时间复杂度$O(nlogn)$。 然后从$1$开始枚举到$n-1$，查询每个区间的最大值和最小值，前面一个分快的最大值必须小于等于后面一个区间的最小值，这样才能保证每一个分块排序后，序列是非递减的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2024/11/01/2023CCPC%E6%B2%B3%E5%8D%97-%E5%BC%A0%E5%8D%9A%E8%BD%A9%E9%A2%98%E8%A7%A3/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="2023CCPC河南省赛题解A 小水獭游河南签到题，最多枚举27次，略 B  Art for Rest知识点：ST表 两种做法，一种st表做法，一种是题目给的正解 st表做法先使用st表预处理区间最值，时间复杂度$O(nlogn)$。 然后从$1$开始枚举到$n-1$，查询每个区间的最大值和最小值，前面一个分快的最大值必须小于等于后面一个区间的最小值，这样才能保证每一个分块排序后，序列是非递减的。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-11-01T14:16:21.510Z">
+<meta property="article:modified_time" content="2024-07-17T08:52:21.095Z">
+<meta property="article:author" content="AAAAAZBX">
+<meta name="twitter:card" content="summary">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/redefine-favicon.svg" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/redefine-favicon.svg">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/redefine-favicon.svg">
+    <!--- Page Info-->
+    
+    <title>
+        
+            Theme Redefine - Redefine Your Hexo Journey.
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/assets/build/styles.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"example.com","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":false,"custom_message":null},"open_graph":true,"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Theme Redefine","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":{"github":null,"instagram":null,"zhihu":null,"twitter":null,"email":null},"qrs":{"weixin":null}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.7.3","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":"2022/8/17 11:45:14"};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+<!--        <span class="swup-progress-icon">-->
+<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+<!--        </span>-->
+    
+</div>
+
+
+
+<main class="page-container" id="swup">
+
+    
+
+    <div class="main-content-container flex flex-col justify-between min-h-dvh">
+
+
+        <div class="main-content-header">
+            <header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                Theme Redefine
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">7</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="post-page-container flex relative justify-between box-border w-full h-full">
+    <div class="article-content-container">
+
+        <div class="article-title relative w-full">
+            
+                <div class="w-full flex items-center pt-6 justify-start">
+                    <h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3"></h1>
+                </div>
+            
+            </div>
+
+        
+            <div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+                <div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+                    <img src="/images/redefine-avatar.svg">
+                </div>
+                <div class="info flex flex-col justify-between">
+                    <div class="author flex items-center">
+                        <span class="name text-default-text-color text-lg font-semibold">The Redefine Team</span>
+                        
+                            <span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv1</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2024-11-01 22:16:21</span>
+        <span class="mobile">2024-11-01 22:16:21</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2024-07-17 16:52:21</span>
+            <span class="mobile">2024-07-17 16:52:21</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        
+
+
+        <div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+            <h1 id="2023CCPC河南省赛题解"><a href="#2023CCPC河南省赛题解" class="headerlink" title="2023CCPC河南省赛题解"></a>2023CCPC河南省赛题解</h1><h2 id="A-小水獭游河南"><a href="#A-小水獭游河南" class="headerlink" title="A 小水獭游河南"></a>A 小水獭游河南</h2><p>签到题，最多枚举27次，略</p>
+<h2 id="B-Art-for-Rest"><a href="#B-Art-for-Rest" class="headerlink" title="B  Art for Rest"></a>B  Art for Rest</h2><p><strong>知识点：</strong>ST表</p>
+<p>两种做法，一种st表做法，一种是题目给的正解</p>
+<h3 id="st表做法"><a href="#st表做法" class="headerlink" title="st表做法"></a>st表做法</h3><p>先使用st表预处理区间最值，时间复杂度$O(nlogn)$。</p>
+<p>然后从$1$开始枚举到$n-1$，查询每个区间的最大值和最小值，前面一个分快的最大值必须小于等于后面一个区间的最小值，这样才能保证每一个分块排序后，序列是非递减的。</p>
+<p><strong>优化1：</strong></p>
+<p>预处理$log_{2}i$的值，时间复杂度$O(n)$。</p>
+<p><strong>优化2：</strong></p>
+<p>如果分块大小为$d$已经确认为一种合法解，那么显然$\forall k<em>d\ st.k\in Z\ .   k</em>d&lt;&#x3D;n $均为合法解，所以可以提前筛掉一部分。</p>
+<h3 id="题解做法"><a href="#题解做法" class="headerlink" title="题解做法"></a>题解做法</h3><p>直接比较每个分块边界的前缀最大值和后缀最小值即可，如果方案合法的话，前缀最大值一定是最后一个分块的最大值，后缀最小值一定是最后一个后缀的最小值，证明略。</p>
+<p>ps:正解是题解做法，st表做法使用优化2后运行时间999ms，勉强通过，但是正解不需要优化2便达到了359ms，使用优化2后时间更是减小到了296ms。</p>
+<h2 id="C-Toxel-与随机数生成器（未写完）"><a href="#C-Toxel-与随机数生成器（未写完）" class="headerlink" title="C Toxel 与随机数生成器（未写完）"></a>C Toxel 与随机数生成器（未写完）</h2><p><strong>知识点：</strong>字符串</p>
+<p>多种做法，这里只给出直接查找，$KMP$，$Z$函数，后缀数组等几种做法。</p>
+<h3 id="直接查找"><a href="#直接查找" class="headerlink" title="直接查找"></a>直接查找</h3><p>比较唐，直接找下标为$1001-n$的序列中是否有和$s.substr(0,1000)$,因为序列足够随机，所以只有$2^{-1000} \approx \frac{1}{10^{300}}$的概率为随机序列但是出现了两个相同的长度为$1000$的子串。</p>
+<h3 id="KMP做法"><a href="#KMP做法" class="headerlink" title="KMP做法"></a>KMP做法</h3><h3 id="Z函数做法"><a href="#Z函数做法" class="headerlink" title="Z函数做法"></a>Z函数做法</h3><h3 id="后缀数组做法"><a href="#后缀数组做法" class="headerlink" title="后缀数组做法"></a>后缀数组做法</h3><h2 id="E-矩阵游戏（未写完）"><a href="#E-矩阵游戏（未写完）" class="headerlink" title="E 矩阵游戏（未写完）"></a>E 矩阵游戏（未写完）</h2><p><strong>知识点：</strong>动态规划</p>
+<p>简单动态规划，赛时没开出来，以后需要多加练习</p>
+<h2 id="F-Art-for-Last"><a href="#F-Art-for-Last" class="headerlink" title="F Art for Last"></a>F Art for Last</h2><p><strong>知识点：</strong>差分，单调队列</p>
+<p>n和数随机调出来k个数，求差的最大值和最小值的乘积的最小值。</p>
+<p>先给数组排个序，再求差分序列，连续k个数的最小值一定是排序后相邻的两个数的差，最大值为这连续k个数的最大值减去最小值，单调队列调试起来比较麻烦，赛时没调出来，给队友hzy调出来了，赛后回顾自己调试出来了。</p>
+<h2 id="G-Toxel-与字符画"><a href="#G-Toxel-与字符画" class="headerlink" title="G Toxel 与字符画"></a>G Toxel 与字符画</h2><p>恶心大模拟，赛时hzy调出来了，需要注意$10^{18}&#x3D;1000000000000000000$和$1^{\infty}&#x3D;1$两个hack样例</p>
+<h2 id="H-Travel-Begins"><a href="#H-Travel-Begins" class="headerlink" title="H Travel Begins"></a>H Travel Begins</h2><p>思维题，要让和最小只需要分离出尽量多的$0.5-\frac{1}{\infty}$,和最大只需要分离出尽量多的$0.5$</p>
+<h2 id="I-数正方形"><a href="#I-数正方形" class="headerlink" title="I 数正方形"></a>I 数正方形</h2><p><strong>知识点：</strong>扫描线</p>
+<h2 id="J-Mocha-沉迷电子游戏"><a href="#J-Mocha-沉迷电子游戏" class="headerlink" title="J Mocha 沉迷电子游戏"></a>J Mocha 沉迷电子游戏</h2><p><strong>知识点</strong>：计算几何</p>
+<h2 id="K-排列与质数"><a href="#K-排列与质数" class="headerlink" title="K 排列与质数"></a>K 排列与质数</h2><p>思维题，赛时想麻烦了，最后半小时才想到正解，比较极限，比赛结束前一分钟过的。</p>
+<p>首先每个单独的奇数序列或偶数序列（收尾除外）可以构成一个合法序列，后面只需要考虑怎么将这两部分结合起来，n为奇数时，一种合法方案是$1\ 3\ 5\ 2\ 7\ …n-6\  n-1\  n-4\  n-2\ n\ n-3\ n-5\ n-7\ …\ 6\ 4$,n为偶数时，一种合法的构造方案是$4\ 6\ 8\ … \ n-6\ n-1\ n-4\ n-2\ n\ n-3\ n-5\ …\ 7\ 2\ 5\ 3\ 1$，其中$n&lt;&#x3D;11$的情况可以进行打表处理。</p>
+
+        </div>
+
+        
+            <div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+                <div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> </li>
+        <li><strong>作者:</strong> The Redefine Team</li>
+        <li><strong>创建于
+                :</strong> 2024-11-01 22:16:21</li>
+        
+            <li>
+                <strong>更新于
+                    :</strong> 2024-07-17 16:52:21
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://redefine.ohevan.com/2024/11/01/2023CCPC河南-张博轩题解/
+        </li>
+        <li>
+            <strong>
+                版权声明:
+            </strong>
+            
+
+            
+                本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a> 进行许可。
+            
+        </li>
+    </ul>
+</div>
+
+            </div>
+        
+
+        
+
+        
+
+        
+            <div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+                
+                    <div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="prev"
+                        rel="prev"
+                        href="/2024/11/01/2024%E4%B8%9C%E5%8C%97%E5%9B%9B%E7%9C%81%E8%81%94%E8%B5%9B/"
+                        >
+                            <span class="left arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </span>
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item"></span>
+                                <span class="post-nav-item">上一篇</span>
+                            </span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="next"
+                        rel="next"
+                        href="/2024/11/01/2023ICPC%E5%8D%97%E4%BA%AC%E5%8C%BA%E5%9F%9F%E8%B5%9B/"
+                        >
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item"></span>
+                                <span class="post-nav-item">下一篇</span>
+                            </span>
+                            <span class="right arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+
+        
+            <div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+                <div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        评论
+    </div>
+    
+
+        
+            
+    <div id="waline"></div>
+    <script type="module" data-swup-reload-script>
+      import { init } from '/js/libs/waline.mjs';
+
+      function loadWaline() {
+        init({
+          el: '#waline',
+          serverURL: 'https://example.example.com',
+          lang: 'zh-CN',
+          dark: 'body[class~="dark-mode"]',
+          reaction: false,
+          requiredMeta: ['nick', 'mail'],
+          emoji: [],
+          
+          
+        });
+      }
+
+      if (typeof swup !== 'undefined') {
+        loadWaline();
+      } else {
+        window.addEventListener('DOMContentLoaded', loadWaline);
+      }
+    </script>
+
+
+
+        
+    
+</div>
+
+            </div>
+        
+    </div>
+
+    
+        <div class="toc-content-container">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">目录</div>
+        <div class="page-title"></div>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#2023CCPC%E6%B2%B3%E5%8D%97%E7%9C%81%E8%B5%9B%E9%A2%98%E8%A7%A3"><span class="nav-text">2023CCPC河南省赛题解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#A-%E5%B0%8F%E6%B0%B4%E7%8D%AD%E6%B8%B8%E6%B2%B3%E5%8D%97"><span class="nav-text">A 小水獭游河南</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-Art-for-Rest"><span class="nav-text">B  Art for Rest</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#st%E8%A1%A8%E5%81%9A%E6%B3%95"><span class="nav-text">st表做法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%98%E8%A7%A3%E5%81%9A%E6%B3%95"><span class="nav-text">题解做法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C-Toxel-%E4%B8%8E%E9%9A%8F%E6%9C%BA%E6%95%B0%E7%94%9F%E6%88%90%E5%99%A8%EF%BC%88%E6%9C%AA%E5%86%99%E5%AE%8C%EF%BC%89"><span class="nav-text">C Toxel 与随机数生成器（未写完）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E6%9F%A5%E6%89%BE"><span class="nav-text">直接查找</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KMP%E5%81%9A%E6%B3%95"><span class="nav-text">KMP做法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Z%E5%87%BD%E6%95%B0%E5%81%9A%E6%B3%95"><span class="nav-text">Z函数做法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E7%BC%80%E6%95%B0%E7%BB%84%E5%81%9A%E6%B3%95"><span class="nav-text">后缀数组做法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#E-%E7%9F%A9%E9%98%B5%E6%B8%B8%E6%88%8F%EF%BC%88%E6%9C%AA%E5%86%99%E5%AE%8C%EF%BC%89"><span class="nav-text">E 矩阵游戏（未写完）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#F-Art-for-Last"><span class="nav-text">F Art for Last</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#G-Toxel-%E4%B8%8E%E5%AD%97%E7%AC%A6%E7%94%BB"><span class="nav-text">G Toxel 与字符画</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#H-Travel-Begins"><span class="nav-text">H Travel Begins</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#I-%E6%95%B0%E6%AD%A3%E6%96%B9%E5%BD%A2"><span class="nav-text">I 数正方形</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#J-Mocha-%E6%B2%89%E8%BF%B7%E7%94%B5%E5%AD%90%E6%B8%B8%E6%88%8F"><span class="nav-text">J Mocha 沉迷电子游戏</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#K-%E6%8E%92%E5%88%97%E4%B8%8E%E8%B4%A8%E6%95%B0"><span class="nav-text">K 排列与质数</span></a></li></ol></li></ol>
+
+    </div>
+</div>
+        </div>
+    
+</div>
+
+
+
+                
+
+            </div>
+
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2022</span>
+              -
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">The Redefine Team</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 7 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">访问人数</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">总访问量</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.7.3</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+            <li class="go-comment">
+                <i class="fa-regular fa-comments"></i>
+            </li>
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+
+</main>
+
+
+    
+<script src="/js/libs/Swup.min.js"></script>
+
+<script src="/js/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+
+
+
+<script src="/js/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/utils.js" type="module"></script>
+
+<script src="/js/main.js" type="module"></script>
+
+<script src="/js/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/layouts/categoryList.js" type="module"></script>
+
+
+
+
+
+    
+<script src="/js/tools/codeBlock.js" type="module"></script>
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js" type="module"></script>
+
+
+
+
+    
+<script src="/js/tools/runtime.js"></script>
+
+    
+<script src="/js/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+    
+<script src="/js/libs/anime.min.js"></script>
+
+
+
+
+
+    
+<script src="/js/tools/tocToggle.js" type="module" data-swup-reload-script=""></script>
+
+<script src="/js/layouts/toc.js" type="module" data-swup-reload-script=""></script>
+
+<script src="/js/plugins/tabs.js" type="module" data-swup-reload-script=""></script>
+
+
+
+
+<script src="/js/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+<script src="/js/layouts/essays.js" type="module" data-swup-reload-script=""></script>
+
+
+
+
+</body>
+</html>
