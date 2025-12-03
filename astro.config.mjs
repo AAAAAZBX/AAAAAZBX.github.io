@@ -10,4 +10,6 @@ export default defineConfig({
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
   },
+  site: 'https://AAAAAZBX.github.io',
 });
+

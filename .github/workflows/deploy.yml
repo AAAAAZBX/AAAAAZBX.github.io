@@ -1,0 +1,38 @@
+name: Deploy to GitHub Pages
+
+on:
+  # 每次往 main 分支 push 就自动部署
+  push:
+    branches: [ main ]
+  # 可以在 GitHub Actions 页面手动点运行
+  workflow_dispatch:
+
+# 这些权限是 GitHub Pages 必需的
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout your repository using git
+        uses: actions/checkout@v5
+
+      - name: Install, build, and upload your site
+        uses: withastro/action@v5
+        # 如果以后改用 pnpm / bun，可以在这里配置 package-manager
+        # with:
+        #   package-manager: pnpm@9
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
