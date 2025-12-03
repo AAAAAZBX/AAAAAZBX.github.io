@@ -175,4 +175,15 @@ strong {
     color: #000; /* 可以选择更深的颜色来突出 */
 }
 
+/* 奖牌颜色样式 */
+.medal-silver {
+    color: #C0C0C0 !important; /* 银色 */
+    font-weight: 700 !important;
+}
+
+.medal-bronze {
+    color: #CD7F32 !important; /* 铜色 */
+    font-weight: 700 !important;
+}
+
 
