@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const posts = await getCollection("learning");
+posts.sort((a, b) => {
+  const da = new Date(a.data.date ?? "1970-01-01").getTime();
+  const db = new Date(b.data.date ?? "1970-01-01").getTime();
+  return db - da;
+});
+---
+
+<Layout title="课外学习 | BoxuanZhang">
+  <div class="content-wrapper">
+    <h1>课外学习</h1>
+    <p>编程实践、数学、工具技巧等杂项学习记录。</p>
+
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li>
+          <a href={`/learning/${post.slug}/`}>{post.data.title}</a>
+          {post.data.date && <> — <small>{post.data.date}</small></>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</Layout>

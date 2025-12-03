@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const posts = await getCollection("algorithms");
+posts.sort((a, b) => {
+  const da = new Date(a.data.date ?? "1970-01-01").getTime();
+  const db = new Date(b.data.date ?? "1970-01-01").getTime();
+  return db - da;
+});
+---
+
+<Layout title="算法竞赛 | BoxuanZhang">
+  <div class="content-wrapper">
+    <h1>算法竞赛</h1>
+    <p>ICPC / 训练题 / 算法专题的笔记都在这里。</p>
+
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li>
+          <a href={`/algorithms/${post.slug}/`}>{post.data.title}</a>
+          {post.data.date && <> — <small>{post.data.date}</small></>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</Layout>

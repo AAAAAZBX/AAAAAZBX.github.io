@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const posts = await getCollection("travel");
+posts.sort((a, b) => {
+  const da = new Date(a.data.date ?? "1970-01-01").getTime();
+  const db = new Date(b.data.date ?? "1970-01-01").getTime();
+  return db - da;
+});
+---
+
+<Layout title="游记分享 | BoxuanZhang">
+  <div class="content-wrapper">
+    <h1>游记分享</h1>
+    <p>一路走一路看的风景与故事。</p>
+
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li>
+          <a href={`/travel/${post.slug}/`}>{post.data.title}</a>
+          {post.data.date && <> — <small>{post.data.date}</small></>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</Layout>

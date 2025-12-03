@@ -1,22 +1,201 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
+---
+const { title = "BoxuanZhang的个人空间", isArticle = false } = Astro.props;
+const year = new Date().getFullYear();
+---
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{title}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- 全局样式 -->
+    <link rel="stylesheet" href="/styles/global.css" />
+
+    <!-- 内联样式：确保 Markdown 内部链接样式生效 -->
+    <style>
+      /* 强制覆盖 Markdown 内部链接样式 */
+      article.typora-github a,
+      .typora-github a {
+        color: #8590a6 !important;
+        text-decoration: none !important;
+      }
+      article.typora-github a:link,
+      article.typora-github a:visited,
+      article.typora-github a:active,
+      .typora-github a:link,
+      .typora-github a:visited,
+      .typora-github a:active {
+        color: #8590a6 !important;
+        text-decoration: none !important;
+      }
+      article.typora-github a:hover,
+      .typora-github a:hover {
+        color: #8590a6 !important;
+        text-decoration: none !important;
+      }
+      article.typora-github a.active,
+      article.typora-github a.active:link,
+      article.typora-github a.active:visited,
+      article.typora-github a.active:hover,
+      article.typora-github a.active:active,
+      .typora-github a.active,
+      .typora-github a.active:link,
+      .typora-github a.active:visited,
+      .typora-github a.active:hover,
+      .typora-github a.active:active {
+        color: #1890ff !important;
+        font-weight: 500 !important;
+        text-decoration: none !important;
+      }
+    </style>
+
+    <!-- KaTeX 样式，用于渲染公式 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css"
+    />
+
+    <!-- Fira Code 字体 -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap"
+    />
+  </head>
+
+  <body>
+    <header>
+      <div class="nav">
+        <div class="nav-left">
+          <span>BoxuanZhang</span>
+        </div>
+        <nav class="nav-links">
+          <a href="/">主页</a>
+          <a href="/algorithms">算法竞赛</a>
+          <a href="/learning">课外学习</a>
+          <a href="/research">科研记录</a>
+          <a href="/travel">游记分享</a>
+        </nav>
+      </div>
+    </header>
+
+      <slot />
+
+    <footer>© {year} BoxuanZhang. All rights reserved.</footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // 代码块复制按钮
+        document.querySelectorAll("pre.astro-code").forEach((pre) => {
+          if (pre.querySelector("button.code-copy")) return;
+
+          const btn = document.createElement("button");
+          btn.className = "code-copy";
+          btn.textContent = "复制";
+
+          btn.addEventListener("click", async () => {
+            const code = pre.querySelector("code");
+            if (!code) return;
+            const text = code.innerText;
+
+            try {
+              await navigator.clipboard.writeText(text);
+              const old = btn.textContent;
+              btn.textContent = "已复制";
+              setTimeout(() => (btn.textContent = old), 1500);
+            } catch (e) {
+              console.error(e);
+            }
+          });
+
+          pre.appendChild(btn);
+        });
+
+        // Markdown 内部目录链接的高亮功能
+        const article = document.querySelector("article.typora-github");
+        if (!article) return;
+
+        // 获取所有锚点链接（href 以 # 开头的链接）
+        const anchorLinks = article.querySelectorAll('a[href^="#"]');
+        if (anchorLinks.length === 0) return;
+
+        // 获取所有标题元素
+        const headings = article.querySelectorAll("h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]");
+        if (headings.length === 0) return;
+
+        // 更新激活链接的函数
+        const updateActiveLink = () => {
+          const hash = window.location.hash;
+          anchorLinks.forEach((link) => {
+            link.classList.remove("active");
+            if (hash && link.getAttribute("href") === hash) {
+              link.classList.add("active");
+            }
+          });
+        };
+
+        // 使用 Intersection Observer 来检测当前可见的标题
+        const observerOptions = {
+          rootMargin: "-20% 0px -70% 0px",
+          threshold: 0,
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const id = entry.target.id;
+              if (id) {
+                // 更新 URL（不创建历史记录）
+                const url = window.location.pathname + `#${id}`;
+                window.history.replaceState(null, "", url);
+                
+                // 更新激活的链接
+                anchorLinks.forEach((link) => {
+                  link.classList.remove("active");
+                  if (link.getAttribute("href") === `#${id}`) {
+                    link.classList.add("active");
+                  }
+                });
+              }
+            }
+          });
+        }, observerOptions);
+
+        // 观察所有标题
+        headings.forEach((heading) => observer.observe(heading));
+
+        // 点击链接时的处理
+        anchorLinks.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute("href")?.substring(1);
+            const target = document.getElementById(targetId || "");
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+              // 使用 replaceState 避免在历史记录中留下锚点
+              const url = window.location.pathname + (targetId ? `#${targetId}` : "");
+              window.history.replaceState(null, "", url);
+              // 更新激活状态
+              updateActiveLink();
+            }
+          });
+        });
+
+        // 页面加载时，如果有锚点，高亮对应的链接
+        updateActiveLink();
+
+        // 监听浏览器前进/后退
+        window.addEventListener("popstate", () => {
+          updateActiveLink();
+          const hash = window.location.hash;
+          if (hash) {
+            const target = document.getElementById(hash.substring(1));
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

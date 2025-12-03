@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const posts = await getCollection("research");
+posts.sort((a, b) => {
+  const da = new Date(a.data.date ?? "1970-01-01").getTime();
+  const db = new Date(b.data.date ?? "1970-01-01").getTime();
+  return db - da;
+});
+---
+
+<Layout title="科研记录 | BoxuanZhang">
+  <div class="content-wrapper">
+    <h1>科研记录</h1>
+    <p>论文阅读、实验记录、项目总结都放在这里。</p>
+
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li>
+          <a href={`/research/${post.slug}/`}>{post.data.title}</a>
+          {post.data.date && <> — <small>{post.data.date}</small></>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</Layout>
