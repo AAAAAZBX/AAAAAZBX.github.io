@@ -1,6 +1,6 @@
 ---
-title:"Ascend C 蜕变结构生成器 prompt"
-date:"2025-12-05"
+title: "Ascend C 蜕变结构生成器 prompt"
+date: "2025-12-05"
 ---
 
 
