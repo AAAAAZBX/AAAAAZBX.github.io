@@ -166,12 +166,12 @@ article.typora-github {
 .typora-github h1 {
   font-size: 2em;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid #eaecef;
+  border-bottom: none;
 }
 .typora-github h2 {
   font-size: 1.5em;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid #eaecef;
+  border-bottom: none;
 }
 .typora-github h3 { font-size: 1.25em; }
 .typora-github h4 { font-size: 1em; }
