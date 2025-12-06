@@ -8,6 +8,36 @@ posts.sort((a, b) => {
   const db = new Date(b.data.date ?? "1970-01-01").getTime();
   return db - da;
 });
+
+// 分类文章
+const pytorchPosts = posts.filter(post => 
+  post.data.title.includes("Pytorch") || 
+  post.data.title.includes("torch.nn") ||
+  post.data.title.includes("神经网络")
+);
+
+// 对 Pytorch 文章进行自定义排序
+const pytorchOrder = [
+  "Pytorch入门",
+  "神经网络的搭建——torch.nn",
+  "Pytorch模型训练套路总结"
+];
+
+pytorchPosts.sort((a, b) => {
+  const indexA = pytorchOrder.indexOf(a.data.title);
+  const indexB = pytorchOrder.indexOf(b.data.title);
+  // 如果不在列表中，放在最后
+  if (indexA === -1 && indexB === -1) return 0;
+  if (indexA === -1) return 1;
+  if (indexB === -1) return -1;
+  return indexA - indexB;
+});
+
+const miscPosts = posts.filter(post => 
+  !post.data.title.includes("Pytorch") && 
+  !post.data.title.includes("torch.nn") &&
+  !post.data.title.includes("神经网络")
+);
 ---
 
 <Layout title="课外学习 | BoxuanZhang">
@@ -15,13 +45,34 @@ posts.sort((a, b) => {
     <h1>课外学习</h1>
     <p>编程实践、数学、工具技巧等杂项学习记录。</p>
 
-    <ul class="post-list">
-      {posts.map((post) => (
-        <li>
-          <a href={`/learning/${post.slug}/`}>{post.data.title}</a>
-          {post.data.date && <> — <small>{post.data.date}</small></>}
-        </li>
-      ))}
-    </ul>
+    <!-- Pytorch学习分类 -->
+    {pytorchPosts.length > 0 && (
+      <section style="margin-bottom: 32px;">
+        <h2 style="font-size: 1.3em; margin-bottom: 16px; color: #24292f;">Pytorch学习</h2>
+        <ul class="post-list">
+          {pytorchPosts.map((post) => (
+            <li>
+              <a href={`/learning/${post.slug}/`}>{post.data.title}</a>
+              {post.data.date && <> — <small>{post.data.date}</small></>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- 杂类分类 -->
+    {miscPosts.length > 0 && (
+      <section>
+        <h2 style="font-size: 1.3em; margin-bottom: 16px; color: #24292f;">杂类</h2>
+        <ul class="post-list">
+          {miscPosts.map((post) => (
+            <li>
+              <a href={`/learning/${post.slug}/`}>{post.data.title}</a>
+              {post.data.date && <> — <small>{post.data.date}</small></>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
   </div>
 </Layout>
