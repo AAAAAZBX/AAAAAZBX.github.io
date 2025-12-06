@@ -3,41 +3,58 @@ import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 
 const posts = await getCollection("learning");
-posts.sort((a, b) => {
-  const da = new Date(a.data.date ?? "1970-01-01").getTime();
-  const db = new Date(b.data.date ?? "1970-01-01").getTime();
-  return db - da;
+
+// 根据 slug 判断类别（子目录名）
+// Astro 的 slug 可能包含路径，需要检查各种可能的格式
+function getCategory(slug: string): string {
+  const slugLower = slug.toLowerCase();
+  // 检查是否包含 pytorch 相关路径
+  if (slugLower.includes("pytorch学习") || slugLower.includes("pytorch")) {
+    return "Pytorch学习";
+  }
+  // 检查是否包含杂类路径
+  if (slug.includes("杂类")) {
+    return "杂类";
+  }
+  return "其他";
+}
+
+// 按类别分组
+const categories = new Map<string, typeof posts>();
+posts.forEach((post) => {
+  const category = getCategory(post.slug);
+  if (!categories.has(category)) {
+    categories.set(category, []);
+  }
+  categories.get(category)!.push(post);
 });
 
-// 分类文章
-const pytorchPosts = posts.filter(post => 
-  post.data.title.includes("Pytorch") || 
-  post.data.title.includes("torch.nn") ||
-  post.data.title.includes("神经网络")
-);
-
-// 对 Pytorch 文章进行自定义排序
-const pytorchOrder = [
-  "Pytorch入门",
-  "神经网络的搭建——torch.nn",
-  "Pytorch模型训练套路总结"
-];
-
-pytorchPosts.sort((a, b) => {
-  const indexA = pytorchOrder.indexOf(a.data.title);
-  const indexB = pytorchOrder.indexOf(b.data.title);
-  // 如果不在列表中，放在最后
-  if (indexA === -1 && indexB === -1) return 0;
-  if (indexA === -1) return 1;
-  if (indexB === -1) return -1;
-  return indexA - indexB;
+// 对每个类别内的文章按日期排序（最新的在前，最老的在后）
+categories.forEach((posts, category) => {
+  posts.sort((a, b) => {
+    const da = new Date(a.data.date ?? "1970-01-01").getTime();
+    const db = new Date(b.data.date ?? "1970-01-01").getTime();
+    return db - da; // 降序：最新的在前
+  });
 });
 
-const miscPosts = posts.filter(post => 
-  !post.data.title.includes("Pytorch") && 
-  !post.data.title.includes("torch.nn") &&
-  !post.data.title.includes("神经网络")
-);
+// 对类别进行排序：最新添加的类别越靠上
+// 根据每个类别中最新的文章日期来判断
+const sortedCategories = Array.from(categories.entries()).sort((a, b) => {
+  const postsA = a[1];
+  const postsB = b[1];
+  
+  // 获取每个类别中最新的文章日期
+  const getLatestDate = (posts: typeof posts) => {
+    if (posts.length === 0) return 0;
+    return Math.max(...posts.map(p => new Date(p.data.date ?? "1970-01-01").getTime()));
+  };
+  
+  const latestA = getLatestDate(postsA);
+  const latestB = getLatestDate(postsB);
+  
+  return latestB - latestA; // 降序：最新添加的类别在前
+});
 ---
 
 <Layout title="课外学习 | BoxuanZhang">
@@ -45,12 +62,11 @@ const miscPosts = posts.filter(post =>
     <h1>课外学习</h1>
     <p>编程实践、数学、工具技巧等杂项学习记录。</p>
 
-    <!-- Pytorch学习分类 -->
-    {pytorchPosts.length > 0 && (
+    {sortedCategories.map(([category, categoryPosts]) => (
       <section style="margin-bottom: 32px;">
-        <h2 style="font-size: 1.3em; margin-bottom: 16px; color: #24292f;">Pytorch学习</h2>
+        <h2 style="font-size: 1.3em; margin-bottom: 16px; color: #24292f;">{category}</h2>
         <ul class="post-list">
-          {pytorchPosts.map((post) => (
+          {categoryPosts.map((post) => (
             <li>
               <a href={`/learning/${post.slug}/`}>{post.data.title}</a>
               {post.data.date && <> — <small>{post.data.date}</small></>}
@@ -58,21 +74,6 @@ const miscPosts = posts.filter(post =>
           ))}
         </ul>
       </section>
-    )}
-
-    <!-- 杂类分类 -->
-    {miscPosts.length > 0 && (
-      <section>
-        <h2 style="font-size: 1.3em; margin-bottom: 16px; color: #24292f;">杂类</h2>
-        <ul class="post-list">
-          {miscPosts.map((post) => (
-            <li>
-              <a href={`/learning/${post.slug}/`}>{post.data.title}</a>
-              {post.data.date && <> — <small>{post.data.date}</small></>}
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
+    ))}
   </div>
 </Layout>

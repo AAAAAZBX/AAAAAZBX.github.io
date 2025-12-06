@@ -1,0 +1,36 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection, getEntry } from "astro:content";
+import TableOfContents from "../../components/TableOfContents.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("learning");
+  return posts.map((post) => {
+    // 对于 [...slug] 路由，slug 参数应该是字符串数组
+    // 但 Astro 可能期望字符串，让我们直接使用 slug 字符串
+    // 如果 slug 包含路径，直接使用
+    return {
+      params: { slug: post.slug },
+    };
+  });
+}
+
+const { slug } = Astro.params;
+// 对于 [...slug]，slug 是数组，需要转换为字符串
+const slugString = Array.isArray(slug) ? slug.join('/') : slug;
+const post = await getEntry("learning", slugString);
+const { Content } = await post.render();
+---
+
+<Layout title={`${post.data.title} | 课外学习`}>
+  <div class="article-wrapper">
+    <TableOfContents />
+    <div class="article-content">
+      <article class="typora-github">
+    <h1>{post.data.title}</h1>
+      <Content />
+    </article>
+    </div>
+  </div>
+</Layout>
+
