@@ -26,9 +26,15 @@ header {
   justify-content: space-between;
 }
 
-.nav-left span {
+.nav-left a {
   font-weight: 600;
   font-size: 1.1em;
+  text-decoration: none;
+  color: #24292f;
+}
+
+.nav-left a:hover {
+  color: #24292f;
 }
 
 .nav-links a {
