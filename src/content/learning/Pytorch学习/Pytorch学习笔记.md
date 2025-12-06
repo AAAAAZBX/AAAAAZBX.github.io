@@ -1,7 +1,7 @@
 ---
 title: "Pytorch入门"
 
-date: "2025-12-06"
+date: "2025-12-04"
 ---
 
 # 一、Pycharm 及 Jupyter notebook使用及对比
