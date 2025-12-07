@@ -1,0 +1,79 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const posts = await getCollection("learning");
+
+// 根据 slug 判断类别（子目录名）
+// Astro 的 slug 可能包含路径，需要检查各种可能的格式
+function getCategory(slug: string): string {
+  const slugLower = slug.toLowerCase();
+  // 检查是否包含 pytorch 相关路径
+  if (slugLower.includes("pytorch学习") || slugLower.includes("pytorch")) {
+    return "Pytorch学习";
+  }
+  // 检查是否包含杂类路径
+  if (slug.includes("杂类")) {
+    return "杂类";
+  }
+  return "其他";
+}
+
+// 按类别分组
+const categories = new Map<string, typeof posts>();
+posts.forEach((post) => {
+  const category = getCategory(post.slug);
+  if (!categories.has(category)) {
+    categories.set(category, []);
+  }
+  categories.get(category)!.push(post);
+});
+
+// 对每个类别内的文章按日期排序（最新的在前，最老的在后）
+categories.forEach((posts, category) => {
+  posts.sort((a, b) => {
+    const da = new Date(a.data.date ?? "1970-01-01").getTime();
+    const db = new Date(b.data.date ?? "1970-01-01").getTime();
+    return db - da; // 降序：最新的在前
+  });
+});
+
+// 对类别进行排序：最新添加的类别越靠上
+// 根据每个类别中最新的文章日期来判断
+const sortedCategories = Array.from(categories.entries()).sort((a, b) => {
+  const postsA = a[1];
+  const postsB = b[1];
+  
+  // 获取每个类别中最新的文章日期
+  const getLatestDate = (posts: typeof posts) => {
+    if (posts.length === 0) return 0;
+    return Math.max(...posts.map(p => new Date(p.data.date ?? "1970-01-01").getTime()));
+  };
+  
+  const latestA = getLatestDate(postsA);
+  const latestB = getLatestDate(postsB);
+  
+  return latestB - latestA; // 降序：最新添加的类别在前
+});
+---
+
+<Layout title="课外学习 | BoxuanZhang">
+  <div class="content-wrapper">
+    <h1>课外学习</h1>
+    <p>编程实践、数学、工具技巧等杂项学习记录。</p>
+
+    {sortedCategories.map(([category, categoryPosts]) => (
+      <section style="margin-bottom: 32px;">
+        <h2 style="font-size: 1.3em; margin-bottom: 16px; color: #24292f;">{category}</h2>
+        <ul class="post-list">
+          {categoryPosts.map((post) => (
+            <li>
+              <a href={`/learning/${post.slug}/`}>{post.data.title}</a>
+              {post.data.date && <> — <small>{post.data.date}</small></>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</Layout>

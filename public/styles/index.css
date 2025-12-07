@@ -1,0 +1,189 @@
+/* 全屏拉伸和保持左右分列 */
+.page-container {
+  /* 使用 30px 确保有足够的边缘空间，同时保持宽阔 */
+  padding: 40px 30px; 
+  display: flex; 
+  gap: 50px;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #333;
+  flex-wrap: nowrap; /* 强制左右分列不换行 */
+  overflow-x: auto; /* 在极窄屏上允许水平滚动 */
+}
+
+/* 左侧 Sidebar 样式 */
+.sidebar {
+  flex-shrink: 0; 
+  width: 280px;
+  min-width: 250px; 
+  text-align: left;
+}
+
+.avatar-container {
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%; 
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* ⭐️ 修改：在个人信息区底部添加间距 */
+.profile-info {
+  margin-bottom: 25px; /* 增加底部外边距，拉开与联系列表的距离 */
+}
+
+.profile-info h1.name {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #000;
+}
+
+.profile-info .role {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #444;
+}
+
+.contact-item a {
+  color: #444;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.contact-item a:hover {
+  color: #0070f3; 
+  text-decoration: underline;
+}
+
+/* 右侧 Main Content 样式 */
+.main-content-wrapper { /* 更改了类名以避免冲突 */
+  flex-grow: 1; 
+  min-width: 350px; 
+  padding-top: 10px;
+}
+
+.content-section {
+  margin-bottom: 40px;
+}
+
+.content-section h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #222;
+}
+
+.content-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.content-section p {
+  line-height: 1.6;
+  margin-bottom: 15px;
+  font-size: 1.05rem;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 30px 0;
+}
+
+/* 列表和论文样式 */
+.news-list, .awards-list {
+  list-style-type: disc;
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+.paper-item {
+  margin-bottom: 20px;
+}
+
+.paper-title {
+  font-size: 1.1rem;
+  color: #000;
+}
+
+.venue {
+  font-style: italic;
+  color: #666;
+}
+
+.paper-links a {
+  font-size: 0.9rem;
+  color: #0070f3;
+  margin-right: 10px;
+  text-decoration: none;
+}
+
+/* 卡片 Grid 样式 */
+.grid-links {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.card {
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  color: #333;
+  background: #f9f9f9;
+  transition: transform 0.2s, box-shadow 0.2s;
+  font-weight: 500;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  background: #fff;
+  border-color: #ccc;
+}
+
+/* 确保加粗的 <strong> 标签能够显示粗体效果 */
+strong {
+  font-weight: 700 !important; /* 强制设置为粗体，解决被继承或覆盖的问题 */
+}
+
+/* 针对内容区 p 标签内的粗体文字，如果上面不够，可以加上这个 */
+.content-section p strong {
+    font-weight: 700;
+    color: #000; /* 可以选择更深的颜色来突出 */
+}
+
+/* 奖牌颜色样式 */
+.medal-silver {
+    color: #C0C0C0 !important; /* 银色 */
+    font-weight: 700 !important;
+}
+
+.medal-bronze {
+    color: #CD7F32 !important; /* 铜色 */
+    font-weight: 700 !important;
+}
+
+

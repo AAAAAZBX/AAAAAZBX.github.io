@@ -1,0 +1,450 @@
+/* ======= 1. 全局基础重置 ======= */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  background-color: #f6f8fa;
+  /* 页面背景：浅灰 */
+  color: #24292f;
+  line-height: 1.5;
+}
+
+/* ======= 2. 导航栏样式 (保持不变) ======= */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #d0d7de;
+}
+
+.nav {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-left a {
+  font-weight: 600;
+  font-size: 1.1em;
+  text-decoration: none;
+  color: #24292f;
+}
+
+.nav-left a:hover {
+  color: #24292f;
+}
+
+.nav-links a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: #57606a;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.nav-links a:hover {
+  color: #24292f;
+}
+
+/* ======= 3. 内容容器样式 (用于列表页和文章页的居中) ======= */
+/* 这里的 main 只包裹列表和文章，不包裹首页的左右分栏 */
+.content-wrapper {
+  max-width: 900px;
+  /* 限制内容宽度 */
+  margin: 32px auto 48px;
+  /* 居中 */
+  padding: 0 16px;
+  /* 侧边留白 */
+}
+
+/* 文章页面布局：左右分栏（目录 + 内容） */
+.article-wrapper {
+  display: flex;
+  max-width: 1200px;
+  margin: 32px auto 48px;
+  padding: 0 24px;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.article-content {
+  flex: 1;
+  min-width: 0;
+  /* 防止 flex item 溢出 */
+}
+
+footer {
+  border-top: 1px solid #d0d7de;
+  text-align: center;
+  padding: 24px 0;
+  font-size: 12px;
+  color: #57606a;
+  margin-top: 40px;
+}
+
+/* ======= 4. Typora GitHub 风格文章容器 (仅用于文章内容) ======= */
+article.typora-github {
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 48px;
+  font-size: 16px;
+  line-height: 1.6;
+  word-wrap: break-word;
+  /* 文章页不需要 max-width，因为它已经被 .content-wrapper 限制了 */
+}
+
+/* 列表页的基础样式 */
+.list-title {
+  font-size: 2em;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.list-description {
+  margin-bottom: 24px;
+  color: #57606a;
+}
+
+.post-list {
+  list-style: none;
+  padding: 0;
+}
+
+.post-list li {
+  padding: 10px 0;
+  border-bottom: none;
+}
+
+.post-list a {
+  font-size: 1.1em;
+  font-weight: 500;
+  color: #24292f;
+  text-decoration: none;
+}
+
+.post-list a:hover {
+  color: #0969da;
+  text-decoration: underline;
+}
+
+
+/* 移动端适配 */
+@media (max-width: 1024px) {
+  .article-wrapper {
+    flex-direction: column;
+    padding: 0 16px;
+  }
+
+  .article-content {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  article.typora-github {
+    padding: 24px 16px;
+  }
+
+  .content-wrapper {
+    margin: 20px auto 30px;
+  }
+
+  .article-wrapper {
+    margin: 20px auto 30px;
+  }
+}
+
+/* ======= 5. Markdown 元素详情样式 ======= */
+
+.typora-github h1,
+.typora-github h2,
+.typora-github h3,
+.typora-github h4,
+.typora-github h5,
+.typora-github h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600 !important; /* 确保标题加粗 */
+  line-height: 1.25;
+  color: #24292f;
+  scroll-margin-top: 80px;
+  /* 为固定导航栏留出空间 */
+}
+
+.typora-github h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: none;
+}
+
+.typora-github h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: none;
+}
+
+.typora-github h3 {
+  font-size: 1.25em;
+}
+
+.typora-github h4 {
+  font-size: 1em;
+}
+
+.typora-github p {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+/* 确保 strong 和 b 标签能够正常加粗显示 */
+.typora-github strong,
+.typora-github b,
+article.typora-github strong,
+article.typora-github b {
+  font-weight: 600 !important; /* 确保加粗生效 */
+  color: inherit;
+}
+
+/* 全局的 strong 和 b 标签样式（用于所有文章内容） */
+article strong,
+article b {
+  font-weight: 600 !important; /* 确保加粗生效 */
+  color: inherit;
+}
+
+/* Markdown 内部链接样式 - 区分锚点链接和外部链接 */
+
+/* 锚点链接（目录链接）：浅灰色，无下划线 */
+article.typora-github a[href^="#"],
+.typora-github a[href^="#"] {
+  color: #8590a6 !important;
+  /* 默认浅灰色，类似知乎 */
+  text-decoration: none !important;
+  /* 没有下划线 */
+  transition: color 0.2s;
+}
+
+article.typora-github a[href^="#"]:link,
+article.typora-github a[href^="#"]:visited,
+article.typora-github a[href^="#"]:active,
+.typora-github a[href^="#"]:link,
+.typora-github a[href^="#"]:visited,
+.typora-github a[href^="#"]:active {
+  color: #8590a6 !important;
+  text-decoration: none !important;
+}
+
+article.typora-github a[href^="#"]:hover,
+.typora-github a[href^="#"]:hover {
+  color: #8590a6 !important;
+  text-decoration: none !important;
+}
+
+/* 锚点链接激活状态：蓝色 */
+article.typora-github a[href^="#"].active,
+article.typora-github a[href^="#"].active:link,
+article.typora-github a[href^="#"].active:visited,
+article.typora-github a[href^="#"].active:hover,
+article.typora-github a[href^="#"].active:active,
+.typora-github a[href^="#"].active,
+.typora-github a[href^="#"].active:link,
+.typora-github a[href^="#"].active:visited,
+.typora-github a[href^="#"].active:hover,
+.typora-github a[href^="#"].active:active {
+  color: #1890ff !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+}
+
+/* 外部链接和文件链接（http/https/本地文件）：蓝色，带下划线 */
+article.typora-github a[href^="http://"],
+article.typora-github a[href^="https://"],
+article.typora-github a[href^="//"],
+article.typora-github a[href^="/"]:not([href^="#"]),
+.typora-github a[href^="http://"],
+.typora-github a[href^="https://"],
+.typora-github a[href^="//"],
+.typora-github a[href^="/"]:not([href^="#"]) {
+  color: #0969da !important;
+  /* 蓝色 */
+  text-decoration: underline !important;
+  /* 带下划线 */
+  transition: color 0.2s;
+}
+
+article.typora-github a[href^="http://"]:link,
+article.typora-github a[href^="http://"]:visited,
+article.typora-github a[href^="https://"]:link,
+article.typora-github a[href^="https://"]:visited,
+article.typora-github a[href^="//"]:link,
+article.typora-github a[href^="//"]:visited,
+article.typora-github a[href^="/"]:not([href^="#"]):link,
+article.typora-github a[href^="/"]:not([href^="#"]):visited,
+.typora-github a[href^="http://"]:link,
+.typora-github a[href^="http://"]:visited,
+.typora-github a[href^="https://"]:link,
+.typora-github a[href^="https://"]:visited,
+.typora-github a[href^="//"]:link,
+.typora-github a[href^="//"]:visited,
+.typora-github a[href^="/"]:not([href^="#"]):link,
+.typora-github a[href^="/"]:not([href^="#"]):visited {
+  color: #0969da !important;
+  text-decoration: underline !important;
+}
+
+article.typora-github a[href^="http://"]:hover,
+article.typora-github a[href^="https://"]:hover,
+article.typora-github a[href^="//"]:hover,
+article.typora-github a[href^="/"]:not([href^="#"]):hover,
+.typora-github a[href^="http://"]:hover,
+.typora-github a[href^="https://"]:hover,
+.typora-github a[href^="//"]:hover,
+.typora-github a[href^="/"]:not([href^="#"]):hover {
+  color: #0550ae !important;
+  /* 悬停时稍深的蓝色 */
+  text-decoration: underline !important;
+}
+
+.typora-github ul,
+.typora-github ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-left: 2em;
+}
+
+.typora-github li {
+  margin: 0.25em 0;
+}
+
+.typora-github li>p {
+  margin-top: 16px;
+}
+
+.typora-github blockquote {
+  margin: 0 0 16px;
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #dfe2e5;
+}
+
+.typora-github blockquote> :first-child {
+  margin-top: 0;
+}
+
+.typora-github blockquote> :last-child {
+  margin-bottom: 0;
+}
+
+.typora-github table {
+  display: block;
+  width: 100%;
+  overflow: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.typora-github table th {
+  font-weight: 600;
+  background-color: #f6f8fa;
+}
+
+.typora-github table th,
+.typora-github table td {
+  padding: 6px 13px;
+  border: 1px solid #d0d7de;
+}
+
+.typora-github table tr {
+  background-color: #fff;
+  border-top: 1px solid #d8dee4;
+}
+
+.typora-github table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+.typora-github hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: #e1e4e8;
+  border: 0;
+}
+
+.typora-github img {
+  max-width: 100%;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.typora-github :not(pre)>code {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  background-color: rgba(175, 184, 193, 0.2);
+  border-radius: 6px;
+}
+
+.typora-github pre.astro-code {
+  position: relative;
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+}
+
+.typora-github pre.astro-code code {
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  font-family: inherit;
+}
+
+.code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #57606a;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+pre.astro-code:hover .code-copy {
+  opacity: 1;
+}
+
+.code-copy:hover {
+  background-color: #f3f4f6;
+  color: #0969da;
+}
+
+pre.astro-code::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 2px 8px;
+  font-size: 10px;
+  color: #6e7781;
+  text-transform: uppercase;
+  display: none;
+}

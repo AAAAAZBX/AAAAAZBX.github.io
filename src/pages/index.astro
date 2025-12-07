@@ -1,0 +1,117 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const profile = {
+  name: "Boxuan Zhang",
+  title: "Master's Candidate in Software College, Nanjing University", // 更新为更专业的描述
+  university: "NJAU", 
+  location: "Nanjing, China", 
+  email: "zbx@stu.njau.edu.cn", 
+  github: "https://github.com/AAAAAZBX",
+  googleScholar: "", 
+  njauUrl: "http://www.njau.edu.cn/", // 新增学校链接
+  qq: "1604815119", // 请替换为您真实的QQ号码
+};
+---
+
+<Layout title={`${profile.name}的个人空间`}>
+  <main>
+    <div class="page-container">
+      
+      <aside class="sidebar">
+        <div class="avatar-container">
+          <img src="/logo.png" alt={profile.name} class="avatar" />
+        </div>
+        
+        <div class="profile-info">
+          <h1 class="name">{profile.name}</h1>
+          <p class="role">{profile.title}</p>
+
+        </div>
+
+<div class="spacer"></div>
+<div class="spacer"></div>
+
+        <div class="contact-list">
+          {/* Location (保持不变) */}
+          <div class="contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span>{profile.location}</span>
+          </div>
+          
+          {/* Email (保持不变) */}
+          <div class="contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+            <a href={`mailto:${profile.email}`}>Email</a>
+          </div>
+
+          {/* Github (保持不变) */}
+          <div class="contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            <a href={profile.github} target="_blank">Github</a>
+          </div>
+
+          {/* QQ 联系方式 */}
+          <div class="contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7c0-2.2-1.8-4-4-4H8.5"></path><path d="M14 13h-4"></path><path d="M14 17h-4"></path><path d="M14 9h-4"></path></svg>
+            <a href={`http://wpa.qq.com/msgrd?v=3&uin=${profile.qq}&site=qq&menu=yes`} target="_blank">QQ</a>
+          </div>
+
+          {/* 学校链接 (保持不变) */}
+          <div class="contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 2 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <a href={profile.njauUrl} target="_blank">{profile.university}</a>
+          </div>
+          
+          </div>
+      </aside>
+
+      <div class="main-content-wrapper">
+        
+        <section class="content-section">
+          <h2>Boxuan Zhang(张博轩)</h2>
+          <p>
+            My name is Zhang Boxuan, and I am a senior undergraduate student at Nanjing Agricultural University. I have joined the <a href="http://www.iselab.cn/" target="_blank">ISElab</a> (Laboratory of Intelligent Software Engineering) of the School of Software at Nanjing University. During my master's studies, I focused more on research in <strong>AI & testing</strong> and related fields.
+          </p>
+          <p>
+            我是张博轩，南京农业大学的大四本科生，目前已经加入南京大学软件学院<a href="http://www.iselab.cn/" target="_blank">ISElab</a>（Laboratory of Intelligent SoftWare Engineering）实验室，我在硕士阶段更多聚焦于<strong>AI & testing</strong>及相关方向的研究。
+          </p>
+        </section>
+
+        <hr class="divider" />
+
+        <section class="content-section">
+          <h3>🔥 News</h3>
+          <ul class="news-list">
+              <li><strong>[2025.12]</strong> no papers until now</li>
+          </ul>
+        </section>
+
+        <section class="content-section">
+          <h3>📚 Sections</h3>
+          <div class="grid-links">
+            <a class="card" href="/algorithms">算法竞赛</a>
+            <a class="card" href="/learning">课外学习</a>
+            <a class="card" href="/research">科研记录</a>
+            <a class="card" href="/travel">游记分享</a>
+          </div>
+        </section>
+
+        <section class="content-section">
+          <h3>🏆 Honors & Awards</h3>
+          <ul class="awards-list">
+              <li>The 50th lCPC Invitational Programming Contest(Nanchang) <strong class="medal-silver">Silver Medal #103</strong></li>
+              <li>The 50th lCPC Asia Xi'an Regional Contest <strong class="medal-bronze">Bronze Medal #138</strong></li>
+              <li>The 49th lCPC Asia Nanjing Regional Contest <strong class="medal-bronze">Bronze Medal #192</strong></li>
+              <li>"Huawei Cup" Jiangsu Provincial Collegiate Programming Contest <strong class="medal-silver">Silver Medal #40</strong></li>
+              <li>Received the <strong>Jin Shanbao Agricultural Education Scholarship</strong> at Nanjing Agricultural University</li>
+              <li>Received the <strong>First-Class Scholarship for Outstanding Students</strong> for two consecutive years (2023-2024, 2024-2025) at Nanjing Agricultural University</li>
+          </ul>
+        </section>
+
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<link rel="stylesheet" href="/styles/index.css" />

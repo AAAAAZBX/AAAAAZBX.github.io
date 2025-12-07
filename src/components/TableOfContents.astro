@@ -1,0 +1,375 @@
+---
+// TableOfContents 组件：自动生成文章目录
+---
+
+<div id="toc-container" class="toc-container">
+  <div class="toc-header">
+    <h3>目录</h3>
+  </div>
+  <nav id="toc-nav" class="toc-nav">
+    <!-- 目录项将通过 JavaScript 动态生成 -->
+  </nav>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const article = document.querySelector("article.typora-github");
+    if (!article) return;
+
+    const headings = article.querySelectorAll("h2, h3, h4");
+    if (headings.length === 0) {
+      document.getElementById("toc-container")?.remove();
+      return;
+    }
+
+    const tocNav = document.getElementById("toc-nav");
+    if (!tocNav) return;
+
+    const tocItems = [];
+
+    headings.forEach((heading, index) => {
+      // 为每个标题生成 ID
+      const text = heading.textContent || "";
+      let id = text
+        .toLowerCase()
+        .replace(/[^\w\s\u4e00-\u9fa5-]/g, "") // 保留中文、英文、数字、连字符
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .trim();
+      
+      // 如果 ID 为空或已存在，添加索引
+      if (!id) {
+        id = `heading-${index}`;
+      }
+      
+      // 检查是否已存在相同 ID
+      let finalId = id;
+      let counter = 1;
+      while (document.getElementById(finalId)) {
+        finalId = `${id}-${counter}`;
+        counter++;
+      }
+
+      heading.id = finalId;
+      const level = parseInt(heading.tagName.charAt(1));
+      tocItems.push({ id: finalId, text, level });
+    });
+
+    // 生成扁平结构的目录 HTML，使用 padding-left 来缩进
+    let tocHTML = '<ul class="toc-list">';
+    
+    tocItems.forEach((item) => {
+      const level = item.level;
+      const levelClass = `toc-level-${level}`;
+      // 根据级别计算缩进：h2=0, h3=24px, h4=48px（参考知乎格式）
+      const indent = (level - 2) * 24;
+      // 使用内联样式确保缩进生效
+      tocHTML += `<li class="toc-list-item ${levelClass}" style="padding-left: ${indent}px;">`;
+      tocHTML += `<a href="#${item.id}" class="toc-item">${item.text}</a>`;
+      tocHTML += '</li>';
+    });
+    
+    tocHTML += '</ul>';
+    tocNav.innerHTML = tocHTML;
+
+    // 添加平滑滚动（使用事件委托，因为结构是动态生成的）
+    tocNav.addEventListener("click", (e) => {
+      const link = e.target.closest("a.toc-item");
+      if (!link) return;
+      
+      e.preventDefault();
+      const targetId = link.getAttribute("href")?.substring(1);
+      const target = document.getElementById(targetId || "");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        // 使用 replaceState 而不是 pushState，避免在历史记录中留下锚点
+        // 这样回退时会回到上一个网页，而不是上一个标题
+        const url = window.location.pathname + (targetId ? `#${targetId}` : '');
+        window.history.replaceState(null, "", url);
+      }
+    });
+
+    // 高亮当前章节
+    const observerOptions = {
+      rootMargin: "-20% 0px -70% 0px",
+      threshold: 0,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          tocNav.querySelectorAll("a.toc-item").forEach((link) => {
+            const listItem = link.closest(".toc-list-item");
+            link.classList.remove("active");
+            listItem?.classList.remove("active");
+            if (link.getAttribute("href") === `#${id}`) {
+              link.classList.add("active");
+              listItem?.classList.add("active");
+            }
+          });
+        }
+      });
+    }, observerOptions);
+
+    headings.forEach((heading) => observer.observe(heading));
+
+    // 页面加载时，如果有锚点，高亮对应的目录项
+    const updateActiveLink = () => {
+      const hash = window.location.hash;
+      tocNav.querySelectorAll("a.toc-item").forEach((link) => {
+        const listItem = link.closest(".toc-list-item");
+        link.classList.remove("active");
+        listItem?.classList.remove("active");
+        if (hash && link.getAttribute("href") === hash) {
+          link.classList.add("active");
+          listItem?.classList.add("active");
+        }
+      });
+    };
+
+    // 初始状态
+    updateActiveLink();
+
+    // 监听浏览器前进/后退
+    window.addEventListener("popstate", () => {
+      updateActiveLink();
+      // 如果有锚点，滚动到对应位置
+      const hash = window.location.hash;
+      if (hash) {
+        const target = document.getElementById(hash.substring(1));
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    });
+  });
+</script>
+
+<style is:global>
+  /* 完全重写目录样式 - 知乎风格 */
+  
+  /* 容器样式 */
+  #toc-container.toc-container {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-right: 32px;
+    flex-shrink: 0;
+    width: 240px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 16px;
+    box-shadow: none;
+  }
+
+  /* 标题区域 */
+  #toc-container .toc-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e1e4e8;
+  }
+
+  #toc-container .toc-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #24292f;
+  }
+
+  /* 导航区域 - 带垂直连接线 */
+  #toc-container .toc-nav {
+    position: relative;
+    padding-left: 0;
+  }
+
+  /* 主垂直连接线 - 在最左边，穿过圆圈中心 */
+  #toc-container .toc-nav::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: #e1e4e8;
+    z-index: 1;
+  }
+
+  /* 列表基础样式 */
+  #toc-container .toc-nav > ul,
+  #toc-container .toc-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: relative;
+  }
+
+  #toc-container .toc-list-item {
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative;
+    list-style: none !important;
+    /* 确保内联样式的 padding-left 能覆盖默认值 */
+  }
+
+  /* 圆形标记点 - 竖线穿过圆圈中心，默认大小（h3） */
+  #toc-container .toc-list-item::before {
+    content: '';
+    position: absolute;
+    /* 竖线在 left: -1px，宽度1px，中心在 -0.5px
+       默认圆圈宽度6px，要让中心在 -0.5px，left = -0.5 - 3 = -3.5px */
+    left: -3.5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #d1d9e0;
+    border: 2px solid #ffffff;
+    z-index: 2;
+    transition: background-color 0.2s;
+    box-sizing: border-box;
+  }
+
+  /* h2 级别 - 最大的圆点 */
+  #toc-container .toc-level-2::before {
+    width: 8px !important;
+    height: 8px !important;
+    left: -4.5px !important; /* 8px / 2 = 4px，中心在 -0.5px，所以 left = -0.5 - 4 = -4.5px */
+  }
+
+  /* h3 级别 - 中等圆点（默认，已在上面定义） */
+  #toc-container .toc-level-3::before {
+    width: 6px !important;
+    height: 6px !important;
+    left: -3.5px !important; /* 6px / 2 = 3px，中心在 -0.5px，所以 left = -0.5 - 3 = -3.5px */
+  }
+
+  /* h4 级别 - 最小的圆点 */
+  #toc-container .toc-level-4::before {
+    width: 4px !important;
+    height: 4px !important;
+    left: -2.5px !important; /* 4px / 2 = 2px，中心在 -0.5px，所以 left = -0.5 - 2 = -2.5px */
+  }
+
+  /* 激活状态的标记点变蓝 */
+  #toc-container .toc-list-item.active::before {
+    background-color: #1890ff !important;
+  }
+
+  /* 链接样式 - 强制覆盖所有状态 */
+  #toc-container .toc-item {
+    all: unset;
+    display: block !important;
+    padding: 6px 0 !important;
+    font-size: 13px !important;
+    color: #8590a6 !important;
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+    cursor: pointer !important;
+    line-height: 1.6 !important;
+    position: relative !important;
+    transition: color 0.2s !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+  }
+
+  /* 所有链接状态都设为灰色 - 使用 !important 强制覆盖 */
+  #toc-container .toc-item:link,
+  #toc-container .toc-item:visited,
+  #toc-container .toc-item:hover,
+  #toc-container .toc-item:active,
+  #toc-container .toc-item:focus {
+    color: #8590a6 !important;
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+    background-color: transparent !important;
+  }
+
+  /* 不同层级 - 设置字体和文本缩进 */
+  #toc-container .toc-level-2 .toc-item {
+    font-weight: 500;
+    font-size: 14px;
+    text-indent: 0; /* h2 不缩进 */
+  }
+
+  #toc-container .toc-level-3 .toc-item {
+    font-weight: 400;
+    font-size: 13px;
+    text-indent: 8px; /* h3 缩进 8px */
+  }
+
+  #toc-container .toc-level-4 .toc-item {
+    font-weight: 400;
+    font-size: 12px;
+    text-indent: 16px; /* h4 缩进 16px */
+  }
+  
+  /* 确保链接文本从圆圈右边开始，有适当间距，并处理文本溢出 */
+  #toc-container .toc-item {
+    padding-left: 12px !important; /* 圆圈和文字之间的间距，确保文字不会和圆圈重叠 */
+    padding-right: 8px !important; /* 右边留点空间 */
+    margin-left: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: block !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* 确保 li 元素不会超出容器 */
+  #toc-container .toc-list-item {
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+  
+  /* 强制确保 li 的 padding-left 生效 */
+  #toc-container .toc-list-item[style*="padding-left"] {
+    padding-left: var(--indent, 0) !important;
+  }
+
+  /* 激活状态 - 蓝色 - 最高优先级 */
+  #toc-container .toc-item.active,
+  #toc-container .toc-item.active:link,
+  #toc-container .toc-item.active:visited,
+  #toc-container .toc-item.active:hover,
+  #toc-container .toc-item.active:active,
+  #toc-container .toc-item.active:focus {
+    color: #1890ff !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+    background-color: transparent !important;
+  }
+
+  /* 移动端隐藏 */
+  @media (max-width: 1024px) {
+    #toc-container.toc-container {
+      display: none;
+    }
+  }
+
+  /* 滚动条 */
+  #toc-container.toc-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #toc-container.toc-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #toc-container.toc-container::-webkit-scrollbar-thumb {
+    background: #d1d9e0;
+    border-radius: 3px;
+  }
+
+  #toc-container.toc-container::-webkit-scrollbar-thumb:hover {
+    background: #a8b2bc;
+  }
+</style>
+

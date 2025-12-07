@@ -1,0 +1,28 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection, getEntry } from "astro:content";
+import TableOfContents from "../../components/TableOfContents.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("travel");
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const post = await getEntry("travel", slug);
+const { Content } = await post.render();
+---
+
+<Layout title={`${post.data.title} | 游记分享`}>
+  <div class="article-wrapper">
+    <TableOfContents />
+    <div class="article-content">
+      <article class="typora-github">
+        <h1>{post.data.title}</h1>
+        <Content />
+      </article>
+    </div>
+  </div>
+</Layout>

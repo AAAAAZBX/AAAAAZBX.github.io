@@ -1,0 +1,271 @@
+---
+const { title = "BoxuanZhang的个人空间", isArticle = false } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{title}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Favicon - 使用头像作为标签栏图标 -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="shortcut icon" type="image/png" href="/logo.png" />
+
+    <!-- 全局样式 -->
+    <link rel="stylesheet" href="/styles/global.css" />
+
+    <!-- 内联样式：确保 Markdown 内部链接样式生效 -->
+    <style>
+      /* 确保标题加粗 */
+      article.typora-github h1,
+      article.typora-github h2,
+      article.typora-github h3,
+      article.typora-github h4,
+      article.typora-github h5,
+      article.typora-github h6,
+      .typora-github h1,
+      .typora-github h2,
+      .typora-github h3,
+      .typora-github h4,
+      .typora-github h5,
+      .typora-github h6 {
+        font-weight: 600 !important;
+      }
+
+      /* 确保加粗内容显示 */
+      article.typora-github strong,
+      article.typora-github b,
+      .typora-github strong,
+      .typora-github b {
+        font-weight: 600 !important;
+      }
+
+      /* 锚点链接（目录链接）：浅灰色，无下划线 */
+      article.typora-github a[href^="#"],
+      .typora-github a[href^="#"] {
+        color: #8590a6 !important;
+        text-decoration: none !important;
+      }
+      article.typora-github a[href^="#"]:link,
+      article.typora-github a[href^="#"]:visited,
+      article.typora-github a[href^="#"]:active,
+      .typora-github a[href^="#"]:link,
+      .typora-github a[href^="#"]:visited,
+      .typora-github a[href^="#"]:active {
+        color: #8590a6 !important;
+        text-decoration: none !important;
+      }
+      article.typora-github a[href^="#"]:hover,
+      .typora-github a[href^="#"]:hover {
+        color: #8590a6 !important;
+        text-decoration: none !important;
+      }
+      /* 锚点链接激活状态：蓝色 */
+      article.typora-github a[href^="#"].active,
+      article.typora-github a[href^="#"].active:link,
+      article.typora-github a[href^="#"].active:visited,
+      article.typora-github a[href^="#"].active:hover,
+      article.typora-github a[href^="#"].active:active,
+      .typora-github a[href^="#"].active,
+      .typora-github a[href^="#"].active:link,
+      .typora-github a[href^="#"].active:visited,
+      .typora-github a[href^="#"].active:hover,
+      .typora-github a[href^="#"].active:active {
+        color: #1890ff !important;
+        font-weight: 500 !important;
+        text-decoration: none !important;
+      }
+      /* 外部链接和文件链接（http/https/本地文件）：蓝色，带下划线 */
+      article.typora-github a[href^="http://"],
+      article.typora-github a[href^="https://"],
+      article.typora-github a[href^="//"],
+      article.typora-github a[href^="/"]:not([href^="#"]),
+      .typora-github a[href^="http://"],
+      .typora-github a[href^="https://"],
+      .typora-github a[href^="//"],
+      .typora-github a[href^="/"]:not([href^="#"]) {
+        color: #0969da !important;
+        text-decoration: underline !important;
+      }
+      article.typora-github a[href^="http://"]:link,
+      article.typora-github a[href^="http://"]:visited,
+      article.typora-github a[href^="https://"]:link,
+      article.typora-github a[href^="https://"]:visited,
+      article.typora-github a[href^="//"]:link,
+      article.typora-github a[href^="//"]:visited,
+      article.typora-github a[href^="/"]:not([href^="#"]):link,
+      article.typora-github a[href^="/"]:not([href^="#"]):visited,
+      .typora-github a[href^="http://"]:link,
+      .typora-github a[href^="http://"]:visited,
+      .typora-github a[href^="https://"]:link,
+      .typora-github a[href^="https://"]:visited,
+      .typora-github a[href^="//"]:link,
+      .typora-github a[href^="//"]:visited,
+      .typora-github a[href^="/"]:not([href^="#"]):link,
+      .typora-github a[href^="/"]:not([href^="#"]):visited {
+        color: #0969da !important;
+        text-decoration: underline !important;
+      }
+      article.typora-github a[href^="http://"]:hover,
+      article.typora-github a[href^="https://"]:hover,
+      article.typora-github a[href^="//"]:hover,
+      article.typora-github a[href^="/"]:not([href^="#"]):hover,
+      .typora-github a[href^="http://"]:hover,
+      .typora-github a[href^="https://"]:hover,
+      .typora-github a[href^="//"]:hover,
+      .typora-github a[href^="/"]:not([href^="#"]):hover {
+        color: #0550ae !important;
+        text-decoration: underline !important;
+      }
+    </style>
+
+    <!-- KaTeX 样式，用于渲染公式 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css"
+    />
+
+    <!-- Fira Code 字体 -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap"
+    />
+  </head>
+
+  <body>
+    <header>
+      <div class="nav">
+        <div class="nav-left">
+          <a href="/">Boxuan Zhang</a>
+        </div>
+        <nav class="nav-links">
+          <a href="/algorithms">算法竞赛</a>
+          <a href="/learning">课外学习</a>
+          <a href="/research">科研记录</a>
+          <a href="/travel">游记分享</a>
+        </nav>
+      </div>
+    </header>
+
+      <slot />
+
+    <footer>© {year} BoxuanZhang. All rights reserved.</footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // 代码块复制按钮
+        document.querySelectorAll("pre.astro-code").forEach((pre) => {
+          if (pre.querySelector("button.code-copy")) return;
+
+          const btn = document.createElement("button");
+          btn.className = "code-copy";
+          btn.textContent = "复制";
+
+          btn.addEventListener("click", async () => {
+            const code = pre.querySelector("code");
+            if (!code) return;
+            const text = code.innerText;
+
+            try {
+              await navigator.clipboard.writeText(text);
+              const old = btn.textContent;
+              btn.textContent = "已复制";
+              setTimeout(() => (btn.textContent = old), 1500);
+            } catch (e) {
+              console.error(e);
+            }
+          });
+
+          pre.appendChild(btn);
+        });
+
+        // Markdown 内部目录链接的高亮功能
+        const article = document.querySelector("article.typora-github");
+        if (!article) return;
+
+        // 获取所有锚点链接（href 以 # 开头的链接）
+        const anchorLinks = article.querySelectorAll('a[href^="#"]');
+        if (anchorLinks.length === 0) return;
+
+        // 获取所有标题元素
+        const headings = article.querySelectorAll("h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]");
+        if (headings.length === 0) return;
+
+        // 更新激活链接的函数
+        const updateActiveLink = () => {
+          const hash = window.location.hash;
+          anchorLinks.forEach((link) => {
+            link.classList.remove("active");
+            if (hash && link.getAttribute("href") === hash) {
+              link.classList.add("active");
+            }
+          });
+        };
+
+        // 使用 Intersection Observer 来检测当前可见的标题
+        const observerOptions = {
+          rootMargin: "-20% 0px -70% 0px",
+          threshold: 0,
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const id = entry.target.id;
+              if (id) {
+                // 更新 URL（不创建历史记录）
+                const url = window.location.pathname + `#${id}`;
+                window.history.replaceState(null, "", url);
+                
+                // 更新激活的链接
+                anchorLinks.forEach((link) => {
+                  link.classList.remove("active");
+                  if (link.getAttribute("href") === `#${id}`) {
+                    link.classList.add("active");
+                  }
+                });
+              }
+            }
+          });
+        }, observerOptions);
+
+        // 观察所有标题
+        headings.forEach((heading) => observer.observe(heading));
+
+        // 点击链接时的处理
+        anchorLinks.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute("href")?.substring(1);
+            const target = document.getElementById(targetId || "");
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+              // 使用 replaceState 避免在历史记录中留下锚点
+              const url = window.location.pathname + (targetId ? `#${targetId}` : "");
+              window.history.replaceState(null, "", url);
+              // 更新激活状态
+              updateActiveLink();
+            }
+          });
+        });
+
+        // 页面加载时，如果有锚点，高亮对应的链接
+        updateActiveLink();
+
+        // 监听浏览器前进/后退
+        window.addEventListener("popstate", () => {
+          updateActiveLink();
+          const hash = window.location.hash;
+          if (hash) {
+            const target = document.getElementById(hash.substring(1));
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
