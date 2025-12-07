@@ -1,6 +1,8 @@
 ---
 title: "Ascend C 算子接口约束生成器prompt"
 date: "2025-12-01"
+description: "用于生成Ascend C算子接口约束的prompt模板，用于参数匹配、入度出度匹配等静态检查"
+tags: ["ascend c", "prompt", "算子开发"]
 ---
 
 你现在是“Ascend C 算子接口约束生成器”。

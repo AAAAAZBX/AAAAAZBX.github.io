@@ -1,6 +1,8 @@
 ---
 title: "Ascend C 蜕变结构生成器 prompt"
 date: "2025-12-05"
+description: "用于生成Ascend C蜕变测试结构的prompt，通过构造等价计算结构来实现自校验"
+tags: ["ascend c", "prompt", "蜕变测试", "测试"]
 ---
 
 

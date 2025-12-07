@@ -1,0 +1,83 @@
+---
+interface Props {
+  currentPage: number;
+  totalPages: number;
+  baseUrl: string;
+}
+
+const { currentPage, totalPages, baseUrl } = Astro.props;
+
+// 生成页码数组
+const pages: number[] = [];
+for (let i = 1; i <= totalPages; i++) {
+  pages.push(i);
+}
+---
+
+<div class="pagination">
+  {pages.map((page) => {
+    const isActive = page === currentPage;
+    // 处理URL参数：如果baseUrl已经包含参数，使用&，否则使用?
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    const url = page === 1 ? baseUrl : `${baseUrl}${separator}page=${page}`;
+    
+    return (
+      <a
+        href={url}
+        class={`pagination-link ${isActive ? 'active' : ''}`}
+        aria-label={`Go to page ${page}`}
+      >
+        {page}
+      </a>
+    );
+  })}
+</div>
+
+<style>
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 32px 0;
+    padding: 0;
+  }
+
+  .pagination-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #57606a;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s;
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    cursor: pointer;
+  }
+
+  .pagination-link:hover {
+    background: #f6f8fa;
+    color: #24292f;
+    border-color: #d0d7de;
+  }
+
+  .pagination-link.active {
+    background: #6a737d;
+    color: #ffffff;
+    font-weight: 600;
+    border-color: #6a737d;
+  }
+
+  .pagination-link.active:hover {
+    background: #5a636a;
+    color: #ffffff;
+    border-color: #5a636a;
+  }
+</style>
+

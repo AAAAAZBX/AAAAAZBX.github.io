@@ -1,27 +1,307 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import Pagination from "../../components/Pagination.astro";
 
 const posts = await getCollection("research");
-posts.sort((a, b) => {
+
+// 获取标签筛选参数
+const selectedTagParam = Astro.url.searchParams.get("tag");
+const selectedTag = selectedTagParam ? decodeURIComponent(selectedTagParam) : null;
+
+// 根据标签筛选文章
+let filteredPosts = posts;
+if (selectedTag) {
+  filteredPosts = posts.filter((post) => {
+    if (!post.data.tags || !Array.isArray(post.data.tags)) {
+      return false;
+    }
+    // 精确匹配标签
+    return post.data.tags.some(tag => tag === selectedTag);
+  });
+}
+
+// 按日期排序（最新的在前）
+const sortedPosts = filteredPosts.sort((a, b) => {
   const da = new Date(a.data.date ?? "1970-01-01").getTime();
   const db = new Date(b.data.date ?? "1970-01-01").getTime();
-  return db - da;
+  return db - da; // 降序：最新的在前
 });
+
+// 分页设置
+const postsPerPage = 10;
+const totalPosts = sortedPosts.length;
+const totalPages = Math.max(1, Math.ceil(totalPosts / postsPerPage));
+
+// 获取当前页码（从 URL 查询参数）
+const currentPage = Math.max(1, Math.min(totalPages, parseInt(Astro.url.searchParams.get("page") || "1")));
+
+// 计算当前页的文章范围
+const startIndex = (currentPage - 1) * postsPerPage;
+const endIndex = startIndex + postsPerPage;
+const currentPosts = sortedPosts.slice(startIndex, endIndex);
+
+// 格式化日期
+function formatDate(dateString: string | undefined): string {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+// 计算阅读时间（基于Markdown内容）
+function calculateReadTime(body: string): number {
+  // 去除Markdown语法，提取纯文本
+  let text = body
+    // 去除代码块
+    .replace(/```[\s\S]*?```/g, '')
+    // 去除行内代码
+    .replace(/`[^`]+`/g, '')
+    // 去除链接 [text](url)
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    // 去除图片 ![alt](url)
+    .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
+    // 去除标题标记
+    .replace(/^#+\s+/gm, '')
+    // 去除粗体/斜体标记
+    .replace(/\*\*([^\*]+)\*\*/g, '$1')
+    .replace(/\*([^\*]+)\*/g, '$1')
+    // 去除删除线
+    .replace(/~~([^~]+)~~/g, '$1')
+    // 去除引用标记
+    .replace(/^>\s+/gm, '')
+    // 去除列表标记
+    .replace(/^[\*\-\+]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    // 去除HTML标签
+    .replace(/<[^>]+>/g, '')
+    // 去除多余空白
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // 计算中文字符数（包括中文标点）
+  const chineseChars = (text.match(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g) || []).length;
+  
+  // 计算英文单词数
+  const englishWords = text
+    .replace(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 0).length;
+
+  // 估算阅读时间
+  // 中文：约300字/分钟，英文：约200词/分钟
+  const chineseTime = chineseChars / 300;
+  const englishTime = englishWords / 200;
+  const totalTime = chineseTime + englishTime;
+
+  // 至少1分钟，向上取整
+  return Math.max(1, Math.ceil(totalTime));
+}
+
+// 处理当前页的文章，获取内容和阅读时间
+const postsWithContent = await Promise.all(
+  currentPosts.map(async (post) => {
+    const readTime = calculateReadTime(post.body);
+    const formattedDate = formatDate(post.data.date);
+    
+    return {
+      ...post,
+      readTime,
+      formattedDate,
+    };
+  })
+);
+
+// 收集所有标签并去重（从所有文章中收集，不只是筛选后的）
+const allTags = new Set<string>();
+posts.forEach((post) => {
+  if (post.data.tags) {
+    post.data.tags.forEach((tag) => allTags.add(tag));
+  }
+});
+const uniqueTags = Array.from(allTags).sort();
 ---
 
 <Layout title="科研记录 | BoxuanZhang">
-  <div class="content-wrapper">
-    <h1>科研记录</h1>
-    <p>论文阅读、实验记录、项目总结都放在这里。</p>
-
-    <ul class="post-list">
-      {posts.map((post) => (
-        <li>
-          <a href={`/research/${post.slug}/`}>{post.data.title}</a>
-          {post.data.date && <> — <small>{post.data.date}</small></>}
-        </li>
+  <link rel="stylesheet" href="/styles/post-list.css" />
+  
+  <div class="post-list-container">
+    <!-- 左侧文章列表 -->
+    <div class="post-list-main">
+      {postsWithContent.map((post) => (
+        <article class="post-card">
+          <a href={`/research/${post.slug}/`} class="post-card-link">
+            <div class="post-card-header">
+              <div>
+                {post.formattedDate && <div class="post-date">{post.formattedDate}</div>}
+                <h2 class="post-title">{post.data.title}</h2>
+                {post.data.description && (
+                  <p class="post-description">{post.data.description}</p>
+                )}
+              </div>
+            </div>
+            <div class="post-meta">
+              <div class="post-read-time">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>{post.readTime} min read</span>
+              </div>
+            </div>
+            {post.data.tags && post.data.tags.length > 0 && (
+              <div class="post-tags">
+                {post.data.tags.map((tag) => (
+                  <span class="post-tag">{tag}</span>
+                ))}
+              </div>
+            )}
+          </a>
+        </article>
       ))}
-    </ul>
+    </div>
+
+    <!-- 右侧标签栏（先空着） -->
+    <aside class="post-list-sidebar">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+          </svg>
+          Tags
+        </h3>
+        <div class="tag-list" id="tag-list">
+          <a href="/research" class="tag-item" data-tag="all" id="tag-all">
+            全部
+          </a>
+          {uniqueTags.map((tag) => (
+            <a 
+              href={`/research?tag=${encodeURIComponent(tag)}`} 
+              class="tag-item"
+              data-tag={tag}
+            >
+              {tag}
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
   </div>
+
+  <!-- 分页导航 -->
+  <Pagination 
+    currentPage={currentPage} 
+    totalPages={totalPages} 
+    baseUrl={selectedTag ? `/research?tag=${encodeURIComponent(selectedTag)}` : "/research"}
+  />
 </Layout>
+
+<script>
+  // 客户端标签筛选功能
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedTags = urlParams.getAll('tag'); // 获取所有tag参数
+    
+    // 更新标签的active状态
+    const tagItems = document.querySelectorAll('.tag-item');
+    const tagAll = document.getElementById('tag-all');
+    
+    if (selectedTags.length === 0) {
+      // 没有选中任何标签，激活"全部"
+      tagAll?.classList.add('active');
+      tagItems.forEach(item => {
+        if (item !== tagAll) {
+          item.classList.remove('active');
+        }
+      });
+    } else {
+      // 有选中的标签，取消"全部"的激活状态
+      tagAll?.classList.remove('active');
+      tagItems.forEach(item => {
+        if (item === tagAll) return;
+        const tagValue = item.getAttribute('data-tag');
+        if (selectedTags.includes(tagValue)) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+    
+    if (selectedTags.length === 0) {
+      // 如果没有标签参数，显示所有文章
+      return;
+    }
+    
+    // 解码所有选中的标签
+    const decodedTags = selectedTags.map(tag => decodeURIComponent(tag));
+    const postCards = document.querySelectorAll('.post-card');
+    
+    // 筛选文章：显示包含任意一个选中标签的文章（并集）
+    postCards.forEach((card) => {
+      const postTags = card.querySelectorAll('.post-tag');
+      let hasAnyTag = false;
+      
+      postTags.forEach((tagElement) => {
+        const tagText = tagElement.textContent?.trim();
+        if (tagText && decodedTags.includes(tagText)) {
+          hasAnyTag = true;
+        }
+      });
+      
+      // 如果不包含任何选中的标签，隐藏文章卡片
+      if (!hasAnyTag) {
+        card.style.display = 'none';
+      } else {
+        card.style.display = '';
+      }
+    });
+    
+    // 更新分页信息
+    const pagination = document.querySelector('.pagination');
+    if (pagination) {
+      const visiblePosts = Array.from(postCards).filter(card => card.style.display !== 'none');
+      if (visiblePosts.length <= 10) {
+        pagination.style.display = 'none';
+      } else {
+        pagination.style.display = '';
+      }
+    }
+  });
+  
+  // 处理标签点击：支持多选（并集）
+  document.addEventListener('click', (e) => {
+    const tagItem = e.target.closest('.tag-item');
+    if (!tagItem) return;
+    
+    e.preventDefault();
+    const tagValue = tagItem.getAttribute('data-tag');
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentTags = urlParams.getAll('tag');
+    
+    if (tagValue === 'all') {
+      // 点击"全部"，清除所有标签
+      window.location.href = '/research';
+    } else {
+      // 切换标签选中状态
+      if (currentTags.includes(tagValue)) {
+        // 如果已选中，取消选中
+        urlParams.delete('tag', tagValue);
+        // 如果还有其他标签，保留它们
+        const remainingTags = currentTags.filter(t => t !== tagValue);
+        if (remainingTags.length === 0) {
+          window.location.href = '/research';
+        } else {
+          urlParams.delete('tag');
+          remainingTags.forEach(tag => urlParams.append('tag', tag));
+          window.location.href = `/research?${urlParams.toString()}`;
+        }
+      } else {
+        // 如果未选中，添加到选中列表
+        urlParams.append('tag', tagValue);
+        window.location.href = `/research?${urlParams.toString()}`;
+      }
+    }
+  });
+</script>

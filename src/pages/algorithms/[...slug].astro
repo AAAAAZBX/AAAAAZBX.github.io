@@ -18,7 +18,22 @@ export async function getStaticPaths() {
 const { slug } = Astro.params;
 // 对于 [...slug]，slug 是数组，需要转换为字符串
 const slugString = Array.isArray(slug) ? slug.join('/') : slug;
-const post = await getEntry("algorithms", slugString);
+
+// 尝试直接通过文件名查找，如果找不到，再尝试完整路径
+let post;
+try {
+  post = await getEntry("algorithms", slugString);
+} catch {
+  // 如果直接查找失败，尝试在所有文章中查找匹配的文件名
+  const allPosts = await getCollection("algorithms");
+  const fileName = slugString.split('/').pop();
+  const foundPost = allPosts.find(p => p.slug.endsWith(fileName));
+  if (foundPost) {
+    post = await getEntry("algorithms", foundPost.slug);
+  } else {
+    throw new Error(`Post not found: ${slugString}`);
+  }
+}
 const { Content } = await post.render();
 ---
 

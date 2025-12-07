@@ -1,7 +1,8 @@
 ---
 title: "Pytorch入门"
-
 date: "2025-12-04"
+description: "Pytorch入门学习笔记，包括开发环境配置、基础语法和常用操作"
+tags: ["pytorch", "入门", "学习笔记"]
 ---
 
 # 一、Pycharm 及 Jupyter notebook使用及对比

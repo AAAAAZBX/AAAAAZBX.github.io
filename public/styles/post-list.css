@@ -1,0 +1,209 @@
+/* 文章列表页面样式 - 卡片式布局 */
+
+.post-list-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 24px;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+/* 左侧文章列表 */
+.post-list-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 文章卡片 */
+.post-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s, transform 0.2s;
+  overflow: hidden;
+  border: 1px solid #e1e4e8;
+}
+
+.post-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.post-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.post-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.post-date {
+  font-size: 13px;
+  color: #6a737d;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.post-title {
+  font-size: 1.4em;
+  font-weight: 600;
+  color: #24292f;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+}
+
+.post-description {
+  font-size: 15px;
+  color: #57606a;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #6a737d;
+}
+
+.post-read-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.post-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #57606a;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.post-tag:hover {
+  background: #eaeef2;
+  color: #24292f;
+}
+
+/* 右侧标签栏 */
+.post-list-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #24292f;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tag-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-item {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #57606a;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.tag-item:hover:not(.active) {
+  background: #eaeef2;
+  color: #24292f;
+  border-color: #d0d7de;
+}
+
+.tag-item.active {
+  background: #6a737d;
+  color: #ffffff;
+  border-color: #6a737d;
+  cursor: default;
+}
+
+.tag-item.active:hover {
+  background: #6a737d;
+  color: #ffffff;
+  border-color: #6a737d;
+}
+
+/* 移动端适配 */
+@media (max-width: 1024px) {
+  .post-list-container {
+    flex-direction: column;
+    padding: 0 16px;
+  }
+
+  .post-list-sidebar {
+    width: 100%;
+    position: static;
+    max-height: none;
+  }
+}
+
+/* 滚动条样式 */
+.post-list-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.post-list-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.post-list-sidebar::-webkit-scrollbar-thumb {
+  background: #d1d9e0;
+  border-radius: 3px;
+}
+
+.post-list-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #a8b2bc;
+}
+
