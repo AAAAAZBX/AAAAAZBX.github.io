@@ -1,3 +1,9 @@
+/* 确保 main 标签不阻止 sticky 定位 */
+main {
+  overflow: visible !important; /* 确保 main 不阻止 sticky 定位 */
+  min-height: 100vh; /* 确保 main 有足够的高度 */
+}
+
 /* 全屏拉伸和保持左右分列 */
 .page-container {
   /* 使用 30px 确保有足够的边缘空间，同时保持宽阔 */
@@ -7,15 +13,29 @@
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: #333;
   flex-wrap: nowrap; /* 强制左右分列不换行 */
-  overflow-x: auto; /* 在极窄屏上允许水平滚动 */
+  align-items: flex-start; /* 确保左右两侧顶部对齐 */
+  position: relative; /* 确保容器在正常文档流中 */
+  overflow: visible !important; /* 确保容器不阻止 sticky 定位 */
+  min-height: 100vh; /* 确保容器有足够的高度让 sticky 工作 */
+  /* 移除 overflow-x: auto，因为它会阻止 sticky 定位工作 */
 }
 
-/* 左侧 Sidebar 样式 */
-.sidebar {
-  flex-shrink: 0; 
-  width: 280px;
-  min-width: 250px; 
-  text-align: left;
+/* 左侧 Sidebar 样式 - 固定在视口中 */
+.sidebar,
+main .sidebar,
+.page-container .sidebar,
+aside.sidebar {
+  flex-shrink: 0 !important; 
+  width: 280px !important;
+  min-width: 250px !important; 
+  text-align: left !important;
+  position: sticky !important; /* 固定定位，滚动时保持在视口中 */
+  top: 80px !important; /* 距离顶部 80px（为导航栏留出空间） */
+  align-self: flex-start !important; /* 与 flex 容器顶部对齐 */
+  max-height: calc(100vh - 100px) !important; /* 最大高度为视口高度减去顶部空间 */
+  overflow-y: auto !important; /* 如果内容超出，允许垂直滚动 */
+  height: auto !important; /* 高度自适应内容 */
+  z-index: 10 !important; /* 确保侧边栏在其他内容之上 */
 }
 
 .avatar-container {
@@ -184,6 +204,242 @@ strong {
 .medal-bronze {
     color: #CD7F32 !important; /* 铜色 */
     font-weight: 700 !important;
+}
+
+/* Statistics 样式 */
+.statistics-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.stat-icon {
+    flex-shrink: 0;
+    color: #666;
+    margin-top: 2px;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.total-posts {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.posts-count {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #000;
+}
+
+/* Contributions 样式 */
+.contributions-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 居中贡献图 */
+}
+
+.contributions-graph {
+    position: relative;
+    margin-bottom: 20px;
+    overflow: visible; /* 移除滚动条 */
+    width: fit-content; /* 让容器自适应内容宽度 */
+}
+
+.month-labels {
+    position: relative;
+    height: 20px;
+    margin-bottom: 8px;
+}
+
+.month-label {
+    font-size: 0.75rem;
+    color: #666;
+    text-align: left;
+    padding-left: 2px;
+    grid-row: 1;
+}
+
+.day-labels {
+    display: grid;
+    grid-template-rows: repeat(7, 11px);
+    gap: 3px;
+    position: absolute;
+    left: 0;
+    width: 30px;
+}
+
+.day-label {
+    font-size: 0.75rem;
+    color: #666;
+    text-align: right;
+    padding-right: 8px;
+    line-height: 11px;
+}
+
+.contribution-grid {
+    display: grid;
+    /* 7行（周日到周六），每行 weeks 列（周数） */
+    /* 注意：列数由 JavaScript 动态设置，这里只设置行数 */
+    grid-template-rows: repeat(7, 11px);
+    gap: 3px;
+    margin-left: 30px;
+    /* 确保按行优先排列 */
+    grid-auto-flow: row;
+}
+
+.contribution-square {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: outline 0.1s;
+}
+
+.contribution-square:hover {
+    outline: 1px solid rgba(0, 0, 0, 0.5);
+    outline-offset: -1px;
+}
+
+.contribution-square.empty {
+    background: transparent;
+    cursor: default;
+}
+
+.contributions-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.legend-squares {
+    display: flex;
+    gap: 3px;
+}
+
+.legend-square {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+}
+
+.contributions-summary {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 8px;
+}
+
+/* Education 样式 */
+.education-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.education-item {
+    display: block;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+}
+
+.education-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #ccc;
+    background-color: #fff;
+}
+
+.education-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 8px;
+}
+
+.education-subtitle {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: #666;
+    margin-bottom: 6px;
+    text-decoration: none;
+}
+
+.education-duration {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: #666;
+    text-decoration: none;
+}
+
+.education-item * {
+    text-decoration: none !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .statistics-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @media (max-width: 480px) {
+        .statistics-cards {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .contributions-graph {
+        overflow-x: scroll;
+    }
+    
+    .month-labels,
+    .contribution-grid {
+        grid-template-columns: repeat(53, 10px);
+    }
+    
+    .contribution-square {
+        width: 10px;
+        height: 10px;
+    }
 }
 
 

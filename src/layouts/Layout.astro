@@ -18,6 +18,15 @@ const year = new Date().getFullYear();
 
     <!-- 内联样式：确保 Markdown 内部链接样式生效 -->
     <style>
+      /* 确保侧边栏 sticky 定位生效 */
+      main .sidebar,
+      .page-container .sidebar,
+      aside.sidebar {
+        position: sticky !important;
+        top: 80px !important;
+        align-self: flex-start !important;
+      }
+      
       /* 确保标题加粗 */
       article.typora-github h1,
       article.typora-github h2,

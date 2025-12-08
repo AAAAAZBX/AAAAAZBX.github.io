@@ -1,9 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
 
 const profile = {
   name: "Boxuan Zhang",
-  title: "Master's Candidate in Software College, Nanjing University", // 更新为更专业的描述
+  title: "Master's Candidate in Software College, Nanjing University", // 更新为更专业的描述
   university: "NJAU", 
   location: "Nanjing, China", 
   email: "zbx@stu.njau.edu.cn", 
@@ -11,14 +12,82 @@ const profile = {
   googleScholar: "", 
   njauUrl: "http://www.njau.edu.cn/", // 新增学校链接
   qq: "1604815119", // 请替换为您真实的QQ号码
+  siteStartDate: "2025-12-03", // 网站开始日期，用于计算在线天数
 };
+
+// 获取所有文章
+const algorithmsPosts = await getCollection("algorithms");
+const learningPosts = await getCollection("learning");
+const researchPosts = await getCollection("research");
+const travelPosts = await getCollection("travel");
+const allPosts = [...algorithmsPosts, ...learningPosts, ...researchPosts, ...travelPosts];
+
+// 计算总文章数
+const totalPosts = allPosts.length;
+
+// 计算总字数
+function calculateWordCount(body: string): number {
+  let text = body
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`[^`]+`/g, '')
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
+    .replace(/^#+\s+/gm, '')
+    .replace(/\*\*([^\*]+)\*\*/g, '$1')
+    .replace(/\*([^\*]+)\*/g, '$1')
+    .replace(/~~([^~]+)~~/g, '$1')
+    .replace(/^>\s+/gm, '')
+    .replace(/^[\*\-\+]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  const chineseChars = (text.match(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g) || []).length;
+  const englishWords = text
+    .replace(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 0).length;
+  
+  return chineseChars + englishWords;
+}
+
+const totalWords = allPosts.reduce((sum, post) => sum + calculateWordCount(post.body), 0);
+const totalWordsFormatted = totalWords >= 10000 ? `${(totalWords / 10000).toFixed(1)}w` : totalWords.toString();
+
+// 计算最后更新时间（最新文章的日期）
+const lastUpdated = allPosts
+  .map(post => post.data.date ? new Date(post.data.date) : new Date(0))
+  .sort((a, b) => b.getTime() - a.getTime())[0];
+
+function formatDate(date: Date): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+const lastUpdatedFormatted = formatDate(lastUpdated);
+
+// 计算在线天数
+const startDate = new Date(profile.siteStartDate);
+const today = new Date();
+const daysOnline = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
+// 准备传递给客户端的数据
+const postsData = allPosts.map(post => ({
+  date: post.data.date || null,
+  body: post.body || ''
+}));
+
+// 准备传递给客户端的 siteStartDate
+const clientSiteStartDate = profile.siteStartDate;
+
 ---
 
 <Layout title={`${profile.name}的个人空间`}>
   <main>
     <div class="page-container">
       
-      <aside class="sidebar">
+      <aside class="sidebar" style="position: sticky !important; top: 80px !important; align-self: flex-start !important;">
         <div class="avatar-container">
           <img src="/logo.png" alt={profile.name} class="avatar" />
         </div>
@@ -38,70 +107,540 @@ const profile = {
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             <span>{profile.location}</span>
           </div>
-          
-          {/* Email (保持不变) */}
-          <div class="contact-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-            <a href={`mailto:${profile.email}`}>Email</a>
-          </div>
-
-          {/* Github (保持不变) */}
-          <div class="contact-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-            <a href={profile.github} target="_blank">Github</a>
-          </div>
-
-          {/* QQ 联系方式 */}
+          {/* Website (可点击) */}
           <div class="contact-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7c0-2.2-1.8-4-4-4H8.5"></path><path d="M14 13h-4"></path><path d="M14 17h-4"></path><path d="M14 9h-4"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <a href="https://aaaaazbx.github.io/" target="_blank" rel="noopener noreferrer">Website</a>
+          </div>
+          {/* Email (可点击) */}
+          <div class="contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+            <a href={`mailto:${profile.email}`}>Email</a>
+          </div>
+          {/* QQ (可点击) */}
+          <div class="contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              <line x1="9" y1="10" x2="15" y2="10"></line>
+              <line x1="9" y1="14" x2="13" y2="14"></line>
+            </svg>
             <a href={`http://wpa.qq.com/msgrd?v=3&uin=${profile.qq}&site=qq&menu=yes`} target="_blank">QQ</a>
           </div>
-
-          {/* 学校链接 (保持不变) */}
+          {/* GitHub (可点击) */}
           <div class="contact-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 2 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            <a href={profile.njauUrl} target="_blank">{profile.university}</a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            <a href={profile.github} target="_blank" rel="noopener noreferrer">GitHub</a>
           </div>
-          
           </div>
       </aside>
 
       <div class="main-content-wrapper">
-        
         <section class="content-section">
-          <h2>Boxuan Zhang(张博轩)</h2>
-          <p>
-            My name is Zhang Boxuan, and I am a senior undergraduate student at Nanjing Agricultural University. I have joined the <a href="http://www.iselab.cn/" target="_blank">ISElab</a> (Laboratory of Intelligent Software Engineering) of the School of Software at Nanjing University. During my master's studies, I focused more on research in <strong>AI & testing</strong> and related fields.
-          </p>
-          <p>
+          <h2>About</h2>
+          <p>
+            My name is Boxuan Zhang, and I am a senior undergraduate student at Nanjing Agricultural University. I have joined the <a href="http://www.iselab.cn/" target="_blank">ISElab</a> (Laboratory of Intelligent Software Engineering) of the School of Software at Nanjing University. During my master's studies, I focused more on research in <strong>AI & testing</strong> and related fields.
+          </p>
+          <p>
             我是张博轩，南京农业大学的大四本科生，目前已经加入南京大学软件学院<a href="http://www.iselab.cn/" target="_blank">ISElab</a>（Laboratory of Intelligent SoftWare Engineering）实验室，我在硕士阶段更多聚焦于<strong>AI & testing</strong>及相关方向的研究。
-          </p>
+          </p>
         </section>
 
         <hr class="divider" />
 
         <section class="content-section">
-          <h3>🔥 News</h3>
-          <ul class="news-list">
-              <li><strong>[2025.12]</strong> no papers until now</li>
-          </ul>
+          <h3>Education</h3>
+          <div class="education-list">
+            <a href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer" class="education-item">
+              <div class="education-title">南京大学</div>
+              <div class="education-subtitle">软件工程专业，硕士</div>
+              <div class="education-duration">Sep, 2026 - Present</div>
+            </a>
+            <a href="https://ai.njau.edu.cn/" target="_blank" rel="noopener noreferrer" class="education-item">
+              <div class="education-title">南京农业大学</div>
+              <div class="education-subtitle">数据科学与大数据技术专业，本科</div>
+              <div class="education-duration">Sep, 2022 - Jun, 2026</div>
+            </a>
+          </div>
         </section>
 
-        <section class="content-section">
-          <h3>🏆 Honors & Awards</h3>
-          <ul class="awards-list">
-              <li>The 50th lCPC Invitational Programming Contest(Nanchang) <strong class="medal-silver">Silver Medal #103</strong></li>
-              <li>The 50th lCPC Asia Xi'an Regional Contest <strong class="medal-bronze">Bronze Medal #138</strong></li>
-              <li>The 49th lCPC Asia Nanjing Regional Contest <strong class="medal-bronze">Bronze Medal #192</strong></li>
-              <li>"Huawei Cup" Jiangsu Provincial Collegiate Programming Contest <strong class="medal-silver">Silver Medal #40</strong></li>
-              <li>Received the <strong>Jin Shanbao Agricultural Education Scholarship</strong> at Nanjing Agricultural University</li>
-              <li>Received the <strong>First-Class Scholarship for Outstanding Students</strong> for two consecutive years (2023-2024, 2024-2025) at Nanjing Agricultural University</li>
-          </ul>
+        <hr class="divider" />
+
+        <section class="content-section">
+          <h3>Statistics</h3>
+          <div class="statistics-cards">
+            <div class="stat-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <div class="stat-content">
+                <div class="stat-value" id="days-online">-</div>
+                <div class="stat-label">Days Online</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <div class="stat-content">
+                <div class="stat-value" id="last-updated">-</div>
+                <div class="stat-label">Last Updated</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+              </svg>
+              <div class="stat-content">
+                <div class="stat-value" id="total-posts">-</div>
+                <div class="stat-label">Total Posts</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <div class="stat-content">
+                <div class="stat-value" id="total-words">-</div>
+                <div class="stat-label">Total Words</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="divider" />
+
+        <section class="content-section">
+          <h3>Contributions</h3>
+          <div class="contributions-container">
+            <div class="contributions-graph" id="contributions-graph">
+              <!-- 贡献图将通过 JavaScript 生成 -->
+            </div>
+            <div class="contributions-legend">
+              <span>Less</span>
+              <div class="legend-squares">
+                <div class="legend-square" style="background-color: #ebedf0;"></div>
+                <div class="legend-square" style="background-color: #9be9a8;"></div>
+                <div class="legend-square" style="background-color: #40c463;"></div>
+                <div class="legend-square" style="background-color: #30a14e;"></div>
+                <div class="legend-square" style="background-color: #216e39;"></div>
+              </div>
+              <span>More</span>
+            </div>
+            <div class="contributions-summary" id="contributions-summary">
+              - contributions in {new Date().getFullYear() - 1} ~ {new Date().getFullYear()}
+            </div>
+          </div>
         </section>
 
       </div>
     </div>
-  </main>
+  </main>
 </Layout>
+
+<script define:vars={{ postsData, siteStartDate: clientSiteStartDate }}>
+  (function() {
+    'use strict';
+    
+    // 立即检查变量
+    console.log('=== DEBUG START ===');
+    console.log('postsData type:', typeof postsData);
+    console.log('postsData is array:', Array.isArray(postsData));
+    console.log('postsData length:', Array.isArray(postsData) ? postsData.length : 'N/A');
+    console.log('siteStartDate:', siteStartDate);
+    console.log('=== DEBUG END ===');
+    
+    // 工具函数：计算总字数
+    function calculateWordCount(body) {
+      if (!body) return 0;
+      let text = body
+        .replace(/```[\s\S]*?```/g, '')
+        .replace(/`[^`]+`/g, '')
+        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+        .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
+        .replace(/^#+\s+/gm, '')
+        .replace(/\*\*([^\*]+)\*\*/g, '$1')
+        .replace(/\*([^\*]+)\*/g, '$1')
+        .replace(/~~([^~]+)~~/g, '$1')
+        .replace(/^>\s+/gm, '')
+        .replace(/^[\*\-\+]\s+/gm, '')
+        .replace(/^\d+\.\s+/gm, '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      const chineseChars = (text.match(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g) || []).length;
+      const englishWords = text
+        .replace(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g, ' ')
+        .split(/\s+/)
+        .filter(word => word.length > 0).length;
+      
+      return chineseChars + englishWords;
+    }
+    
+    // 更新统计数据
+    function updateStatistics() {
+      console.log('[updateStatistics] Called');
+      try {
+        const posts = Array.isArray(postsData) ? postsData : [];
+        console.log('[updateStatistics] Posts count:', posts.length);
+        
+        // 更新总文章数
+        const totalPostsEl = document.getElementById('total-posts');
+        console.log('[updateStatistics] total-posts element:', !!totalPostsEl);
+        if (totalPostsEl) {
+          totalPostsEl.textContent = posts.length;
+          console.log('[updateStatistics] Set total-posts to:', posts.length);
+        } else {
+          console.error('[updateStatistics] total-posts element NOT FOUND!');
+        }
+        
+        // 更新总字数
+        const totalWords = posts.reduce((sum, post) => sum + calculateWordCount(post.body || ''), 0);
+        const totalWordsFormatted = totalWords >= 10000 ? `${(totalWords / 10000).toFixed(1)}w` : totalWords.toString();
+        const totalWordsEl = document.getElementById('total-words');
+        if (totalWordsEl) {
+          totalWordsEl.textContent = totalWordsFormatted;
+        }
+        
+        // 更新最后更新时间
+        const dates = posts
+          .map(post => post.date ? new Date(post.date) : null)
+          .filter(date => date !== null && !isNaN(date.getTime()))
+          .sort((a, b) => b.getTime() - a.getTime());
+        
+        if (dates.length > 0) {
+          const lastUpdated = dates[0];
+          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          const lastUpdatedFormatted = `${months[lastUpdated.getMonth()]} ${lastUpdated.getDate()}, ${lastUpdated.getFullYear()}`;
+          const lastUpdatedEl = document.getElementById('last-updated');
+          if (lastUpdatedEl) {
+            lastUpdatedEl.textContent = lastUpdatedFormatted;
+          }
+        }
+        
+        // 更新在线天数
+        if (siteStartDate) {
+          const startDate = new Date(siteStartDate);
+          const today = new Date();
+          if (!isNaN(startDate.getTime())) {
+            const daysOnline = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+            const daysOnlineEl = document.getElementById('days-online');
+            if (daysOnlineEl) {
+              daysOnlineEl.textContent = daysOnline;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error updating statistics:', error);
+      }
+    }
+  
+    // 加载贡献图 - 使用解析后的数据重新渲染
+    async function loadContributions() {
+      const graphEl = document.getElementById('contributions-graph');
+      const summaryEl = document.getElementById('contributions-summary');
+      
+      if (!graphEl) {
+        return;
+      }
+      
+      graphEl.innerHTML = '<p style="color: #666; padding: 20px;">Loading contributions...</p>';
+      
+      try {
+        const apiUrl = window.location.origin + '/api/github-contributions';
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API returned ${response.status}`);
+        }
+        
+        const result = await response.json();
+        const contributions = result.contributions || [];
+        
+        if (!Array.isArray(contributions) || contributions.length === 0) {
+          if (result.error) {
+            throw new Error(result.error);
+          }
+          graphEl.innerHTML = '<p style="color: #666; padding: 20px;">No contributions data available. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>';
+          if (summaryEl) {
+            summaryEl.textContent = `0 contributions in ${new Date().getFullYear() - 1} ~ ${new Date().getFullYear()}`;
+          }
+          return;
+        }
+        
+        renderContributionGraph(contributions, graphEl, summaryEl);
+        
+      } catch (error) {
+        console.error('[Contributions] Error:', error);
+        graphEl.innerHTML = `<p style="color: #666; padding: 20px;">Error: ${error.message}. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>`;
+        if (summaryEl) {
+          summaryEl.textContent = '';
+        }
+      }
+    }
+    
+    // 渲染贡献图 - 修复日期顺序问题
+    function renderContributionGraph(contributions, graphEl, summaryEl) {
+      graphEl.innerHTML = '';
+      
+      if (!contributions || contributions.length === 0) {
+        graphEl.innerHTML = '<p style="color: #666; padding: 20px;">No contributions data available.</p>';
+        return;
+      }
+      
+      // 首先按日期排序，确保数据按时间顺序排列
+      const sortedContributions = [...contributions].sort((a, b) => {
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return a.date.localeCompare(b.date);
+      });
+      
+      // 找到最早和最晚的日期
+      const dates = sortedContributions.filter(c => c.date).map(c => new Date(c.date + 'T00:00:00Z'));
+      if (dates.length === 0) {
+        graphEl.innerHTML = '<p style="color: #666; padding: 20px;">No valid dates found.</p>';
+        return;
+      }
+      
+      const earliestDate = new Date(Math.min(...dates.map(d => d.getTime())));
+      const latestDate = new Date(Math.max(...dates.map(d => d.getTime())));
+      
+      // 计算需要显示的周数（从最早日期到最晚日期）
+      const daysDiff = Math.ceil((latestDate.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24));
+      const weeks = Math.ceil((daysDiff + 1) / 7);
+      
+      // 创建日期到贡献数据的映射
+      const contributionMap = new Map();
+      sortedContributions.forEach(c => {
+        if (c.date) {
+          contributionMap.set(c.date, c);
+        }
+      });
+      
+      // 创建容器
+      const container = document.createElement('div');
+      container.style.position = 'relative';
+      container.style.display = 'inline-block';
+      
+      // 创建月份标签行
+      const monthRow = document.createElement('div');
+      monthRow.style.position = 'relative';
+      monthRow.style.height = '20px';
+      monthRow.style.marginBottom = '8px';
+      monthRow.style.marginLeft = '30px';
+      
+      // 创建主内容区
+      const mainArea = document.createElement('div');
+      mainArea.style.display = 'flex';
+      
+      // 创建日期标签列
+      const dayCol = document.createElement('div');
+      dayCol.style.width = '30px';
+      dayCol.style.marginRight = '3px';
+      dayCol.style.display = 'flex';
+      dayCol.style.flexDirection = 'column';
+      const dayNames = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+      for (let i = 0; i < 7; i++) {
+        const dayLabel = document.createElement('div');
+        dayLabel.textContent = dayNames[i];
+        dayLabel.style.height = '11px';
+        dayLabel.style.lineHeight = '11px';
+        dayLabel.style.fontSize = '0.75rem';
+        dayLabel.style.color = '#666';
+        dayLabel.style.textAlign = 'right';
+        dayLabel.style.paddingRight = '8px';
+        dayCol.appendChild(dayLabel);
+      }
+      
+      // 创建贡献网格
+      const grid = document.createElement('div');
+      grid.style.display = 'grid';
+      grid.style.gridTemplateColumns = `repeat(${weeks}, 11px)`;
+      grid.style.gridTemplateRows = `repeat(7, 11px)`;
+      grid.style.gap = '3px';
+      
+      // 生成网格数据：按 GitHub 的布局方式（列优先）
+      // 第一列是第1周的周日到周六，第二列是第2周的周日到周六...
+      // 但 GitHub 的贡献图从周日开始，所以 day=0 是周日
+      const gridData = [];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      // 从最早日期开始，按周填充数据
+      for (let week = 0; week < weeks; week++) {
+        for (let day = 0; day < 7; day++) {
+          // 计算当前日期
+          const currentDate = new Date(earliestDate);
+          currentDate.setUTCDate(earliestDate.getUTCDate() + week * 7 + day);
+          
+          // 格式化为 YYYY-MM-DD
+          const dateStr = currentDate.toISOString().split('T')[0];
+          
+          // 获取该日期的贡献数据
+          const contribution = contributionMap.get(dateStr) || { date: dateStr, count: 0 };
+          
+          if (!gridData[day]) {
+            gridData[day] = [];
+          }
+          gridData[day][week] = contribution;
+        }
+      }
+      
+      // 生成月份标签（使用第一行，即周日的数据）
+      const monthLabels = [];
+      let lastMonth = -1;
+      for (let week = 0; week < weeks; week++) {
+        const item = gridData[0][week];
+        if (item && item.date) {
+          try {
+            const date = new Date(item.date + 'T00:00:00Z');
+            if (!isNaN(date.getTime())) {
+              const month = date.getUTCMonth();
+              if (week === 0 || month !== lastMonth) {
+                monthLabels.push({ week, month });
+                lastMonth = month;
+              }
+            }
+          } catch (e) {
+            // 忽略错误
+          }
+        }
+      }
+      
+      // 渲染月份标签
+      monthLabels.forEach(({ week, month }) => {
+        const label = document.createElement('div');
+        label.textContent = months[month];
+        label.style.position = 'absolute';
+        label.style.left = `${week * 14}px`; // 每个方块 11px + 间距 3px = 14px
+        label.style.fontSize = '0.75rem';
+        label.style.color = '#666';
+        label.style.height = '20px';
+        label.style.lineHeight = '20px';
+        label.style.whiteSpace = 'nowrap';
+        monthRow.appendChild(label);
+      });
+      
+      // 生成贡献方块（按行优先：先所有周的周日，再所有周的周一...）
+      for (let day = 0; day < 7; day++) {
+        for (let week = 0; week < weeks; week++) {
+          const item = gridData[day][week];
+          const square = document.createElement('div');
+          square.className = 'contribution-square';
+          
+          const count = item?.count || 0;
+          const date = item?.date || null;
+          
+          // 设置颜色
+          if (count === 0) {
+            square.style.backgroundColor = '#ebedf0';
+          } else if (count === 1) {
+            square.style.backgroundColor = '#9be9a8';
+          } else if (count <= 3) {
+            square.style.backgroundColor = '#40c463';
+          } else if (count <= 5) {
+            square.style.backgroundColor = '#30a14e';
+          } else {
+            square.style.backgroundColor = '#216e39';
+          }
+          
+          // 设置提示
+          if (date) {
+            try {
+              const d = new Date(date + 'T00:00:00Z');
+              const dateStr = d.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric', 
+                timeZone: 'UTC' 
+              });
+              square.title = `${count} contribution${count !== 1 ? 's' : ''} on ${dateStr}`;
+            } catch (e) {
+              square.title = `${count} contribution${count !== 1 ? 's' : ''} on ${date}`;
+            }
+          } else {
+            square.title = `${count} contribution${count !== 1 ? 's' : ''}`;
+          }
+          
+          grid.appendChild(square);
+        }
+      }
+      
+      // 组装
+      mainArea.appendChild(dayCol);
+      mainArea.appendChild(grid);
+      container.appendChild(monthRow);
+      container.appendChild(mainArea);
+      graphEl.appendChild(container);
+      
+      // 更新摘要
+      if (summaryEl) {
+        const total = contributions.reduce((sum, c) => sum + (c.count || 0), 0);
+        const year = new Date().getFullYear();
+        summaryEl.textContent = `${total} contributions in ${year - 1} ~ ${year}`;
+      }
+    }
+    
+    // 初始化函数
+    function init() {
+      console.log('=== INIT START ===');
+      console.log('DOM ready state:', document.readyState);
+      
+      // 检查元素
+      const el1 = document.getElementById('total-posts');
+      const el2 = document.getElementById('days-online');
+      const el3 = document.getElementById('contributions-graph');
+      console.log('Elements found:', {
+        'total-posts': !!el1,
+        'days-online': !!el2,
+        'contributions-graph': !!el3
+      });
+      
+      try {
+        updateStatistics();
+        console.log('updateStatistics() completed');
+      } catch (e) {
+        console.error('updateStatistics() error:', e);
+      }
+      
+      try {
+        loadContributions();
+        console.log('loadContributions() called');
+      } catch (e) {
+        console.error('loadContributions() error:', e);
+      }
+      
+      console.log('=== INIT END ===');
+    }
+    
+    // 确保在 DOM 加载后执行
+    console.log('Script executing, readyState:', document.readyState);
+    if (document.readyState === 'loading') {
+      console.log('Waiting for DOMContentLoaded...');
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      console.log('DOM ready, calling init...');
+      setTimeout(init, 100);
+    }
+    
+    // 定期更新（每分钟）
+    setInterval(() => {
+      updateStatistics();
+      loadContributions();
+    }, 60000);
+  })();
+</script>
 
 <link rel="stylesheet" href="/styles/index.css" />
