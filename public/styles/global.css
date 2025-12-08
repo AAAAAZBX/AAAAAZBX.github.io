@@ -1,11 +1,11 @@
-/* ======= 1. 全局基础重置 ======= */
+/* ======= 1. 全局基础重置 (部分修改) ======= */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   background-color: #f6f8fa;
-  /* 页面背景：浅灰 */
   color: #24292f;
   line-height: 1.5;
+  /* 移除 position: relative; 这里的 Canvas 不需要依赖 body 定位 */
 }
 
 /* ======= 2. 导航栏样式 (保持不变) ======= */
@@ -77,13 +77,38 @@ header {
   /* 防止 flex item 溢出 */
 }
 
+/* ... (上方的 body, header, nav 等样式保持不变) ... */
+
+/* 2. 确保 Footer 具备定位上下文 */
 footer {
-  border-top: 1px solid #d0d7de;
+  position: relative;
+  /* 🌟 关键：提供定位上下文 */
   text-align: center;
-  padding: 24px 0;
+  padding: 40px 0 24px;
+  /* 顶部留出空间 */
   font-size: 12px;
   color: #57606a;
   margin-top: 40px;
+  background-color: #fff;
+  z-index: 10;
+  border-top: 1px solid #d8dee4;
+  /* 灰色顶部边框 */
+}
+
+/* 3. 定义新的 Canvas 容器样式 - 覆盖底部横线区域 */
+#dino-canvas-container {
+  position: absolute;
+  top: 0;
+  /* 紧贴 footer 顶部边缘 */
+  left: 0;
+  width: 100%;
+  height: 60px;
+  /* 动画区域高度，可根据您的需求调整 */
+  pointer-events: none;
+  /* 🌟 关键：不阻挡鼠标点击 footer 中的其他内容 */
+  z-index: 1;
+  /* 确保它在 footer 的文本内容之下 */
+  overflow: hidden;
 }
 
 /* ======= 4. Typora GitHub 风格文章容器 (仅用于文章内容) ======= */
@@ -169,7 +194,8 @@ article.typora-github {
 .typora-github h6 {
   margin-top: 24px;
   margin-bottom: 16px;
-  font-weight: 600 !important; /* 确保标题加粗 */
+  font-weight: 600 !important;
+  /* 确保标题加粗 */
   line-height: 1.25;
   color: #24292f;
   scroll-margin-top: 80px;
@@ -206,14 +232,16 @@ article.typora-github {
 .typora-github b,
 article.typora-github strong,
 article.typora-github b {
-  font-weight: 600 !important; /* 确保加粗生效 */
+  font-weight: 600 !important;
+  /* 确保加粗生效 */
   color: inherit;
 }
 
 /* 全局的 strong 和 b 标签样式（用于所有文章内容） */
 article strong,
 article b {
-  font-weight: 600 !important; /* 确保加粗生效 */
+  font-weight: 600 !important;
+  /* 确保加粗生效 */
   color: inherit;
 }
 
