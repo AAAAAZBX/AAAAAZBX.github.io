@@ -15,7 +15,7 @@ const post = await getEntry("research", slug);
 const { Content } = await post.render();
 ---
 
-<Layout title={`${post.data.title} | 科研记录`}>
+<Layout title={`${post.data.title} | Research`}>
   <div class="article-wrapper">
     <TableOfContents />
     <div class="article-content">

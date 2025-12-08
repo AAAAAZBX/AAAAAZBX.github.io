@@ -5,39 +5,60 @@ import TableOfContents from "../../components/TableOfContents.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("algorithms");
-  return posts.map((post) => {
-    // 对于 [...slug] 路由，slug 参数应该是字符串数组
-    // 但 Astro 可能期望字符串，让我们直接使用 slug 字符串
-    // 如果 slug 包含路径，直接使用
-    return {
+  const paths = [];
+  
+  posts.forEach((post) => {
+    // 生成完整路径的路由（对于 [...slug]，直接使用字符串）
+    paths.push({
       params: { slug: post.slug },
-    };
+    });
+    
+    // 生成只有文件名的路由
+    const slugParts = post.slug.split('/');
+    const fileName = slugParts[slugParts.length - 1];
+    // 只有当文件名与完整路径不同时才添加
+    if (fileName !== post.slug) {
+      paths.push({
+        params: { slug: fileName },
+      });
+    }
   });
+  
+  return paths;
 }
 
 const { slug } = Astro.params;
 // 对于 [...slug]，slug 是数组，需要转换为字符串
-const slugString = Array.isArray(slug) ? slug.join('/') : slug;
+const slugArray = Array.isArray(slug) ? slug : [slug];
+const slugString = slugArray.join('/');
 
-// 尝试直接通过文件名查找，如果找不到，再尝试完整路径
-let post;
-try {
-  post = await getEntry("algorithms", slugString);
-} catch {
-  // 如果直接查找失败，尝试在所有文章中查找匹配的文件名
-  const allPosts = await getCollection("algorithms");
-  const fileName = slugString.split('/').pop();
-  const foundPost = allPosts.find(p => p.slug.endsWith(fileName));
-  if (foundPost) {
-    post = await getEntry("algorithms", foundPost.slug);
-  } else {
-    throw new Error(`Post not found: ${slugString}`);
-  }
+// 获取所有文章
+const allPosts = await getCollection("algorithms");
+
+// 查找文章：先尝试完整路径，再尝试文件名
+let post = allPosts.find(p => p.slug === slugString);
+
+if (!post) {
+  // 如果完整路径找不到，尝试通过文件名查找
+  const fileName = slugArray[slugArray.length - 1];
+  post = allPosts.find(p => {
+    const postSlugParts = p.slug.split('/');
+    const postFileName = postSlugParts[postSlugParts.length - 1];
+    return postFileName === fileName;
+  });
 }
+
+if (!post) {
+  return new Response(null, {
+    status: 404,
+    statusText: 'Not found'
+  });
+}
+
 const { Content } = await post.render();
 ---
 
-<Layout title={`${post.data.title} | 算法竞赛`}>
+<Layout title={`${post.data.title} | Competitive Programming`}>
   <div class="article-wrapper">
     <TableOfContents />
     <div class="article-content">
