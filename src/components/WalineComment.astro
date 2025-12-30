@@ -1,0 +1,111 @@
+---
+const { 
+  class: className = '',
+  serverURL = import.meta.env.PUBLIC_WALINE_SERVER_URL || 'https://your-waline-server-url/',
+  path = Astro.url.pathname
+} = Astro.props
+---
+
+<!-- 使用 CDN 加载 Waline 样式和脚本 -->
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css" />
+<script src="https://unpkg.com/@waline/client@v2/dist/waline.js" defer></script>
+
+<comment-component>
+  <div id='waline' class={`not-prose ${className}`}>
+    Comment seems to stuck. Try to refresh?✨
+  </div>
+</comment-component>
+
+<script define:vars={{ serverURL, path }} is:inline>
+  // 动态加载 Waline
+  (function() {
+    // 确保 customElements 只定义一次
+    if (customElements.get('comment-component')) {
+      return
+    }
+
+    class Comment extends HTMLElement {
+      constructor() {
+        super()
+      }
+
+      connectedCallback() {
+        // 确保元素存在
+        const walineEl = document.getElementById('waline')
+        if (!walineEl) {
+          console.warn('Waline container not found')
+          return
+        }
+
+        // 等待 Waline 加载完成
+        const initWaline = () => {
+          if (typeof window.Waline === 'undefined') {
+            setTimeout(initWaline, 100)
+            return
+          }
+
+          try {
+            const walineConfig = {
+              emoji: [
+                'weibo',
+                'alus',
+                'bilibili',
+                'qq'
+              ],
+              locale: {
+                placeholder: '欢迎留言~(支持Markdown语法)'
+              }
+            }
+
+            const walineInstance = window.Waline.init({
+              el: '#waline',
+              serverURL: serverURL,
+              path: path,
+              reaction: [],
+              dark: 'html.dark',
+              pageview: true,
+              comment: true,
+              ...walineConfig
+            })
+            walineInstance?.update()
+          } catch (error) {
+            console.error('Failed to initialize Waline:', error)
+          }
+        }
+
+        initWaline()
+      }
+    }
+
+    customElements.define('comment-component', Comment)
+  })()
+</script>
+
+<style>
+  :global(.dark) #waline {
+    --waline-bg-color: var(--card-bg);
+    --waline-bg-color-light: var(--btn-plain-bg-hover);
+  }
+
+  :global(.wl-count) {
+    color: var(--waline-dark-grey);
+  }
+
+  :global(.wl-editor) {
+    padding: 0.35em 0.5em;
+    width: calc(100% - 2em);
+  }
+
+  :global(.wl-edit) {
+    color: var(--waline-dark-grey);
+  }
+
+  :global(#wl-edit)::placeholder {
+    color: var(--waline-dark-grey);
+  }
+
+  :global(.wl-panel) {
+    margin: .5em 0;
+    border: none;
+  }
+</style>

@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import TableOfContents from "../../components/TableOfContents.astro";
+import WalineComment from "../../components/WalineComment.astro";
 ---
 
 <Layout title="Shared Memory Manager | Projects">
@@ -341,6 +342,13 @@ Host → Client: OK\n 或 ERROR &lt;message&gt;\n</code></pre>
           </a>
         </p>
       </article>
+      
+      <!-- 评论区域 -->
+      <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid #d0d7de;">
+        <WalineComment />
+      </div>
     </div>
   </div>
 </Layout>
+
+

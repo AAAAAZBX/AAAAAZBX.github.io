@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import { getCollection, getEntry } from "astro:content";
 import TableOfContents from "../../components/TableOfContents.astro";
+import WalineComment from "../../components/WalineComment.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("research");
@@ -37,6 +38,11 @@ const { Content } = await post.render();
     <h1>{post.data.title}</h1>
       <Content />
     </article>
+    
+    <!-- 评论区域 -->
+    <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid #d0d7de;">
+      <WalineComment />
+    </div>
     </div>
   </div>
 </Layout>
