@@ -1,0 +1,94 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// 定义项目列表
+const projects = [
+  {
+    slug: "shared-memory-manager",
+    title: "Shared Memory Manager",
+    description: "基于Python网络编程的跨网络共享内存管理工具，支持GUI界面和TCP协议通信",
+    date: "2024",
+    tags: ["Python", "网络编程", "共享内存", "TCP"],
+    github: "https://github.com/AAAAAZBX/Shared-Memory-Manager",
+    language: "Python"
+  }
+];
+
+// 格式化日期
+function formatDate(dateString: string | undefined): string {
+  if (!dateString) return "";
+  return dateString;
+}
+---
+
+<Layout title="Projects | BoxuanZhang">
+  <link rel="stylesheet" href="/styles/post-list.css" />
+  
+  <div class="post-list-container">
+    <!-- 左侧项目列表 -->
+    <div class="post-list-main">
+      {projects.map((project) => (
+        <article class="post-card">
+          <a href={`/projects/${project.slug}/`} class="post-card-link">
+            <div class="post-card-header">
+              <div>
+                {project.date && <div class="post-date">{project.date}</div>}
+                <h2 class="post-title">{project.title}</h2>
+                {project.description && (
+                  <p class="post-description">{project.description}</p>
+                )}
+              </div>
+            </div>
+            <div class="post-meta">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <a 
+                  href={project.github} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style="display: flex; align-items: center; gap: 4px; color: #0969da; text-decoration: none;"
+                  onclick="event.stopPropagation()"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                  </svg>
+                  <span>GitHub</span>
+                </a>
+                {project.language && (
+                  <span style="color: #57606a; font-size: 14px;">{project.language}</span>
+                )}
+              </div>
+            </div>
+            {project.tags && project.tags.length > 0 && (
+              <div class="post-tags">
+                {project.tags.map((tag) => (
+                  <span class="post-tag">{tag}</span>
+                ))}
+              </div>
+            )}
+          </a>
+        </article>
+      ))}
+    </div>
+
+    <!-- 右侧侧边栏 -->
+    <aside class="post-list-sidebar">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+          </svg>
+          Technologies
+        </h3>
+        <div class="tag-list">
+          <span class="tag-item">Python</span>
+          <span class="tag-item">网络编程</span>
+          <span class="tag-item">TCP</span>
+          <span class="tag-item">共享内存</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</Layout>
