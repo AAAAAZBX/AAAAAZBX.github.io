@@ -22,6 +22,9 @@ jobs:
 
       - name: Install, build, and upload your site
         uses: withastro/action@v5
+        env:
+          # Waline 服务器 URL（需要在 GitHub Secrets 中配置）
+          PUBLIC_WALINE_SERVER_URL: ${{ secrets.PUBLIC_WALINE_SERVER_URL }}
         # 如果以后改用 pnpm / bun，可以在这里配置 package-manager
         # with:
         #   package-manager: pnpm@9
