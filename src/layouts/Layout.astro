@@ -165,6 +165,41 @@ const year = new Date().getFullYear();
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        // 导航栏滚动效果
+        const header = document.querySelector('header');
+        let lastScrollTop = 0;
+        let ticking = false;
+
+        const updateHeader = () => {
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          
+          // 参考 axi404.top：滚动超过一定距离后添加 not-top 类（这里用 scrolled）
+          if (scrollTop > 16) { // 超过 top-4 (16px) 后显示背景和边框
+            header?.classList.add('scrolled');
+          } else {
+            header?.classList.remove('scrolled');
+          }
+          
+          lastScrollTop = scrollTop;
+          ticking = false;
+        };
+
+        const requestTick = () => {
+          if (!ticking) {
+            window.requestAnimationFrame(updateHeader);
+            ticking = true;
+          }
+        };
+
+        window.addEventListener('scroll', requestTick, { passive: true });
+        updateHeader(); // 初始检查
+
+        // 平滑滚动
+        document.documentElement.style.scrollBehavior = 'smooth';
+
+        // 移除当前页面链接的高亮（用户要求：只有悬停时才显示蓝色）
+        // 不再添加 active 类和 aria-current 属性
+
         // 代码块复制按钮
         document.querySelectorAll("pre.astro-code").forEach((pre) => {
           if (pre.querySelector("button.code-copy")) return;
