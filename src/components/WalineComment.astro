@@ -68,6 +68,31 @@ const {
               ...walineConfig
             })
             walineInstance?.update()
+
+            // 动态修改按钮颜色（确保覆盖所有可能的样式）
+            setTimeout(() => {
+              const submitButtons = document.querySelectorAll('#waline button[type="submit"], #waline .wl-btn-primary, #waline button.wl-btn-primary, #waline .wl-form button:last-child')
+              submitButtons.forEach(btn => {
+                if (btn.textContent?.includes('提交') || btn.textContent?.includes('Submit')) {
+                  btn.style.setProperty('background-color', '#1e80ff', 'important')
+                  btn.style.setProperty('background', '#1e80ff', 'important')
+                  btn.style.setProperty('border-color', '#1e80ff', 'important')
+                  btn.style.setProperty('color', '#ffffff', 'important')
+                  
+                  btn.addEventListener('mouseenter', () => {
+                    btn.style.setProperty('background-color', '#1170e6', 'important')
+                    btn.style.setProperty('background', '#1170e6', 'important')
+                    btn.style.setProperty('border-color', '#1170e6', 'important')
+                  })
+                  
+                  btn.addEventListener('mouseleave', () => {
+                    btn.style.setProperty('background-color', '#1e80ff', 'important')
+                    btn.style.setProperty('background', '#1e80ff', 'important')
+                    btn.style.setProperty('border-color', '#1e80ff', 'important')
+                  })
+                }
+              })
+            }, 500)
           } catch (error) {
             console.error('Failed to initialize Waline:', error)
           }
@@ -82,11 +107,136 @@ const {
 </script>
 
 <style>
+  /* 暗色模式 */
   :global(.dark) #waline {
     --waline-bg-color: var(--card-bg);
     --waline-bg-color-light: var(--btn-plain-bg-hover);
   }
 
+  /* 使用 CSS 变量覆盖 Waline 主题色 */
+  :global(#waline) {
+    --waline-theme-color: #1e80ff !important;
+    --waline-active-color: #1170e6 !important;
+  }
+
+  /* 修改提交按钮颜色：使用 Waline 默认蓝色（与链接颜色一致） */
+  /* 使用更高优先级的选择器覆盖 Waline 默认样式 */
+  :global(#waline button.wl-btn-primary),
+  :global(#waline .wl-btn-primary),
+  :global(#waline button[type="submit"]),
+  :global(#waline .wl-btn.wl-btn-primary),
+  :global(#waline button[class*="primary"]),
+  :global(#waline button[class*="submit"]),
+  :global(#waline .wl-form button:last-child),
+  :global(#waline .wl-form .wl-btn:last-child) {
+    background-color: #1e80ff !important;
+    background: #1e80ff !important;
+    border-color: #1e80ff !important;
+    border: 1px solid #1e80ff !important;
+    color: #ffffff !important;
+  }
+
+  :global(#waline button.wl-btn-primary:hover),
+  :global(#waline .wl-btn-primary:hover),
+  :global(#waline button[type="submit"]:hover),
+  :global(#waline .wl-btn.wl-btn-primary:hover),
+  :global(#waline button[class*="primary"]:hover),
+  :global(#waline button[class*="submit"]:hover),
+  :global(#waline .wl-form button:last-child:hover),
+  :global(#waline .wl-form .wl-btn:last-child:hover) {
+    background-color: #1170e6 !important;
+    background: #1170e6 !important;
+    border-color: #1170e6 !important;
+    border: 1px solid #1170e6 !important;
+    color: #ffffff !important;
+  }
+
+  :global(#waline button.wl-btn-primary:active),
+  :global(#waline .wl-btn-primary:active),
+  :global(#waline button[type="submit"]:active),
+  :global(#waline .wl-btn.wl-btn-primary:active),
+  :global(#waline button[class*="primary"]:active),
+  :global(#waline button[class*="submit"]:active),
+  :global(#waline .wl-form button:last-child:active),
+  :global(#waline .wl-form .wl-btn:last-child:active) {
+    background-color: #0d5fcc !important;
+    background: #0d5fcc !important;
+    border-color: #0d5fcc !important;
+    border: 1px solid #0d5fcc !important;
+    color: #ffffff !important;
+  }
+
+  :global(#waline button.wl-btn-primary:focus),
+  :global(#waline .wl-btn-primary:focus),
+  :global(#waline button[type="submit"]:focus),
+  :global(#waline .wl-btn.wl-btn-primary:focus),
+  :global(#waline button[class*="primary"]:focus),
+  :global(#waline button[class*="submit"]:focus),
+  :global(#waline .wl-form button:last-child:focus),
+  :global(#waline .wl-form .wl-btn:last-child:focus) {
+    background-color: #1e80ff !important;
+    background: #1e80ff !important;
+    border-color: #1e80ff !important;
+    border: 1px solid #1e80ff !important;
+    color: #ffffff !important;
+  }
+
+  /* 修改排序按钮颜色：使用相同的蓝色 */
+  :global(#waline .wl-sort-btn),
+  :global(#waline a.wl-sort-btn),
+  :global(#waline .wl-sort-btn.active) {
+    color: #1e80ff !important;
+  }
+
+  :global(#waline .wl-sort-btn:hover),
+  :global(#waline a.wl-sort-btn:hover) {
+    color: #1170e6 !important;
+  }
+
+  :global(#waline .wl-sort-btn.active),
+  :global(#waline a.wl-sort-btn.active) {
+    color: #1e80ff !important;
+    font-weight: 600 !important;
+  }
+
+  /* 修改编辑区边框颜色：使用相同的蓝色 */
+  :global(#waline .wl-input) {
+    border-color: #d0d7de !important;
+  }
+
+  :global(#waline .wl-input:focus) {
+    border-color: #1e80ff !important;
+    box-shadow: 0 0 0 3px rgba(30, 128, 255, 0.1) !important;
+  }
+
+  :global(#waline textarea.wl-input) {
+    border-color: #d0d7de !important;
+  }
+
+  :global(#waline textarea.wl-input:focus) {
+    border-color: #1e80ff !important;
+    box-shadow: 0 0 0 3px rgba(30, 128, 255, 0.1) !important;
+  }
+
+  /* 修改其他绿色元素 */
+  :global(#waline .wl-card__head) {
+    border-bottom-color: #d0d7de !important;
+  }
+
+  :global(#waline .wl-card) {
+    border-color: #d0d7de !important;
+  }
+
+  /* 保持链接颜色为 Waline 默认蓝色（与按钮一致） */
+  :global(#waline a) {
+    color: #1e80ff !important;
+  }
+
+  :global(#waline a:hover) {
+    color: #1170e6 !important;
+  }
+
+  /* 其他样式 */
   :global(.wl-count) {
     color: var(--waline-dark-grey);
   }
