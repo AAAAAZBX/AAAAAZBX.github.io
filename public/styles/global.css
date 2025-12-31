@@ -198,11 +198,12 @@ footer {
   /* 顶部留出空间 */
   font-size: 12px;
   color: #57606a;
-  margin-top: 40px;
-  background-color: #fff;
+  margin-top: 20px;
+  /* 减少顶部边距，让视觉上更融合 */
+  background-color: transparent;
+  /* 透明背景，和上面的内容区域保持一致 */
   z-index: 10;
-  border-top: 1px solid #d8dee4;
-  /* 灰色顶部边框 */
+  /* 移除顶部边框，消除颜色隔离感 */
 }
 
 /* 3. 定义新的 Canvas 容器样式 - 覆盖底部横线区域 */

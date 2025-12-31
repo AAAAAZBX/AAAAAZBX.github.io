@@ -113,7 +113,8 @@ aside.sidebar {
   /* 更改了类名以避免冲突 */
   flex-grow: 1;
   min-width: 350px;
-  padding-top: 10px;
+  padding-top: 0;
+  /* 减少顶部空白，让 About 部分往上移 */
 }
 
 .content-section {
@@ -130,7 +131,6 @@ aside.sidebar {
   font-size: 1.5rem;
   margin-bottom: 15px;
   color: #333;
-  border-bottom: 2px solid #eee;
   padding-bottom: 8px;
 }
 
@@ -141,9 +141,8 @@ aside.sidebar {
 }
 
 .divider {
-  border: none;
-  border-top: 1px solid #eee;
-  margin: 30px 0;
+  display: none;
+  /* 隐藏分界线 */
 }
 
 /* 列表和论文样式 */
