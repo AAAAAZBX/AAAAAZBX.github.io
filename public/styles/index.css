@@ -140,6 +140,30 @@ aside.sidebar {
   font-size: 1.05rem;
 }
 
+/* About 部分段落间距控制 */
+/* 英文段落之间的间距（小） */
+.content-section .about-en + .about-en {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* 中文段落之间的间距（小） */
+.content-section .about-cn + .about-cn {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* 中英文之间的间距（大） */
+.content-section .about-en:last-of-type + .about-cn {
+  margin-top: 25px;
+  margin-bottom: 0;
+}
+
+/* 确保最后一个中文段落有底部间距 */
+.content-section .about-cn:last-of-type {
+  margin-bottom: 15px;
+}
+
 .divider {
   display: none;
   /* 隐藏分界线 */

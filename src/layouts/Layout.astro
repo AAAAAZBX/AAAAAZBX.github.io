@@ -155,6 +155,15 @@ const year = new Date().getFullYear();
           <a href="/projects">Projects</a>
           <a href="/algorithms">Competitive Programming</a>
           <a href="/travel">Daily Life</a>
+          <button id="lang-toggle" class="lang-toggle" aria-label="切换语言">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lang-icon">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span class="lang-text" data-lang="en">中文</span>
+            <span class="lang-text" data-lang="zh" style="display: none;">English</span>
+          </button>
         </nav>
       </div>
     </header>
@@ -165,6 +174,42 @@ const year = new Date().getFullYear();
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        // 语言切换功能
+        (function() {
+          // 从 localStorage 读取语言偏好，默认为英文
+          const savedLang = localStorage.getItem('preferred-lang') || 'en';
+          
+          function setLanguage(lang) {
+            // 保存到 localStorage
+            localStorage.setItem('preferred-lang', lang);
+            
+            // 切换所有带有 data-lang 属性的元素
+            document.querySelectorAll('[data-lang]').forEach(el => {
+              if (el.getAttribute('data-lang') === lang) {
+                el.style.display = '';
+              } else {
+                el.style.display = 'none';
+              }
+            });
+            
+            // 更新 HTML lang 属性
+            document.documentElement.lang = lang;
+          }
+          
+          // 初始化语言
+          setLanguage(savedLang);
+          
+          // 语言切换按钮点击事件
+          const langToggle = document.getElementById('lang-toggle');
+          if (langToggle) {
+            langToggle.addEventListener('click', () => {
+              const currentLang = localStorage.getItem('preferred-lang') || 'en';
+              const newLang = currentLang === 'en' ? 'zh' : 'en';
+              setLanguage(newLang);
+            });
+          }
+        })();
+        
         // 导航栏滚动效果
         const header = document.querySelector('header');
         let lastScrollTop = 0;
