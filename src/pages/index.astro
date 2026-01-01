@@ -384,12 +384,27 @@ const clientSiteStartDate = profile.siteStartDate;
         }
         
         const result = await response.json();
+        console.log('[Contributions] API result:', result);
+        console.log('[Contributions] Has error:', result.error);
+        console.log('[Contributions] Contributions type:', typeof result.contributions);
+        console.log('[Contributions] Is array:', Array.isArray(result.contributions));
+        console.log('[Contributions] Length:', result.contributions?.length);
+        
         const contributions = result.contributions || [];
         
-        if (!Array.isArray(contributions) || contributions.length === 0) {
-          if (result.error) {
-            throw new Error(result.error);
-          }
+        if (result.error) {
+          console.error('[Contributions] API error:', result.error);
+          throw new Error(result.error);
+        }
+        
+        if (!Array.isArray(contributions)) {
+          console.error('[Contributions] Contributions is not an array:', contributions);
+          graphEl.innerHTML = '<p style="color: #666; padding: 20px;">Invalid contributions data format. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>';
+          return;
+        }
+        
+        if (contributions.length === 0) {
+          console.warn('[Contributions] Contributions array is empty');
           graphEl.innerHTML = '<p style="color: #666; padding: 20px;">No contributions data available. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>';
           if (summaryEl) {
             summaryEl.textContent = `0 contributions in ${new Date().getFullYear() - 1} ~ ${new Date().getFullYear()}`;
@@ -397,6 +412,7 @@ const clientSiteStartDate = profile.siteStartDate;
           return;
         }
         
+        console.log('[Contributions] Rendering graph with', contributions.length, 'contributions');
         renderContributionGraph(contributions, graphEl, summaryEl);
         
       } catch (error) {
@@ -434,8 +450,15 @@ const clientSiteStartDate = profile.siteStartDate;
       const earliestDate = new Date(Math.min(...dates.map(d => d.getTime())));
       const latestDate = new Date(Math.max(...dates.map(d => d.getTime())));
       
-      // 计算需要显示的周数（从最早日期到最晚日期）
-      const daysDiff = Math.ceil((latestDate.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24));
+      // 获取今天的日期（UTC，只比较日期部分）
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      
+      // 确保最晚日期不超过今天
+      const endDate = latestDate > today ? today : latestDate;
+      
+      // 计算需要显示的周数（从最早日期到今天）
+      const daysDiff = Math.ceil((endDate.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24));
       const weeks = Math.ceil((daysDiff + 1) / 7);
       
       // 创建日期到贡献数据的映射
@@ -482,10 +505,15 @@ const clientSiteStartDate = profile.siteStartDate;
       }
       
       // 创建贡献网格
+      // GitHub 贡献图：行（垂直）代表一周的某一天，列（水平）代表某一周
+      // 所以：7行（周日到周六），weeks列（多少周）
+      // CSS Grid 按行优先填充：先填第一行的所有列，再填第二行的所有列...
+      // 所以填充顺序应该是：先遍历所有 week（列），再遍历所有 day（行）
+      // 不对！应该是：先遍历所有 day（行），再遍历所有 week（列）
       const grid = document.createElement('div');
       grid.style.display = 'grid';
-      grid.style.gridTemplateColumns = `repeat(${weeks}, 11px)`;
-      grid.style.gridTemplateRows = `repeat(7, 11px)`;
+      grid.style.gridTemplateRows = `repeat(7, 11px)`;  // 7行：周日到周六（垂直方向）
+      grid.style.gridTemplateColumns = `repeat(${weeks}, 11px)`;  // weeks列：多少周（水平方向）
       grid.style.gap = '3px';
       
       // 生成网格数据：按 GitHub 的布局方式（列优先）
@@ -495,22 +523,30 @@ const clientSiteStartDate = profile.siteStartDate;
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       
       // 从最早日期开始，按周填充数据
+      // gridData[day][week] 表示第 day 行（一周的某一天）第 week 列（某一周）的数据
+      // 必须确保所有位置都被填充，即使是未来的日期也要设置为 null
       for (let week = 0; week < weeks; week++) {
         for (let day = 0; day < 7; day++) {
           // 计算当前日期
           const currentDate = new Date(earliestDate);
           currentDate.setUTCDate(earliestDate.getUTCDate() + week * 7 + day);
           
-          // 格式化为 YYYY-MM-DD
-          const dateStr = currentDate.toISOString().split('T')[0];
-          
-          // 获取该日期的贡献数据
-          const contribution = contributionMap.get(dateStr) || { date: dateStr, count: 0 };
-          
           if (!gridData[day]) {
             gridData[day] = [];
           }
-          gridData[day][week] = contribution;
+          
+          // 如果日期超过今天，标记为 null（不渲染，但保留位置）
+          if (currentDate > today) {
+            gridData[day][week] = null;
+          } else {
+            // 格式化为 YYYY-MM-DD
+            const dateStr = currentDate.toISOString().split('T')[0];
+            
+            // 获取该日期的贡献数据
+            const contribution = contributionMap.get(dateStr) || { date: dateStr, count: 0 };
+            
+            gridData[day][week] = contribution;
+          }
         }
       }
       
@@ -549,12 +585,39 @@ const clientSiteStartDate = profile.siteStartDate;
         monthRow.appendChild(label);
       });
       
-      // 生成贡献方块（按行优先：先所有周的周日，再所有周的周一...）
+      // 生成贡献方块（按行优先填充：先所有周的周日，再所有周的周一...）
+      // CSS Grid 按行优先填充：先填第一行的所有列，再填第二行的所有列...
+      // 重要：必须为每个位置创建元素，即使是未来的日期也要创建隐藏的占位元素
       for (let day = 0; day < 7; day++) {
         for (let week = 0; week < weeks; week++) {
-          const item = gridData[day][week];
+          // 确保 gridData[day] 存在
+          if (!gridData[day]) {
+            gridData[day] = [];
+          }
+          
+          // 计算这个位置对应的日期
+          const currentDate = new Date(earliestDate);
+          currentDate.setUTCDate(earliestDate.getUTCDate() + week * 7 + day);
+          
           const square = document.createElement('div');
           square.className = 'contribution-square';
+          
+          // 如果日期超过今天，创建隐藏的占位元素（使用 visibility 而不是 display）
+          if (currentDate > today) {
+            square.style.visibility = 'hidden'; // 隐藏但保留空间
+            square.style.pointerEvents = 'none'; // 禁用交互
+            grid.appendChild(square);
+            continue;
+          }
+          
+          const item = gridData[day][week];
+          
+          // 如果该项为 null 或 undefined，创建一个空方块
+          if (item === null || item === undefined) {
+            square.style.backgroundColor = '#ebedf0';
+            grid.appendChild(square);
+            continue;
+          }
           
           const count = item?.count || 0;
           const date = item?.date || null;
