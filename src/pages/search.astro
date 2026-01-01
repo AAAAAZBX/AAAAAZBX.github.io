@@ -1,0 +1,434 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="搜索">
+  <main style="max-width: 980px; margin: 0 auto; padding: 48px 16px;">
+    <div style="margin-bottom: 24px;">
+      <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 16px;">搜索</h1>
+      <p style="color: #57606a; margin-bottom: 24px;">输入关键词搜索博客文章</p>
+    </div>
+    
+    <div id="search"></div>
+  </main>
+</Layout>
+
+<script is:inline>
+  async function initSearch() {
+    const searchContainer = document.getElementById("search");
+    if (!searchContainer) return;
+    
+    // 先显示搜索界面
+    searchContainer.innerHTML = `
+      <div style="margin-bottom: 24px;">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="搜索文章..." 
+          style="width: 100%; padding: 12px 16px; font-size: 16px; border: 1px solid #d0d7de; border-radius: 6px; outline: none; transition: border-color 0.2s;"
+        />
+      </div>
+      <div id="search-status" style="color: #57606a; padding: 16px; text-align: center; font-size: 14px;">正在加载搜索功能...</div>
+      <div id="search-results"></div>
+    `;
+    
+    const searchInput = document.getElementById("search-input");
+    const resultsContainer = document.getElementById("search-results");
+    const statusContainer = document.getElementById("search-status");
+    
+    // 输入框样式
+    if (searchInput) {
+      searchInput.addEventListener("focus", function() {
+        this.style.borderColor = "#0969da";
+      });
+      searchInput.addEventListener("blur", function() {
+        this.style.borderColor = "#d0d7de";
+      });
+    }
+    
+    let searchInstance = null;
+    
+    // 尝试加载 Pagefind
+    try {
+      // 直接尝试加载 Pagefind
+      // Pagefind 1.4.0 的 API：init() 不返回实例，而是初始化内部实例
+      // 然后直接使用导出的 search() 函数
+      console.log("开始加载 Pagefind...");
+      let pagefindModule;
+      try {
+        pagefindModule = await import("/pagefind/pagefind.js");
+        console.log("Pagefind 模块加载成功");
+        console.log("模块的键:", Object.keys(pagefindModule));
+      } catch (importError) {
+        console.error("Failed to import Pagefind:", importError);
+        console.error("Import error details:", {
+          message: importError.message,
+          stack: importError.stack,
+          name: importError.name
+        });
+        throw new Error("无法加载 Pagefind 文件。请确保已运行 npm run build 生成搜索索引。错误: " + importError.message);
+      }
+      
+      // 检查是否有 init 和 search 函数
+      const initFn = pagefindModule.init;
+      const searchFn = pagefindModule.search;
+      
+      if (!initFn || typeof initFn !== 'function') {
+        console.error("Pagefind module structure:", pagefindModule);
+        throw new Error("Pagefind init function not found. Module keys: " + Object.keys(pagefindModule).join(", "));
+      }
+      
+      if (!searchFn || typeof searchFn !== 'function') {
+        console.error("Pagefind module structure:", pagefindModule);
+        throw new Error("Pagefind search function not found. Module keys: " + Object.keys(pagefindModule).join(", "));
+      }
+      
+      console.log("开始初始化 Pagefind...");
+      // 初始化 Pagefind（不返回实例）
+      await initFn();
+      console.log("Pagefind 初始化成功");
+      
+      // 保存 search 函数供后续使用
+      searchInstance = { search: searchFn };
+      
+      if (statusContainer) {
+        statusContainer.style.display = "none";
+      }
+      
+      // 搜索功能已就绪
+      let searchTimeout;
+      searchInput?.addEventListener("input", async (e) => {
+        const query = e.target.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length < 2) {
+          if (resultsContainer) {
+            resultsContainer.innerHTML = "";
+          }
+          if (statusContainer) {
+            statusContainer.style.display = "none";
+          }
+          return;
+        }
+        
+        if (statusContainer) {
+          statusContainer.style.display = "block";
+          statusContainer.textContent = "搜索中...";
+        }
+        
+        searchTimeout = setTimeout(async () => {
+          try {
+            if (!searchInstance) {
+              throw new Error("Search not initialized");
+            }
+            
+            // Pagefind 1.4.0 的 search 方法
+            // 返回格式：{ results: [...], unfilteredResultCount: number, filters: {...}, timings: {...} }
+            const searchResponse = await searchInstance.search(query);
+            
+            console.log("Search response:", searchResponse);
+            
+            // 检查结果格式
+            if (!searchResponse) {
+              throw new Error("No results returned from search");
+            }
+            
+            // Pagefind 1.4.0 返回格式：{ results: [...], unfilteredResultCount: number, ... }
+            // results 是一个数组，每个元素有 data() 方法需要调用才能获取完整信息
+            if (!searchResponse.results || !Array.isArray(searchResponse.results)) {
+              console.error("Unexpected search response format:", searchResponse);
+              throw new Error("Invalid results format. Response: " + JSON.stringify(searchResponse).substring(0, 200));
+            }
+            
+            // 获取所有结果的完整数据
+            const resultsWithData = await Promise.all(
+              searchResponse.results.map(async (result) => {
+                const data = await result.data();
+                
+                // 规范化 URL（移除查询参数和 hash，用于去重和过滤）
+                let normalizedUrl = data.url;
+                try {
+                  const urlObj = new URL(data.url, window.location.origin);
+                  normalizedUrl = urlObj.pathname;
+                  if (!normalizedUrl.startsWith('/')) {
+                    normalizedUrl = '/' + normalizedUrl;
+                  }
+                  normalizedUrl = normalizedUrl.replace(/\/index\.html?$/i, '/').replace(/\/$/, '') || '/';
+                } catch (e) {
+                  // URL 解析失败，使用原始 URL
+                }
+                
+                // 排除主页和目录页面（只搜索具体的文章，不搜索目录列表页和主页）
+                // 主页的特征：URL 是 / 或 /index
+                const isHomePage = normalizedUrl === '/' || normalizedUrl === '/index';
+                // 目录页面的特征：URL 是 /research/, /learning/, /algorithms/, /travel/ 等，且没有子路径
+                const isDirectoryPage = /^\/(research|learning|algorithms|travel|projects)\/?$/.test(normalizedUrl);
+                if (isHomePage || isDirectoryPage) {
+                  return null; // 返回 null，后续过滤掉
+                }
+                
+                // 提取标题 - 直接使用 Pagefind 的 meta.title（与 axi 博客一致）
+                // axi 的博客直接使用 i.meta?.title，不做任何处理
+                let title = data.meta?.title || data.title || null;
+                
+                // 如果 meta.title 存在，移除可能的后缀（如 " | Research", " | BoxuanZhang"）
+                if (title && data.meta?.title) {
+                  title = title.split(' | ')[0].trim();
+                }
+                
+                // 如果还是没有标题，从 raw_content 中提取第一个 <h1> 标签
+                if (!title && data.raw_content) {
+                  const h1Match = data.raw_content.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+                  if (h1Match && h1Match[1]) {
+                    title = h1Match[1].trim();
+                    title = title.replace(/<[^>]+>/g, '').replace(/&[#\w]+;/g, '');
+                  }
+                }
+                
+                // 如果还是没有标题，从 content 中提取第一个 <h1> 标签
+                if (!title && data.content) {
+                  const h1Match = data.content.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+                  if (h1Match && h1Match[1]) {
+                    title = h1Match[1].trim();
+                    title = title.replace(/<[^>]+>/g, '').replace(/&[#\w]+;/g, '');
+                  }
+                }
+                
+                // 如果还是没有标题，从 URL 解析
+                if (!title) {
+                  try {
+                    const urlObj = new URL(data.url, window.location.origin);
+                    const pathParts = urlObj.pathname.split('/').filter(p => p && p !== 'index');
+                    if (pathParts.length > 0) {
+                      let lastPart = pathParts[pathParts.length - 1];
+                      title = decodeURIComponent(lastPart);
+                      title = title.replace(/\.(html|htm)$/i, '');
+                      title = title.replace(/[-_]/g, ' ');
+                    }
+                  } catch (e) {
+                    console.warn("Failed to parse URL for title:", data.url, e);
+                  }
+                }
+                
+                // 如果还是没有标题，使用默认值
+                if (!title || title.trim() === '') {
+                  title = '无标题';
+                }
+                
+                // 调试日志 - 查看完整数据结构
+                console.log("Pagefind 数据:", {
+                  url: data.url,
+                  'data.meta': data.meta,
+                  'data.meta?.title': data.meta?.title,
+                  'data.title': data.title,
+                  'data.keys': Object.keys(data),
+                  '最终标题': title
+                });
+                
+                // 处理 excerpt：保留 <mark> 标签用于高亮，但移除其他 HTML 标签
+                let excerpt = data.excerpt || '';
+                if (excerpt) {
+                  // 先移除除了 <mark> 之外的所有 HTML 标签
+                  // 保留 <mark> 和 </mark> 标签用于高亮显示
+                  excerpt = excerpt.replace(/<(?!\/?mark\b)[^>]+>/gi, '');
+                  // 移除 HTML 实体（但保留 &nbsp; 等必要的）
+                  excerpt = excerpt.replace(/&(?!nbsp|amp|lt|gt|quot|#\d+;)[#\w]+;/g, '');
+                  // 清理多余空格（但保留标记内的空格）
+                  excerpt = excerpt.replace(/\s+/g, ' ').trim();
+                  
+                  // 扩展 excerpt 长度（2-3倍），确保段落长度一致
+                  // 如果 excerpt 太短，尝试从 content 中获取更多内容
+                  if (excerpt.length < 200 && data.raw_content) {
+                    // 找到 excerpt 在 raw_content 中的位置
+                    const excerptText = excerpt.replace(/<mark>/gi, '').replace(/<\/mark>/gi, '');
+                    const contentIndex = data.raw_content.indexOf(excerptText);
+                    if (contentIndex !== -1) {
+                      // 从原始内容中提取更长的片段（前后各扩展一些）
+                      const start = Math.max(0, contentIndex - 100);
+                      const end = Math.min(data.raw_content.length, contentIndex + excerptText.length + 200);
+                      let extendedContent = data.raw_content.substring(start, end);
+                      // 移除除了 <mark> 之外的所有 HTML 标签
+                      extendedContent = extendedContent.replace(/<(?!\/?mark\b)[^>]+>/gi, '');
+                      extendedContent = extendedContent.replace(/&(?!nbsp|amp|lt|gt|quot|#\d+;)[#\w]+;/g, '');
+                      extendedContent = extendedContent.replace(/\s+/g, ' ').trim();
+                      // 如果扩展后的内容更长，使用它
+                      if (extendedContent.length > excerpt.length) {
+                        excerpt = extendedContent;
+                      }
+                    }
+                  }
+                  
+                  // 确保段落后面有省略号（如果还没有的话）
+                  if (excerpt && !excerpt.endsWith('...')) {
+                    excerpt = excerpt + '...';
+                  }
+                }
+                
+                return {
+                  url: data.url,
+                  normalizedUrl: normalizedUrl,
+                  title: title,
+                  excerpt: excerpt,
+                  score: result.score
+                };
+              })
+            );
+            
+            // 过滤掉目录页面（null 值）
+            const filteredResults = resultsWithData.filter(r => r !== null);
+            
+            // 按 URL 去重：如果同一篇文章出现多次，只保留分数最高的那个
+            const uniqueResults = [];
+            const urlMap = new Map();
+            
+            filteredResults.forEach(result => {
+              if (!result) return; // 跳过 null
+              const existing = urlMap.get(result.normalizedUrl);
+              if (!existing || result.score > existing.score) {
+                urlMap.set(result.normalizedUrl, result);
+              }
+            });
+            
+            // 转换为数组并按分数排序
+            const deduplicatedResults = Array.from(urlMap.values())
+              .sort((a, b) => b.score - a.score);
+            
+            displayResults({ results: deduplicatedResults }, resultsContainer, statusContainer);
+          } catch (error) {
+            console.error("Search error:", error);
+            console.error("Error details:", {
+              message: error.message,
+              stack: error.stack,
+              searchInstance: !!searchInstance
+            });
+            
+            if (statusContainer) {
+              statusContainer.style.display = "block";
+              statusContainer.innerHTML = `<span style="color: #d1242f;">搜索出错：${error.message || '未知错误'}。请检查控制台获取详细信息。</span>`;
+            }
+            if (resultsContainer) {
+              resultsContainer.innerHTML = "";
+            }
+          }
+        }, 300);
+      });
+      
+    } catch (error) {
+      console.error("Failed to initialize Pagefind:", error);
+      console.error("Error stack:", error.stack);
+      
+      // 检查是否是预览模式
+      const isPreview = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      
+      if (statusContainer) {
+        let errorMessage = "搜索功能暂不可用";
+        let errorDetails = "";
+        
+        if (error.message.includes("无法加载 Pagefind 文件")) {
+          errorDetails = `
+            <p style="margin: 0 0 8px 0; color: #57606a; font-size: 14px;">Pagefind 文件未找到。请确保：</p>
+            <ol style="margin: 8px 0 0 0; padding-left: 20px; color: #57606a; font-size: 14px; line-height: 1.8;">
+              <li>已运行 <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run build</code></li>
+              <li>构建成功生成了 <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">dist/pagefind</code> 目录</li>
+              <li>正在使用 <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run preview</code> 预览（不是 <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run dev</code>）</li>
+            </ol>
+          `;
+        } else {
+          errorDetails = `
+            <p style="margin: 0 0 8px 0; color: #57606a; font-size: 14px;">错误详情：${escapeHtml(error.message)}</p>
+            <p style="margin: 8px 0 0 0; color: #57606a; font-size: 13px;">请打开浏览器控制台（F12）查看详细错误信息。</p>
+          `;
+        }
+        
+        statusContainer.innerHTML = `
+          <div style="padding: 24px; background: #fff4e6; border: 1px solid #ffd89b; border-radius: 6px;">
+            <p style="margin: 0 0 12px 0; color: #d1242f; font-weight: 500;">${errorMessage}</p>
+            ${errorDetails}
+            ${isPreview ? '<p style="margin: 12px 0 0 0; color: #57606a; font-size: 13px;">当前运行在预览模式，这是正确的。如果问题持续，请检查控制台错误信息。</p>' : ''}
+          </div>
+        `;
+      }
+      // 禁用搜索输入框
+      if (searchInput) {
+        searchInput.disabled = true;
+        searchInput.placeholder = "搜索功能需要先构建网站";
+        searchInput.style.backgroundColor = "#f6f8fa";
+        searchInput.style.cursor = "not-allowed";
+      }
+    }
+  }
+  
+  function displayResults(results, container, statusContainer) {
+    if (statusContainer) {
+      statusContainer.style.display = "none";
+    }
+    
+    if (!container) return;
+    
+    if (!results || !results.results || results.results.length === 0) {
+      container.innerHTML = `<p style="color: #57606a; padding: 24px; text-align: center;">未找到相关文章</p>`;
+      return;
+    }
+    
+    const html = results.results.map(result => {
+      const url = result.url;
+      // 使用 result.title（已经在前面提取并处理过了）
+      const title = result.title || '无标题';
+      // excerpt 已经处理过，保留 <mark> 标签，所以不需要 escapeHtml
+      const excerpt = result.excerpt || '';
+      
+      return `
+        <div style="padding: 16px; border: 1px solid #d0d7de; border-radius: 6px; margin-bottom: 12px; transition: all 0.2s; cursor: pointer;"
+             onmouseover="this.style.borderColor='#0969da'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'"
+             onmouseout="this.style.borderColor='#d0d7de'; this.style.boxShadow='none'"
+             onclick="window.location.href='${url}'">
+          <h3 style="margin: 0 0 8px 0; font-size: 1.25rem; font-weight: 600;">
+            <a href="${url}" style="color: #0969da; text-decoration: none;">${escapeHtml(title)}</a>
+          </h3>
+          <p class="search-excerpt" style="margin: 0; color: #57606a; font-size: 14px; line-height: 1.6;">${excerpt}</p>
+          <p style="margin: 8px 0 0 0; color: #8c959f; font-size: 12px;">${escapeHtml(url)}</p>
+        </div>
+      `;
+    }).join('');
+    
+    container.innerHTML = `
+      <p style="color: #57606a; margin-bottom: 16px; font-size: 14px;">找到 ${results.results.length} 个结果</p>
+      ${html}
+    `;
+  }
+  
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  // 页面加载后初始化搜索
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initSearch);
+  } else {
+    initSearch();
+  }
+</script>
+
+<style>
+  #search-results a:hover {
+    text-decoration: underline;
+  }
+  
+  /* 搜索结果的 excerpt 样式 */
+  .search-excerpt {
+    word-break: break-word;
+  }
+  
+  /* 关键词高亮样式（黄色背景） */
+  .search-excerpt mark {
+    background-color: #ffeb3b;
+    color: inherit;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+</style>
+

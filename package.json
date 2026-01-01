@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node -e \"const fs = require('fs'); const path = require('path'); const distPath = path.join(process.cwd(), 'dist'); ['axi404.github.io-main', 'axi404.github.io-source'].forEach(dir => { const fullPath = path.join(distPath, dir); if (fs.existsSync(fullPath)) { fs.rmSync(fullPath, { recursive: true, force: true }); console.log('Removed:', fullPath); } });\" && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -14,6 +14,9 @@
     "astro": "^5.16.3",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "pagefind": "^1.4.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.53.3"
