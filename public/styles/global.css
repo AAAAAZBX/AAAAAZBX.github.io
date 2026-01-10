@@ -242,6 +242,7 @@ header.scrolled .nav-links {
   padding: 0 24px;
   gap: 32px;
   align-items: flex-start;
+  overflow-x: visible !important; /* 确保目录的圆点可以超出边界显示 */
 }
 
 .article-content {
@@ -500,7 +501,7 @@ article.typora-github a[href^="#"].active:active,
   text-decoration: none !important;
 }
 
-/* 外部链接和文件链接（http/https/本地文件）：蓝色，带下划线 */
+/* 外部链接和文件链接（http/https/本地文件）：蓝色，无下划线 */
 article.typora-github a[href^="http://"],
 article.typora-github a[href^="https://"],
 article.typora-github a[href^="//"],
@@ -511,8 +512,8 @@ article.typora-github a[href^="/"]:not([href^="#"]),
 .typora-github a[href^="/"]:not([href^="#"]) {
   color: #0969da !important;
   /* 蓝色 */
-  text-decoration: underline !important;
-  /* 带下划线 */
+  text-decoration: none !important;
+  /* 无下划线 */
   transition: color 0.2s;
 }
 
@@ -533,7 +534,7 @@ article.typora-github a[href^="/"]:not([href^="#"]):visited,
 .typora-github a[href^="/"]:not([href^="#"]):link,
 .typora-github a[href^="/"]:not([href^="#"]):visited {
   color: #0969da !important;
-  text-decoration: underline !important;
+  text-decoration: none !important;
 }
 
 article.typora-github a[href^="http://"]:hover,
@@ -546,7 +547,7 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
 .typora-github a[href^="/"]:not([href^="#"]):hover {
   color: #0550ae !important;
   /* 悬停时稍深的蓝色 */
-  text-decoration: underline !important;
+  text-decoration: none !important;
 }
 
 .typora-github ul,

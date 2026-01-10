@@ -61,8 +61,8 @@
     tocItems.forEach((item) => {
       const level = item.level;
       const levelClass = `toc-level-${level}`;
-      // 根据级别计算缩进：h2=0, h3=24px, h4=48px（参考知乎格式）
-      const indent = (level - 2) * 24;
+      // 根据级别计算缩进：h2=0, h3=36px, h4=72px（每级增加36px，差距更大）
+      const indent = (level - 2) * 36;
       // 使用内联样式确保缩进生效
       tocHTML += `<li class="toc-list-item ${levelClass}" style="padding-left: ${indent}px;">`;
       tocHTML += `<a href="#${item.id}" class="toc-item">${item.text}</a>`;
@@ -155,7 +155,7 @@
     top: 80px;
     max-height: calc(100vh - 100px);
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: visible !important; /* 强制 visible，让圆点可以超出容器边界显示 */
     margin-right: 32px;
     flex-shrink: 0;
     width: 240px;
@@ -163,7 +163,11 @@
     border: none;
     border-radius: 0;
     padding: 16px;
+    padding-left: 30px !important; /* 增加左侧 padding，确保最大的圆点（7px，left: -3px）也能完整显示 */
     box-shadow: none;
+    /* 确保容器本身不会裁剪内容 */
+    clip-path: none !important;
+    clip: auto !important;
   }
 
   /* 标题区域 */
@@ -180,31 +184,36 @@
     color: #24292f;
   }
 
-  /* 导航区域 - 带垂直连接线 */
+  /* 导航区域 - 带垂直连接线（参考知乎实现） */
+  /* 添加 padding-left 让圆点完整显示 */
   #toc-container .toc-nav {
     position: relative;
-    padding-left: 0;
+    padding-left: 0; /* 不需要额外的 padding，因为容器已经有 padding-left 了 */
   }
 
-  /* 主垂直连接线 - 在最左边，穿过圆圈中心 */
+  /* 主垂直连接线 - 知乎风格：竖线在背景层 */
+  /* 竖线位置：容器 padding-left 是 20px，但我们需要竖线在合适的位置 */
+  /* 考虑到圆点中心要对齐，竖线应该在合适的位置 */
   #toc-container .toc-nav::before {
     content: '';
     position: absolute;
-    left: -1px;
+    left: 0; /* 相对于 .toc-nav，从 0 开始 */
     top: 0;
     bottom: 0;
     width: 1px;
     background-color: #e1e4e8;
-    z-index: 1;
+    z-index: 0;
   }
 
   /* 列表基础样式 */
+  /* 关键：设置 z-index，确保整个列表（包括圆点）在竖线上方 */
   #toc-container .toc-nav > ul,
   #toc-container .toc-list {
     list-style: none !important;
     padding: 0 !important;
     margin: 0 !important;
     position: relative;
+    z-index: 1;
   }
 
   #toc-container .toc-list-item {
@@ -212,52 +221,59 @@
     padding: 0 !important;
     position: relative;
     list-style: none !important;
+    z-index: 1;
     /* 确保内联样式的 padding-left 能覆盖默认值 */
   }
 
-  /* 圆形标记点 - 竖线穿过圆圈中心，默认大小（h3） */
+  /* 圆形标记点 - 纯色圆点，浮在竖线上方 */
+  /* 关键：竖线在 .toc-nav 的 left: 0，中心在 0.5px
+     圆点的 left 是相对于 .toc-list-item 的
+     圆点中心要对齐到竖线中心 0.5px
+     圆点宽度6px，中心在 0.5px，所以 left = 0.5 - 3 = -2.5px */
   #toc-container .toc-list-item::before {
     content: '';
     position: absolute;
-    /* 竖线在 left: -1px，宽度1px，中心在 -0.5px
-       默认圆圈宽度6px，要让中心在 -0.5px，left = -0.5 - 3 = -3.5px */
-    left: -3.5px;
+    left: -2.5px; /* 圆点宽度6px，中心在0.5px（相对于.toc-list-item），所以 left = 0.5 - 3 = -2.5px */
     top: 50%;
     transform: translateY(-50%);
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: #d1d9e0;
-    border: 2px solid #ffffff;
-    z-index: 2;
+    background-color: #8491A5;
+    border: none;
+    z-index: 2 !important;
     transition: background-color 0.2s;
     box-sizing: border-box;
   }
 
   /* h2 级别 - 最大的圆点 */
   #toc-container .toc-level-2::before {
-    width: 8px !important;
-    height: 8px !important;
-    left: -4.5px !important; /* 8px / 2 = 4px，中心在 -0.5px，所以 left = -0.5 - 4 = -4.5px */
+    width: 7px !important;
+    height: 7px !important;
+    left: -3px !important; /* 圆点宽度7px，中心在0.5px，所以 left = 0.5 - 3.5 = -3px */
+    border: none !important;
   }
 
   /* h3 级别 - 中等圆点（默认，已在上面定义） */
   #toc-container .toc-level-3::before {
     width: 6px !important;
     height: 6px !important;
-    left: -3.5px !important; /* 6px / 2 = 3px，中心在 -0.5px，所以 left = -0.5 - 3 = -3.5px */
+    left: -2.5px !important; /* 圆点宽度6px，中心在0.5px，所以 left = 0.5 - 3 = -2.5px */
+    border: none !important;
   }
 
   /* h4 级别 - 最小的圆点 */
   #toc-container .toc-level-4::before {
-    width: 4px !important;
-    height: 4px !important;
-    left: -2.5px !important; /* 4px / 2 = 2px，中心在 -0.5px，所以 left = -0.5 - 2 = -2.5px */
+    width: 5px !important;
+    height: 5px !important;
+    left: -2px !important; /* 圆点宽度5px，中心在0.5px，所以 left = 0.5 - 2.5 = -2px */
+    border: none !important;
   }
 
   /* 激活状态的标记点变蓝 */
   #toc-container .toc-list-item.active::before {
     background-color: #1890ff !important;
+    box-shadow: 0 1px 3px rgba(24, 144, 255, 0.3) !important;
   }
 
   /* 链接样式 - 强制覆盖所有状态 */
@@ -325,7 +341,7 @@
   /* 确保 li 元素不会超出容器 */
   #toc-container .toc-list-item {
     max-width: 100% !important;
-    overflow: hidden !important;
+    overflow: visible !important; /* 改为 visible，让圆点可以超出边界显示 */
   }
   
   /* 强制确保 li 的 padding-left 生效 */

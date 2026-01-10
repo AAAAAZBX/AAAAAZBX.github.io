@@ -21,11 +21,19 @@ if (selectedTag) {
   });
 }
 
-// 按日期排序（最新的在前）
+// 按 ID 字段字典序降序排序，但 technology_content.md 始终置顶
 const sortedPosts = filteredPosts.sort((a, b) => {
-  const da = new Date(a.data.date ?? "1970-01-01").getTime();
-  const db = new Date(b.data.date ?? "1970-01-01").getTime();
-  return db - da; // 降序：最新的在前
+  // technology_content.md 始终排在最前面
+  const aIsIndex = a.slug.includes('technology_content');
+  const bIsIndex = b.slug.includes('technology_content');
+  
+  if (aIsIndex && !bIsIndex) return -1;
+  if (!aIsIndex && bIsIndex) return 1;
+  
+  // 其他文章按 ID 字段字典序降序排序（如果没有 id，则使用 date）
+  const aId = a.data.id ?? a.data.date ?? "1970-01-01";
+  const bId = b.data.id ?? b.data.date ?? "1970-01-01";
+  return bId.localeCompare(aId); // 字典序降序：较大的字符串在前
 });
 
 // 分页设置

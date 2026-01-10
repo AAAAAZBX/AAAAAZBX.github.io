@@ -4,6 +4,7 @@ const algorithms = defineCollection({
   type: "content",
   schema: z.object({
     title: z.string(),
+    id: z.string().optional(),
     date: z.string().optional(),
     description: z.string().optional(),
     tags: z.array(z.string()).optional(),
@@ -14,6 +15,7 @@ const learning = defineCollection({
   type: "content",
   schema: z.object({
     title: z.string(),
+    id: z.string().optional(),
     date: z.string().optional(),
     description: z.string().optional(),
     tags: z.array(z.string()).optional(),
@@ -24,6 +26,7 @@ const research = defineCollection({
   type: "content",
   schema: z.object({
     title: z.string(),
+    id: z.string().optional(),
     date: z.string().optional(),
     description: z.string().optional(),
     tags: z.array(z.string()).optional(),
@@ -34,6 +37,7 @@ const travel = defineCollection({
   type: "content",
   schema: z.object({
     title: z.string(),
+    id: z.string().optional(),
     date: z.string().optional(),
     description: z.string().optional(),
     tags: z.array(z.string()).optional(),
