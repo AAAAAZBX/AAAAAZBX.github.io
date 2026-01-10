@@ -708,11 +708,11 @@ const clientSiteStartDate = profile.siteStartDate;
       setTimeout(init, 100);
     }
     
-    // 定期更新（每10h）
+    // 定期更新（每100h）
     setInterval(() => {
       updateStatistics();
       loadContributions();
-    }, 36000000);
+    }, 360000000);
   })();
 </script>
 
