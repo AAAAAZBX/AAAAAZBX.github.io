@@ -18,12 +18,12 @@ tags: []
 ## 机器学习/深度学习/大语言模型
 
 ### Pytorch
-- [Pytorch入门](https://aaaaazbx.github.io/learning/Pytorch学习笔记/) (2025.12.6): 介绍Pytorch开发环境配置、Dataset和DataLoader的使用、Tensorboard可视化、Transform图片格式变换、torchvision数据集使用等
-- [神经网络的搭建——torch.nn](https://aaaaazbx.github.io/learning/Pytorch搭建神经网络/) (2025.12.6): 介绍torch.nn模块的使用，包括Module基类、卷积层、池化层、激活层、线性层、损失函数、优化器等
-- [Pytorch模型训练套路总结](https://aaaaazbx.github.io/learning/Pytorch模型训练套路总结/) (2025.12.6): 介绍完整的模型训练流程，包括数据集加载、模型定义、训练和测试、GPU训练、模型保存和加载等
+- [Pytorch入门](https://aaaaazbx.github.io/learning/pytorch学习笔记/) (2025.12.6): 介绍Pytorch开发环境配置、Dataset和DataLoader的使用、Tensorboard可视化、Transform图片格式变换、torchvision数据集使用等
+- [神经网络的搭建——torch.nn](https://aaaaazbx.github.io/learning/pytorch搭建神经网络/) (2025.12.6): 介绍torch.nn模块的使用，包括Module基类、卷积层、池化层、激活层、线性层、损失函数、优化器等
+- [Pytorch模型训练套路总结](https://aaaaazbx.github.io/learning/pytorch模型训练套路总结/) (2025.12.6): 介绍完整的模型训练流程，包括数据集加载、模型定义、训练和测试、GPU训练、模型保存和加载等
 
 ## 工具
 
 ### Linux
-- [Linux相关语法](https://aaaaazbx.github.io/learning/Linux相关语法/) (2025.12.1): 介绍Linux相关工具的使用, tmux, vim, shell, ssh, git, thrift, 管道, 环境变量, 以及Linux常用命令
+- [Linux相关语法](https://aaaaazbx.github.io/learning/linux相关语法/) (2025.12.1): 介绍Linux相关工具的使用, tmux, vim, shell, ssh, git, thrift, 管道, 环境变量, 以及Linux常用命令
 

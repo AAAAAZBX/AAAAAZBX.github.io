@@ -43,7 +43,8 @@ print(output)
 
 # 二、torch.nn.functional()卷积相关操作
 
-## 1.官方文档中介绍的conv2d()相关参数<a href='https://pytorch.org/docs/1.8.1/nn.functional.html#conv2d'>链接
+## 1.官方文档中介绍的conv2d()相关参数 [链接](https://pytorch.org/docs/1.8.1/nn.functional.html#conv2d)
+
 
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -162,7 +163,7 @@ print(output3)
 
 # 三、神经网络中的卷积层
 
-## 1.二位卷积层<a href='https://pytorch.org/docs/1.8.1/generated/torch.nn.Conv2d.html#torch.nn.Conv2d'>Conv2d
+## 1.二位卷积层 [Conv2d](https://pytorch.org/docs/1.8.1/generated/torch.nn.Conv2d.html#torch.nn.Conv2d)
 
 
 ```python
@@ -266,7 +267,7 @@ writer.close()
 
 运行后便可以在teosorboard中看到卷积后的结果
 
-## 2.最大池化层<a href='https://pytorch.org/docs/1.8.1/generated/torch.nn.MaxPool2d.html#torch.nn.MaxPool2d'>MaxPool2d
+## 2.最大池化层 [MaxPool2d](https://pytorch.org/docs/1.8.1/generated/torch.nn.MaxPool2d.html#torch.nn.MaxPool2d)
 
 
 ```python
@@ -383,7 +384,7 @@ writer.close()
 
 运行完后便可以在tendorboard中看到效果，做了最大池化操作后图像变模糊了
 
-## 3.非线性激活层<a href='https://pytorch.org/docs/1.8.1/nn.html#non-linear-activations-weighted-sum-nonlinearity'>链接
+## 3.非线性激活层 [链接](https://pytorch.org/docs/1.8.1/nn.html#non-linear-activations-weighted-sum-nonlinearity)
 
 - 神经网络中最常用的非线性激活函数为RELU和sigmoid函数
 
@@ -480,7 +481,7 @@ writer.close()
 
 运行代码后，便可以在tensorboard中看到经过非线性激活后的图像
 
-## 4.线性层<a href='https://pytorch.org/docs/1.8.1/generated/torch.nn.Linear.html#torch.nn.Linear'>Linear
+## 4.线性层 [Linear](https://pytorch.org/docs/1.8.1/generated/torch.nn.Linear.html#torch.nn.Linear)
 
 
 ```python
@@ -676,11 +677,11 @@ for data in dataloader:
 
 # 四、神经网络搭建实战
 
-<a href='https://pytorch.org/docs/1.8.1/generated/torch.nn.Sequential.html?highlight=sequential#torch.nn.Sequential'>nn.Sequential介绍
+[nn.Sequential介绍](https://pytorch.org/docs/1.8.1/generated/torch.nn.Sequential.html?highlight=sequential#torch.nn.Sequential)
 
 ## 1.CIFAR10神经网络实战
 
-<a href="https://www.bing.com/images/search?view=detailV2&ccid=VAYSNpV6&id=1A70A9DAA5674E00717A84EAC9E7263C23092A51&thid=OIP.VAYSNpV64ojo3IylZMAfgQHaCE&mediaurl=https%3A%2F%2Flh6.googleusercontent.com%2Fproxy%2FtZONCuOCljWy9GTBt_-hobTZfrAWPHOzYzNVnCQcK8WR27nRycrOiQtY0BHoASJKJlxXORZuQYO50NBcc3eYbI4tjR3k4-NJPt1CgkYmuPSyNy6O0LlICOR3rA6p4vdl1ukbU_DRrDtEafVkL01S-ZLebmZY1i-jLOuEc8R7pwzRABOWUsJsH1z1KFd0t4RKGEriy-xOzclJRiA_OW6qjdpq2mMDhncYU3vsZD-fHXBE_oowARk%3Dw1200-h630-p-k-no-nu&cdnurl=https%3A%2F%2Fth.bing.com%2Fth%2Fid%2FR.54061236957ae288e8dc8ca564c01f81%3Frik%3DUSoJIzwm58nqhA%26pid%3DImgRaw%26r%3D0&exph=203&expw=725&q=Cifar-10%e6%a8%a1%e5%9e%8b&form=IRPRST&ck=5BB10B9518562D31B072F42DDCA78A71&selectedindex=1&ajaxhist=0&ajaxserp=0&pivotparams=insightsToken%3Dccid_TZC%252BmJ9g*cp_0205E11528B3F744FE28EE10541E368E*mid_A9AF515883331C9097DF5B395DE1A9A414E1080A*simid_608003886023007768*thid_OIP.TZC-mJ9g5bGaoHv1gP7nxwHaBw&vt=0&sim=11&iss=VSI&ajaxhist=0&ajaxserp=0">CIFAR10的分类网络
+[CIFAR10的分类网络](https://www.bing.com/images/search?view=detailV2&ccid=VAYSNpV6&id=1A70A9DAA5674E00717A84EAC9E7263C23092A51&thid=OIP.VAYSNpV64ojo3IylZMAfgQHaCE&mediaurl=https%3A%2F%2Flh6.googleusercontent.com%2Fproxy%2FtZONCuOCljWy9GTBt_-hobTZfrAWPHOzYzNVnCQcK8WR27nRycrOiQtY0BHoASJKJlxXORZuQYO50NBcc3eYbI4tjR3k4-NJPt1CgkYmuPSyNy6O0LlICOR3rA6p4vdl1ukbU_DRrDtEafVkL01S-ZLebmZY1i-jLOuEc8R7pwzRABOWUsJsH1z1KFd0t4RKGEriy-xOzclJRiA_OW6qjdpq2mMDhncYU3vsZD-fHXBE_oowARk%3Dw1200-h630-p-k-no-nu&cdnurl=https%3A%2F%2Fth.bing.com%2Fth%2Fid%2FR.54061236957ae288e8dc8ca564c01f81%3Frik%3DUSoJIzwm58nqhA%26pid%3DImgRaw%26r%3D0&exph=203&expw=725&q=Cifar-10%e6%a8%a1%e5%9e%8b&form=IRPRST&ck=5BB10B9518562D31B072F42DDCA78A71&selectedindex=1&ajaxhist=0&ajaxserp=0&pivotparams=insightsToken%3Dccid_TZC%252BmJ9g*cp_0205E11528B3F744FE28EE10541E368E*mid_A9AF515883331C9097DF5B395DE1A9A414E1080A*simid_608003886023007768*thid_OIP.TZC-mJ9g5bGaoHv1gP7nxwHaBw&vt=0&sim=11&iss=VSI&ajaxhist=0&ajaxserp=0)
 
 
 ```python
@@ -784,7 +785,7 @@ writer.close()
 
 - 为我们更新输出提供一定的依据（反向传播）
 
-## 1.L1Loss()损失函数<a href='https://pytorch.org/docs/1.8.1/generated/torch.nn.L1Loss.html#torch.nn.L1Loss'>链接
+## 1.L1Loss()损失函数 [链接](https://pytorch.org/docs/1.8.1/generated/torch.nn.L1Loss.html#torch.nn.L1Loss)
 
 
 ```python
@@ -826,7 +827,7 @@ print(result)
     tensor(2.)
 
 
-## 2.平方差损失函数<a href='https://pytorch.org/docs/1.8.1/generated/torch.nn.L1Loss.html#torch.nn.L1Loss'>MSELOSS
+## 2.平方差损失函数 [MSELOSS](https://pytorch.org/docs/1.8.1/generated/torch.nn.L1Loss.html#torch.nn.L1Loss)
 
 
 ```python
@@ -839,7 +840,7 @@ print(result)
     tensor(1.3333)
 
 
-## 3.交叉熵损失函数<a href='https://pytorch.org/docs/1.8.1/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss'>CrossEntropyLoss
+## 3.交叉熵损失函数 [CrossEntropyLoss](https://pytorch.org/docs/1.8.1/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
 
 假设有一张狗的图片和一个神经网络，三个预测类别分别为$[person,dog,cat]$(0, 1, 2)
 
@@ -992,7 +993,7 @@ for data in dataloader:
     result_loss.backward()
 ```
 
-# 六、优化器<a href='https://pytorch.org/docs/1.8.1/optim.html'>optimizer
+# 六、优化器 [optimizer](https://pytorch.org/docs/1.8.1/optim.html)
 
 - 学习速率lr参数是所有优化器中必有的参数
 
