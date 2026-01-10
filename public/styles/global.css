@@ -632,6 +632,29 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   border-radius: 6px;
 }
 
+.typora-github pre {
+  position: relative;
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+}
+
+.typora-github pre code {
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  font-family: inherit;
+  display: block;
+  white-space: pre;
+  overflow-x: auto;
+}
+
 .typora-github pre.astro-code {
   position: relative;
   padding: 16px;

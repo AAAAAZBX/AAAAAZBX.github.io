@@ -1,0 +1,248 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
+import WalineComment from "../../components/WalineComment.astro";
+---
+
+<Layout title="Shared Memory Management System | Projects">
+  <div class="article-wrapper">
+    <TableOfContents />
+    <div class="article-content">
+      <article class="typora-github">
+        <h1>🔗 Shared Memory Management System</h1>
+        
+        <div style="margin: 20px 0; padding: 16px; background-color: #f6f8fa; border-radius: 6px; border-left: 4px solid #0969da;">
+          <p style="margin: 0 0 12px 0; font-size: 16px;">
+            <strong>基于 C++17 实现的共享内存管理系统</strong>
+          </p>
+          <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <a 
+              href="https://github.com/AAAAAZBX/Shared-Memory-Management-System"
+              target="_blank" 
+              rel="noopener noreferrer"
+              style="display: inline-flex; align-items: center; gap: 6px; color: #0969da; text-decoration: none; font-weight: 500;"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+              </svg>
+              View on GitHub
+            </a>
+            <span style="color: #57606a; display: inline-flex; align-items: center; gap: 4px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              C++
+            </span>
+          </div>
+        </div>
+
+        <h2>📋 项目简介</h2>
+        <p>这是一个基于 C++17 实现的共享内存管理系统，提供了完整的内存池管理、分配、释放和持久化功能。系统采用模块化设计，代码结构清晰，易于维护和扩展。</p>
+
+        <h2>✨ 核心特性</h2>
+        <ul>
+          <li><strong>💾 内存池管理</strong> - 固定大小内存池（1MB，256 × 4KB 块）</li>
+          <li><strong>🔧 内存分配</strong> - 首次适配（First Fit）算法，自动紧凑</li>
+          <li><strong>🗑️ 内存释放</strong> - 支持释放和删除用户内存</li>
+          <li><strong>📝 内容管理</strong> - 支持分配、读取、更新用户内容</li>
+          <li><strong>💿 数据持久化</strong> - 支持保存和加载内存池状态</li>
+          <li><strong>⏰ 时间追踪</strong> - 记录用户最后修改时间</li>
+          <li><strong>📊 状态查询</strong> - 提供详细的内存和块状态信息</li>
+          <li><strong>📦 批量执行</strong> - 支持从文件批量执行命令</li>
+        </ul>
+
+        <h2>🚀 快速开始</h2>
+        
+        <h3>编译与运行</h3>
+        <p><strong>方式一：使用批处理脚本（推荐）</strong></p>
+        <pre><code>cd server
+.\run.bat</code></pre>
+
+        <p><strong>方式二：手动编译</strong></p>
+        <pre><code>cd server
+g++ -std=c++17 -Wall main.cpp command/commands.cpp shared_memory_pool/shared_memory_pool.cpp persistence/persistence.cpp -o main.exe
+.\main.exe</code></pre>
+
+        <h2>💻 命令示例</h2>
+        <pre><code># 查看帮助
+server> help
+server> help status
+
+# 查看内存状态
+server> status --memory
+server> status --block
+
+# 分配内存
+server> alloc client_1 "Hello World"
+
+# 读取用户内容
+server> read client_1
+
+# 释放用户内存
+server> free client_1
+server> delete client_1  # free 的别名
+
+# 更新用户内容
+server> update client_1 "Updated Content"
+
+# 批量执行命令文件
+server> exec sample.txt
+
+# 紧凑内存
+server> compact
+
+# 重置内存池（需要密码确认）
+server> reset
+
+# 退出
+server> quit</code></pre>
+
+        <h2>📁 项目结构</h2>
+        <pre><code>Shared-Memory-Manage-System/
+├── server/
+│   ├── main.cpp                          # 主程序入口，REPL 循环
+│   ├── command/
+│   │   ├── commands.h                    # 命令处理声明
+│   │   └── commands.cpp                  # 命令处理实现
+│   ├── shared_memory_pool/
+│   │   ├── shared_memory_pool.h          # 内存池类声明
+│   │   └── shared_memory_pool.cpp        # 内存池实现
+│   ├── persistence/
+│   │   ├── persistence.h                 # 持久化模块声明
+│   │   └── persistence.cpp                # 持久化模块实现
+│   ├── run.bat                           # 编译运行脚本
+│   └── build.bat                         # 编译脚本
+├── details.md                            # 项目需求文档
+└── README.md                             # 项目文档</code></pre>
+
+        <h2>🛠️ 技术栈</h2>
+        <ul>
+          <li><strong>语言</strong>：C++17</li>
+          <li><strong>编译器</strong>：g++ (MinGW-w64 / MSYS2)</li>
+          <li><strong>标准库</strong>：STL（<code>vector</code>, <code>map</code>, <code>bitset</code>, <code>array</code>）</li>
+          <li><strong>平台</strong>：Windows</li>
+        </ul>
+
+        <h2>📊 性能指标</h2>
+        <ul>
+          <li><strong>内存池大小</strong>：1MB（256 × 4KB 块）</li>
+          <li><strong>分配算法</strong>：首次适配（First Fit）+ 自动紧凑</li>
+          <li><strong>时间复杂度</strong>：
+            <ul>
+              <li>分配：O(n) 最坏情况，n 为块数</li>
+              <li>紧凑：O(n)</li>
+              <li>释放：O(1)</li>
+              <li>查询：O(1) 到 O(n)</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h2>📝 数据持久化</h2>
+        <p>系统支持将内存池状态保存到文件（<code>memory_pool.dat</code>），并在程序启动时自动加载。持久化文件格式包含：</p>
+        <ul>
+          <li>文件头（魔数、版本号等）</li>
+          <li>元数据数组（256 个块的信息）</li>
+          <li>Used Map（块使用状态）</li>
+          <li>User Block Info（用户块映射）</li>
+          <li>Pool Data（实际数据内容）</li>
+        </ul>
+        <p>程序退出时（Ctrl+C、Ctrl+Z、quit/exit）会自动保存状态。</p>
+
+        <h2>✅ 开发进度</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>功能模块</th>
+              <th>状态</th>
+              <th>完成度</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>内存池核心</td>
+              <td>✅ 完成</td>
+              <td>100%</td>
+            </tr>
+            <tr>
+              <td>内存分配</td>
+              <td>✅ 完成</td>
+              <td>100%</td>
+            </tr>
+            <tr>
+              <td>内存释放</td>
+              <td>✅ 完成</td>
+              <td>100%</td>
+            </tr>
+            <tr>
+              <td>内存紧凑</td>
+              <td>✅ 完成</td>
+              <td>100%</td>
+            </tr>
+            <tr>
+              <td>命令行界面</td>
+              <td>✅ 完成</td>
+              <td>100%</td>
+            </tr>
+            <tr>
+              <td>状态查询</td>
+              <td>✅ 完成</td>
+              <td>100%</td>
+            </tr>
+            <tr>
+              <td>内容读取</td>
+              <td>✅ 完成</td>
+              <td>100%</td>
+            </tr>
+            <tr>
+              <td>批量执行</td>
+              <td>✅ 完成</td>
+              <td>100%</td>
+            </tr>
+            <tr>
+              <td>数据持久化</td>
+              <td>✅ 完成</td>
+              <td>100%</td>
+            </tr>
+            <tr>
+              <td>TCP 服务器</td>
+              <td>⏳ 待实现</td>
+              <td>0%</td>
+            </tr>
+            <tr>
+              <td>客户端程序</td>
+              <td>⏳ 待实现</td>
+              <td>0%</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>⚠️ 注意事项</h2>
+        <ul>
+          <li>当前版本为服务器端核心功能实现，TCP 网络功能尚未集成</li>
+          <li>数据持久化功能已完成，支持程序退出时自动保存状态</li>
+          <li>内存池大小可在 <code>shared_memory_pool/shared_memory_pool.h</code> 中通过 <code>kPoolSize</code> 常量调整</li>
+          <li>建议使用支持 C++17 的编译器（g++ 7.0+ 或 MSVC 2017+）</li>
+          <li>块 ID 显示格式为 3 位数字，不足 3 位用 0 填充（如 <code>block_000</code>, <code>block_030</code>）</li>
+          <li>持久化文件 <code>memory_pool.dat</code> 保存在服务器程序运行目录</li>
+        </ul>
+
+        <hr style="margin: 40px 0;" />
+
+        <p style="text-align: center; color: #57606a;">
+          <strong>如果这个项目对你有帮助，请给个 ⭐ Star！</strong>
+        </p>
+        <p style="text-align: center; margin-top: 8px;">
+          <a href="https://github.com/AAAAAZBX/Shared-Memory-Management-System" target="_blank" rel="noopener noreferrer" style="color: #0969da; text-decoration: none;">
+            https://github.com/AAAAAZBX/Shared-Memory-Management-System
+          </a>
+        </p>
+      </article>
+      
+      <!-- 评论区域 -->
+      <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid #d0d7de;">
+        <WalineComment />
+      </div>
+    </div>
+  </div>
+</Layout>
