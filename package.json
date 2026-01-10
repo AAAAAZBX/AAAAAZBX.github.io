@@ -13,7 +13,8 @@
     "@astrojs/mdx": "^4.3.12",
     "astro": "^5.16.3",
     "rehype-katex": "^7.0.1",
-    "remark-math": "^6.0.0"
+    "remark-math": "^6.0.0",
+    "sharp": "^0.33.0"
   },
   "devDependencies": {
     "pagefind": "^1.4.0"
