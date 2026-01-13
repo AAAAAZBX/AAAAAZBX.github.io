@@ -12,12 +12,14 @@ const selectedTag = selectedTagParam ? decodeURIComponent(selectedTagParam) : nu
 // 根据标签筛选文章
 let filteredPosts = posts;
 if (selectedTag) {
+  // 解码URL参数
+  const decodedTag = decodeURIComponent(selectedTag);
   filteredPosts = posts.filter((post) => {
     if (!post.data.tags || !Array.isArray(post.data.tags)) {
       return false;
     }
-    // 精确匹配标签
-    return post.data.tags.some(tag => tag === selectedTag);
+    // 精确匹配标签（大小写敏感，确保与目录名一致）
+    return post.data.tags.some(tag => tag === decodedTag);
   });
 }
 

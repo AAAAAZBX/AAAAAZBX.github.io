@@ -3,7 +3,7 @@ title: "神经网络的搭建——torch.nn"
 id: "2025-12-06-02"
 date: "2025-12-06"
 description: "介绍如何使用torch.nn模块搭建神经网络，包括Module基类、各种层和容器的使用方法"
-tags: ["pytorch", "神经网络", "深度学习"]
+tags: ["AI", "pytorch", "神经网络", "深度学习"]
 ---
 
 

@@ -1,6 +1,45 @@
 ---
+import { getCollection } from "astro:content";
+
 const { title = "BoxuanZhang的个人空间", isArticle = false } = Astro.props;
 const year = new Date().getFullYear();
+
+// 动态获取learning目录下的所有子目录
+// 由于Astro的slug可能会转换为小写，我们从标签中提取目录名（保持原始大小写）
+const learningPosts = await getCollection("learning");
+const subdirectories = new Map<string, string>(); // Map<小写目录名, 原始目录名>
+
+learningPosts.forEach((post) => {
+  // 从slug中提取目录名（可能是小写）
+  if (post.slug.includes('/')) {
+    const parts = post.slug.split('/');
+    const dirNameFromSlug = parts[0].toLowerCase(); // 统一转为小写用于匹配
+    
+    // 从标签中查找匹配的目录名（保持原始大小写）
+    if (post.data.tags && Array.isArray(post.data.tags)) {
+      post.data.tags.forEach((tag) => {
+        const tagLower = tag.toLowerCase();
+        // 如果标签的小写与slug的第一部分小写匹配，说明这是目录名标签
+        if (tagLower === dirNameFromSlug) {
+          // 使用标签的原始大小写作为目录名
+          subdirectories.set(tagLower, tag);
+        }
+      });
+    }
+  }
+});
+
+// 转换为数组并排序（使用原始大小写）
+const sortedSubdirectories = Array.from(subdirectories.values()).sort((a, b) => {
+  // 先按小写字母排序，但保持原始大小写
+  const aLower = a.toLowerCase();
+  const bLower = b.toLowerCase();
+  if (aLower !== bLower) {
+    return aLower.localeCompare(bLower);
+  }
+  // 如果小写相同，按原始大小写排序
+  return a.localeCompare(b);
+});
 ---
 
 <html lang="zh">
@@ -151,7 +190,28 @@ const year = new Date().getFullYear();
         </div>
         <nav class="nav-links">
           <a href="/research">Research</a>
-          <a href="/learning">Technology</a>
+          <div class="nav-dropdown">
+            <a href="/learning" class="nav-dropdown-trigger">
+              Technology
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-arrow">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </a>
+            <div class="nav-dropdown-menu">
+              {sortedSubdirectories.length > 0 ? (
+                sortedSubdirectories.map((dir) => (
+                  <a href={`/learning?tag=${encodeURIComponent(dir)}`} class="nav-dropdown-item">{dir}</a>
+                ))
+              ) : (
+                // 如果没有子目录，显示默认选项（向后兼容）
+                <>
+                  <a href="/learning?tag=AI" class="nav-dropdown-item">AI</a>
+                  <a href="/learning?tag=Math" class="nav-dropdown-item">Math</a>
+                  <a href="/learning?tag=Tools" class="nav-dropdown-item">Tools</a>
+                </>
+              )}
+            </div>
+          </div>
           <a href="/projects">Projects</a>
           <a href="/algorithms">Competitive Programming</a>
           <a href="/travel">Daily Life</a>
