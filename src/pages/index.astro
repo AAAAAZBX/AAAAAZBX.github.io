@@ -365,11 +365,14 @@ const clientSiteStartDate = profile.siteStartDate;
       graphEl.innerHTML = '<p style="color: #666; padding: 20px;">Loading contributions...</p>';
       
       try {
-        const apiUrl = window.location.origin + '/api/github-contributions';
+        // 添加时间戳参数防止浏览器缓存
+        const timestamp = new Date().getTime();
+        const apiUrl = `${window.location.origin}/api/github-contributions?t=${timestamp}`;
         const response = await fetch(apiUrl, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
+            'Cache-Control': 'no-cache', // 防止浏览器缓存
           },
         });
         
@@ -383,6 +386,17 @@ const clientSiteStartDate = profile.siteStartDate;
         console.log('[Contributions] Contributions type:', typeof result.contributions);
         console.log('[Contributions] Is array:', Array.isArray(result.contributions));
         console.log('[Contributions] Length:', result.contributions?.length);
+        console.log('[Contributions] Latest date from API:', result.latestDate);
+        console.log('[Contributions] Today:', result.today);
+        console.log('[Contributions] Missing today:', result.latestDate !== result.today);
+        
+        // 显示最近几天的数据用于调试
+        if (result.contributions && Array.isArray(result.contributions)) {
+          const recentContributions = [...result.contributions]
+            .sort((a, b) => b.date.localeCompare(a.date))
+            .slice(0, 7);
+          console.log('[Contributions] Recent 7 days:', recentContributions);
+        }
         
         const contributions = result.contributions || [];
         
@@ -447,6 +461,16 @@ const clientSiteStartDate = profile.siteStartDate;
       // 获取今天的日期（UTC，只比较日期部分）
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0);
+      
+      // 调试信息：显示日期范围
+      console.log('[Contributions] Date range:', {
+        earliest: earliestDate.toISOString().split('T')[0],
+        latest: latestDate.toISOString().split('T')[0],
+        today: today.toISOString().split('T')[0],
+        latestContributionDate: sortedContributions.length > 0 
+          ? sortedContributions[sortedContributions.length - 1].date 
+          : null
+      });
       
       // 确保最晚日期不超过今天
       const endDate = latestDate > today ? today : latestDate;
