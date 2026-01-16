@@ -198,28 +198,16 @@ export const GET: APIRoute = async () => {
     }
     
     const totalContributions = contributions.reduce((sum, c) => sum + c.count, 0);
-    
-    // 获取最新的日期用于调试
-    const latestContributionDate = contributions.length > 0 
-      ? contributions.sort((a, b) => b.date.localeCompare(a.date))[0].date 
-      : null;
-    const today = new Date().toISOString().split('T')[0];
-    
     console.log(`[API] Parsed ${contributions.length} contribution days, total: ${totalContributions}`);
-    console.log(`[API] Latest contribution date: ${latestContributionDate}, Today: ${today}`);
-    console.log(`[API] Missing today's data: ${latestContributionDate !== today}`);
     
     return new Response(JSON.stringify({ 
       contributions,
-      totalContributions,
-      timestamp: new Date().toISOString(), // 添加时间戳，方便调试
-      latestDate: latestContributionDate, // 添加最新日期，方便调试
-      today: today, // 添加今天的日期，方便调试
+      totalContributions
     }), {
       status: 200,
       headers: { 
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=300', // 减少到 5 分钟（300秒），更及时更新
+        'Cache-Control': 'public, max-age=3600',
       },
     });
   } catch (error: any) {
