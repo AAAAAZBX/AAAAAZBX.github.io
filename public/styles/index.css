@@ -12,7 +12,7 @@ main {
   padding: 40px 30px;
   display: flex;
   gap: 50px;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Noto Serif", "DejaVu Serif", serif !important;
   color: #333;
   flex-wrap: nowrap;
   /* 强制左右分列不换行 */
@@ -72,7 +72,8 @@ aside.sidebar {
 
 .profile-info h1.name {
   font-size: 1.8rem;
-  font-weight: 700;
+  font-family: "Open Sans", "DejaVu Sans", sans-serif !important;
+  font-weight: 400 !important;
   margin-bottom: 5px;
   color: #000;
 }
@@ -125,6 +126,8 @@ aside.sidebar {
   font-size: 2rem;
   margin-bottom: 15px;
   color: #222;
+  font-family: "Open Sans", "DejaVu Sans", sans-serif !important;
+  font-weight: 400 !important;
 }
 
 .content-section h3 {
@@ -132,6 +135,8 @@ aside.sidebar {
   margin-bottom: 15px;
   color: #333;
   padding-bottom: 8px;
+  font-family: "Open Sans", "DejaVu Sans", sans-serif !important;
+  font-weight: 400 !important;
 }
 
 .content-section p {
