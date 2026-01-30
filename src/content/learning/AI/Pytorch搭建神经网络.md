@@ -6,10 +6,6 @@ description: "介绍如何使用torch.nn模块搭建神经网络，包括Module�
 tags: ["AI", "pytorch", "神经网络", "深度学习"]
 ---
 
-
-
-# **神经网络的搭建**——torch.nn
-
 # 一、Container中的Moudule是所有的神经网络的基础、父类
 
 - 所有的其他神经网络必须从Moudule中继承
