@@ -23,92 +23,84 @@ async function fetchGitHubContributions() {
     }
 
     // 解析 GitHub 贡献图数据
-    // GitHub 使用 SVG 格式，每个 <rect> 元素包含：
-    // - data-date: 日期 (YYYY-MM-DD)
-    // - data-count: 精确贡献数（如果存在）
-    // - data-level: 贡献等级（0-4）
-    // 注意：GitHub 的 SVG 结构可能包含自闭合或带子元素的 rect
+    // GitHub 2024+ 新结构：
+    // - <td> 元素包含 data-date 和 id
+    // - <tool-tip> 元素包含精确贡献数，通过 for 属性关联到 td 的 id
 
     const contributionsMap = new Map();
-    const rectPattern = /<rect[^>]*data-date="([^"]+)"[^>]*>/g;
     let match;
 
-    // 统一处理所有 rect 元素，无论是自闭合还是带子元素
-    while ((match = rectPattern.exec(htmlText)) !== null) {
-      const rectStart = match[0];
+    // 步骤1: 解析所有 <td> 元素，建立 id -> date 的映射
+    const idToDateMap = new Map();
+    const tdPattern = /<td[^>]*data-date="([^"]+)"[^>]*id="([^"]+)"[^>]*>/g;
+    
+    while ((match = tdPattern.exec(htmlText)) !== null) {
       const date = match[1];
+      const id = match[2];
+      idToDateMap.set(id, date);
+      // 初始化贡献数为 0
+      if (!contributionsMap.has(date)) {
+        contributionsMap.set(date, 0);
+      }
+    }
 
-      // 跳过已处理的日期
-      if (contributionsMap.has(date)) continue;
-
-      let count = 0;
-
-      // 优先级1: data-count（最精确）
-      const countMatch = rectStart.match(/data-count="(\d+)"/);
-      if (countMatch) {
-        count = parseInt(countMatch[1], 10) || 0;
-      } else {
-        // 优先级2: 从完整的 rect 元素中提取 title 内容
-        // 找到完整的 rect 元素（包括可能的子元素和结束标签）
-        const rectEndIndex = htmlText.indexOf('>', rectPattern.lastIndex - 1);
-        if (rectEndIndex !== -1) {
-          const isSelfClosing = rectStart.trim().endsWith('/>');
-          let fullRect = '';
-
-          if (isSelfClosing) {
-            fullRect = rectStart;
-          } else {
-            // 查找结束标签
-            const endIndex = htmlText.indexOf('</rect>', rectEndIndex);
-            if (endIndex !== -1) {
-              fullRect = htmlText.substring(match.index, endIndex + 8); // +8 for </rect>
-            } else {
-              fullRect = rectStart;
-            }
-          }
-
-          // 从完整 rect 中提取 title
-          const titleMatch = fullRect.match(/<title>([^<]*)<\/title>/);
-          if (titleMatch) {
-            const titleText = titleMatch[1];
-            const contributionMatch = titleText.match(/(\d+)\s+contribution/i);
-            if (contributionMatch) {
-              count = parseInt(contributionMatch[1], 10) || 0;
-            } else if (titleText.toLowerCase().includes('no contribution')) {
-              count = 0;
-            }
-          }
-
-          // 如果还没找到，尝试 title 属性
-          if (count === 0) {
-            const titleAttrMatch = fullRect.match(/title="([^"]*)"/);
-            if (titleAttrMatch) {
-              const titleStr = titleAttrMatch[1];
-              const contributionMatch = titleStr.match(/(\d+)\s+contribution/i);
-              if (contributionMatch) {
-                count = parseInt(contributionMatch[1], 10) || 0;
-              } else if (titleStr.toLowerCase().includes('no contribution')) {
-                count = 0;
-              }
-            }
-          }
-        }
-
-        // 优先级3: 使用 data-level（最后手段）
-        if (count === 0) {
-          const levelMatch = rectStart.match(/data-level="(\d+)"/);
-          if (levelMatch) {
-            const level = parseInt(levelMatch[1], 10);
-            // 使用 GitHub 官方的颜色映射对应的贡献范围
-            if (level === 1) count = 1;
-            else if (level === 2) count = 4; // 2-6 范围的中间值
-            else if (level === 3) count = 8; // 7-11 范围的中间值
-            else if (level === 4) count = 12; // 12+ 范围的起始值
-          }
+    // 也尝试 id 在 data-date 之前的情况
+    const tdPatternAlt = /<td[^>]*id="([^"]+)"[^>]*data-date="([^"]+)"[^>]*>/g;
+    while ((match = tdPatternAlt.exec(htmlText)) !== null) {
+      const id = match[1];
+      const date = match[2];
+      if (!idToDateMap.has(id)) {
+        idToDateMap.set(id, date);
+        if (!contributionsMap.has(date)) {
+          contributionsMap.set(date, 0);
         }
       }
+    }
 
-      contributionsMap.set(date, count);
+    console.log('[Build] Found', idToDateMap.size, 'td elements with data-date');
+
+    // 步骤2: 解析所有 <tool-tip> 元素，提取贡献数并关联到日期
+    const tooltipPattern = /<tool-tip[^>]*for="([^"]+)"[^>]*>([^<]*)<\/tool-tip>/g;
+    
+    while ((match = tooltipPattern.exec(htmlText)) !== null) {
+      const forId = match[1];
+      const tooltipText = match[2];
+      
+      // 从 tooltip 文本中提取贡献数
+      const contributionMatch = tooltipText.match(/(\d+)\s+contribution/i);
+      if (contributionMatch) {
+        const count = parseInt(contributionMatch[1], 10) || 0;
+        
+        // 通过 id 找到对应的日期
+        const date = idToDateMap.get(forId);
+        if (date) {
+          contributionsMap.set(date, count);
+        }
+      }
+    }
+
+    // 如果新格式没有匹配到数据，尝试旧的 rect 格式作为备选
+    if (contributionsMap.size === 0) {
+      console.log('[Build] No td elements found, trying rect format...');
+      
+      const rectPattern = /<rect[^>]*data-date="([^"]+)"[^>]*>([\s\S]*?)<\/rect>/g;
+      while ((match = rectPattern.exec(htmlText)) !== null) {
+        const date = match[1];
+        const innerContent = match[2];
+        
+        if (contributionsMap.has(date)) continue;
+        
+        let count = 0;
+        const titleMatch = innerContent.match(/<title>([^<]*)<\/title>/);
+        if (titleMatch) {
+          const contributionMatch = titleMatch[1].match(/(\d+)\s+contribution/i);
+          if (contributionMatch) {
+            count = parseInt(contributionMatch[1], 10) || 0;
+          }
+        }
+        
+        contributionsMap.set(date, count);
+      }
     }
 
     // 转换为数组并按日期排序
@@ -118,18 +110,27 @@ async function fetchGitHubContributions() {
 
     // 如果没有找到数据，尝试旧的 table 格式作为备选
     if (contributions.length === 0) {
-      const tdPattern = /<td[^>]*data-date="([^"]+)"[^>]*data-level="(\d+)"[^>]*>/g;
+      // 匹配 td 元素，尝试从 title 属性获取精确贡献数
+      const tdPattern = /<td[^>]*data-date="([^"]+)"[^>]*>/g;
       while ((match = tdPattern.exec(htmlText)) !== null) {
+        const tdTag = match[0];
         const date = match[1];
-        const level = parseInt(match[2], 10);
 
         if (contributionsMap.has(date)) continue;
 
         let count = 0;
-        if (level === 1) count = 1;
-        else if (level === 2) count = 4;
-        else if (level === 3) count = 8;
-        else if (level === 4) count = 12;
+        
+        // 尝试从 title 属性获取精确数值
+        const titleAttrMatch = tdTag.match(/title="([^"]*)"/);
+        if (titleAttrMatch) {
+          const titleStr = titleAttrMatch[1];
+          const contributionMatch = titleStr.match(/(\d+)\s+contribution/i);
+          if (contributionMatch) {
+            count = parseInt(contributionMatch[1], 10) || 0;
+          }
+        }
+        
+        // 注意：不再使用 data-level 估算
 
         contributionsMap.set(date, count);
       }

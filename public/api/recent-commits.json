@@ -1,0 +1,55 @@
+{
+  "commits": [
+    {
+      "hash": "cb2fed66569078f6f3c42ad49d0b022f83e555e4",
+      "date": "2026-01-30 16:02:44 +0800",
+      "message": "目录格式修改"
+    },
+    {
+      "hash": "3f0f1ed8a8d58bec50a79783acad3a8603403645",
+      "date": "2026-01-30 15:05:37 +0800",
+      "message": "博客内容修改"
+    },
+    {
+      "hash": "66b3a3b1d445c2c428d1142957b423adf2cbd060",
+      "date": "2026-01-29 09:37:07 +0800",
+      "message": "贡献图"
+    },
+    {
+      "hash": "77a051bb506696a0950dc4dbe324a79d753b2e84",
+      "date": "2026-01-24 11:06:01 +0800",
+      "message": "更新贡献数据文件"
+    },
+    {
+      "hash": "063d8f7b19abb3cccbf639a6e5c9bbac084aae96",
+      "date": "2026-01-24 11:05:39 +0800",
+      "message": "重构贡献图实现以匹配GitHub官方样式"
+    },
+    {
+      "hash": "2513bdfb0a5217b315eb3b8c3a062ae1252ab174",
+      "date": "2026-01-23 16:16:52 +0800",
+      "message": "测试 contributions 邮箱配置"
+    },
+    {
+      "hash": "cbd97d8e6809647fcef24555ee4979ea3f16f30c",
+      "date": "2026-01-21 13:41:58 +0800",
+      "message": "删除Math目录"
+    },
+    {
+      "hash": "f876b3c7c30a3c9f155d8ef052f2b7faeef84971",
+      "date": "2026-01-19 09:58:40 +0800",
+      "message": "修改字体"
+    },
+    {
+      "hash": "915b8b56a852477ca5c1997cd918edd31b2af1b1",
+      "date": "2026-01-19 05:46:06 +0800",
+      "message": "Projects修改"
+    },
+    {
+      "hash": "ae3d96b2892d2ea1c853e88ca97da8baa9216111",
+      "date": "2026-01-16 08:42:07 +0800",
+      "message": "更新contributions逻辑"
+    }
+  ],
+  "timestamp": "2026-01-30T09:44:50.949Z"
+}
