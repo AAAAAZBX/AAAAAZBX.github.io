@@ -6,10 +6,10 @@ on:
     branches: [ main ]
   # 可以在 GitHub Actions 页面手动点运行
   workflow_dispatch:
-  # 每天 UTC 时间 00:00 自动触发构建，更新贡献图数据
-  # 对应北京时间 08:00（UTC+8）
+  # 每天北京时间 00:00 自动触发构建，更新贡献图数据
+  # 对应 UTC 时间 16:00（前一天）
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 16 * * *'
 
 # 这些权限是 GitHub Pages 必需的
 permissions:
