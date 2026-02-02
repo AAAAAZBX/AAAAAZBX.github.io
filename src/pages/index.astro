@@ -236,7 +236,7 @@ const clientSiteStartDate = profile.siteStartDate;
             <div class="contributions-legend">
               <span>Less</span>
               <div class="legend-squares">
-                <div class="legend-square" style="background-color: #ebedf0;"></div>
+                <div class="legend-square" style="background-color: #EFF2F5;"></div>
                 <div class="legend-square" style="background-color: #9be9a8;"></div>
                 <div class="legend-square" style="background-color: #40c463;"></div>
                 <div class="legend-square" style="background-color: #30a14e;"></div>
@@ -599,7 +599,7 @@ const clientSiteStartDate = profile.siteStartDate;
 
           // 如果该项为 null 或 undefined，创建一个空方块
           if (item === null || item === undefined) {
-            square.style.backgroundColor = '#ebedf0';
+            square.style.backgroundColor = '#EFF2F5';
             grid.appendChild(square);
             continue;
           }
@@ -609,7 +609,7 @@ const clientSiteStartDate = profile.siteStartDate;
 
           // 使用 GitHub 官方颜色方案
           if (count === 0) {
-            square.style.backgroundColor = '#ebedf0'; // 无贡献
+            square.style.backgroundColor = '#EFF2F5'; // 无贡献
           } else if (count <= 3) {
             square.style.backgroundColor = '#9be9a8'; // 1-3 贡献
           } else if (count <= 7) {
