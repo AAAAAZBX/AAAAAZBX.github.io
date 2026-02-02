@@ -1,3 +1,50 @@
+/* ======= 0. CSS 变量定义 (亮色/暗色模式) ======= */
+:root {
+  /* 亮色模式变量 */
+  --bg-primary: #f6f8fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f6f8fa;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --text-link: #0969da;
+  --text-link-hover: #0550ae;
+  --border-color: #d0d7de;
+  --border-light: rgba(208, 215, 222, 0.8);
+  --nav-bg: rgba(255, 255, 255, 0.6);
+  --code-bg: #f6f8fa;
+  --code-inline-bg: rgba(175, 184, 193, 0.2);
+  --table-bg: #fff;
+  --table-stripe-bg: #f6f8fa;
+  --table-header-bg: #f6f8fa;
+  --blockquote-border: #dfe2e5;
+  --blockquote-text: #6a737d;
+  --dropdown-bg: #fff;
+  --dropdown-hover-bg: #f6f8fa;
+}
+
+.dark {
+  /* 暗色模式变量 */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --text-link: #58a6ff;
+  --text-link-hover: #79c0ff;
+  --border-color: #30363d;
+  --border-light: rgba(48, 54, 61, 0.8);
+  --nav-bg: rgba(22, 27, 34, 0.8);
+  --code-bg: #161b22;
+  --code-inline-bg: rgba(110, 118, 129, 0.4);
+  --table-bg: #0d1117;
+  --table-stripe-bg: #161b22;
+  --table-header-bg: #161b22;
+  --blockquote-border: #30363d;
+  --blockquote-text: #8b949e;
+  --dropdown-bg: #161b22;
+  --dropdown-hover-bg: #21262d;
+}
+
 /* ======= 1. 全局基础重置 (部分修改) ======= */
 html {
   /* 确保 html 有足够高度，让 sticky 定位正常工作 */
@@ -8,8 +55,8 @@ html {
 body {
   margin: 0;
   font-family: "Noto Serif", "DejaVu Serif", serif !important;
-  background-color: #f6f8fa;
-  color: #24292f;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   line-height: 1.5;
   /* 确保 body 不阻止 sticky 定位 */
   overflow-x: hidden;
@@ -17,6 +64,7 @@ body {
   /* 确保 body 有足够高度，让 sticky 定位在页面底部也能正常工作 */
   min-height: 100vh;
   /* 移除 position: relative; 这里的 Canvas 不需要依赖 body 定位 */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* 确保所有元素继承字体 */
@@ -76,10 +124,10 @@ header {
 
 /* 滚动时的导航栏样式 */
 header.scrolled .nav {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--nav-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-color: rgba(208, 215, 222, 0.8);
+  border-color: var(--border-light);
   border-radius: 16px;
   /* sm:rounded-2xl */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -88,17 +136,11 @@ header.scrolled .nav {
   padding-right: 6px;
 }
 
-/* 暗色模式 */
-.dark header.scrolled .nav {
-  background: rgba(30, 30, 30, 0.6);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
 .nav {
-  max-width: 980px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 4px 24px;
-  /* 初始 padding 很小 */
+  padding: 4px 32px;
+  /* 初始 padding 增加 */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -106,7 +148,7 @@ header.scrolled .nav {
 }
 
 header.scrolled .nav {
-  padding: 6px 24px;
+  padding: 6px 32px;
   /* 滚动时稍微增加 padding */
 }
 
@@ -115,7 +157,7 @@ header.scrolled .nav {
   font-size: 1.25em;
   /* text-xl */
   text-decoration: none;
-  color: #24292f;
+  color: var(--text-primary);
   transition: margin-inline 0.3s ease;
   display: inline-block;
 }
@@ -136,22 +178,22 @@ header.scrolled .nav-left a {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 16px;
-  /* gap-x-4 = 1rem = 16px */
+  gap: 24px;
+  /* 增加间距让导航更分散 */
   transition: gap 0.3s ease;
 }
 
-/* 滚动时 gap 变小（参考 group-[.not-top]:gap-x-2） */
+/* 滚动时 gap 稍小但仍保持舒适 */
 header.scrolled .nav-links {
-  gap: 8px;
-  /* gap-x-2 = 0.5rem = 8px */
+  gap: 16px;
+  /* 保持合适的间距 */
 }
 
 .nav-links a {
-  padding: 8px 12px;
-  /* py-2 md:px-3 */
+  padding: 8px 4px;
+  /* 减少水平padding，让gap来控制间距 */
   text-decoration: none;
-  color: #57606a;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
   transition: color 0.2s ease;
@@ -159,7 +201,7 @@ header.scrolled .nav-links {
 }
 
 .nav-links a:hover {
-  color: #0969da;
+  color: var(--text-link);
   /* hover:text-primary */
 }
 
@@ -173,9 +215,9 @@ header.scrolled .nav-links {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 8px 4px;
   text-decoration: none;
-  color: #57606a;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
   transition: color 0.2s ease;
@@ -184,7 +226,7 @@ header.scrolled .nav-links {
 }
 
 .nav-dropdown-trigger:hover {
-  color: #0969da;
+  color: var(--text-link);
 }
 
 .nav-dropdown-trigger .dropdown-arrow {
@@ -201,8 +243,8 @@ header.scrolled .nav-links {
   top: 100%;
   left: 0;
   margin-top: 4px;
-  background: #fff;
-  border: 1px solid #d0d7de;
+  background: var(--dropdown-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   min-width: 120px;
@@ -224,7 +266,7 @@ header.scrolled .nav-links {
   display: block;
   padding: 8px 16px;
   text-decoration: none;
-  color: #57606a;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 400;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -232,40 +274,67 @@ header.scrolled .nav-links {
 }
 
 .nav-dropdown-item:hover {
-  background-color: #f6f8fa;
-  color: #0969da;
+  background-color: var(--dropdown-hover-bg);
+  color: var(--text-link);
 }
 
-/* 暗色模式下的下拉菜单 */
-.dark .nav-dropdown-menu {
-  background: #1e1e1e;
-  border-color: rgba(255, 255, 255, 0.1);
+/* 主题切换按钮样式 - 与语言切换按钮保持一致 */
+.theme-toggle {
+  padding: 0;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  margin-left: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-width: 36px;
+  height: 28px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
-.dark .nav-dropdown-item {
-  color: #e1e4e8;
+.theme-toggle:hover {
+  background: var(--dropdown-hover-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
 }
 
-.dark .nav-dropdown-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #58a6ff;
+.theme-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+.theme-icon {
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
 }
 
 /* 语言切换按钮样式 - 参考 axi 博客风格 */
 .lang-toggle {
   padding: 0;
   text-decoration: none;
-  color: #24292f;
+  color: var(--text-primary);
   font-size: 12px;
   font-weight: 500;
   transition: background-color 0.2s ease, border-color 0.2s ease;
   white-space: nowrap;
-  background: #f6f8fa;
-  border: 1px solid #d0d7de;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   cursor: pointer;
   font-family: inherit;
-  margin-left: 8px;
+  margin-left: 16px;
   display: inline-block;
   width: 80px;
   min-width: 80px;
@@ -279,20 +348,20 @@ header.scrolled .nav-links {
 }
 
 .lang-toggle:hover {
-  background: #f3f4f6;
-  border-color: #d0d7de;
-  color: #24292f;
+  background: var(--dropdown-hover-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
 }
 
 .lang-toggle:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
 }
 
 .lang-toggle .lang-icon {
   width: 14px;
   height: 14px;
-  color: #24292f;
+  color: var(--text-primary);
   position: absolute;
   left: 10px;
   top: 50%;
@@ -300,7 +369,7 @@ header.scrolled .nav-links {
 }
 
 .lang-toggle .lang-text {
-  color: #24292f;
+  color: var(--text-primary);
   font-weight: 500;
   display: inline-block;
   position: absolute;
@@ -336,7 +405,8 @@ header.scrolled .nav-links {
   padding: 0 24px;
   gap: 32px;
   align-items: flex-start;
-  overflow-x: visible !important; /* 确保目录的圆点可以超出边界显示 */
+  overflow-x: visible !important;
+  /* 确保目录的圆点可以超出边界显示 */
 }
 
 .article-content {
@@ -382,14 +452,15 @@ footer {
 
 /* ======= 4. Typora GitHub 风格文章容器 (仅用于文章内容) ======= */
 article.typora-github {
-  background: #ffffff;
-  border: 1px solid #d0d7de;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 48px;
   font-size: 16px;
   line-height: 1.6;
   word-wrap: break-word;
   /* 文章页不需要 max-width，因为它已经被 .content-wrapper 限制了 */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* 列表页的基础样式 */
@@ -401,7 +472,7 @@ article.typora-github {
 
 .list-description {
   margin-bottom: 24px;
-  color: #57606a;
+  color: var(--text-secondary);
 }
 
 .post-list {
@@ -417,12 +488,12 @@ article.typora-github {
 .post-list a {
   font-size: 1.1em;
   font-weight: 500;
-  color: #24292f;
+  color: var(--text-primary);
   text-decoration: none;
 }
 
 .post-list a:hover {
-  color: #0969da;
+  color: var(--text-link);
   text-decoration: underline;
 }
 
@@ -504,7 +575,7 @@ article.typora-github {
   font-weight: 400 !important;
   /* 确保标题加粗 */
   line-height: 1.25;
-  color: #24292f;
+  color: var(--text-primary);
   scroll-margin-top: 80px;
   /* 为固定导航栏留出空间 */
 }
@@ -605,7 +676,7 @@ article.typora-github a[href^="/"]:not([href^="#"]),
 .typora-github a[href^="https://"],
 .typora-github a[href^="//"],
 .typora-github a[href^="/"]:not([href^="#"]) {
-  color: #0969da !important;
+  color: var(--text-link) !important;
   /* 蓝色 */
   text-decoration: none !important;
   /* 无下划线 */
@@ -640,7 +711,7 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
 .typora-github a[href^="https://"]:hover,
 .typora-github a[href^="//"]:hover,
 .typora-github a[href^="/"]:not([href^="#"]):hover {
-  color: #0550ae !important;
+  color: var(--text-link-hover) !important;
   /* 悬停时稍深的蓝色 */
   text-decoration: none !important;
 }
@@ -663,8 +734,8 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
 .typora-github blockquote {
   margin: 0 0 16px;
   padding: 0 1em;
-  color: #6a737d;
-  border-left: 0.25em solid #dfe2e5;
+  color: var(--blockquote-text);
+  border-left: 0.25em solid var(--blockquote-border);
 }
 
 .typora-github blockquote> :first-child {
@@ -687,22 +758,22 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
 
 .typora-github table th {
   font-weight: 600;
-  background-color: #f6f8fa;
+  background-color: var(--table-header-bg);
 }
 
 .typora-github table th,
 .typora-github table td {
   padding: 6px 13px;
-  border: 1px solid #d0d7de;
+  border: 1px solid var(--border-color);
 }
 
 .typora-github table tr {
-  background-color: #fff;
-  border-top: 1px solid #d8dee4;
+  background-color: var(--table-bg);
+  border-top: 1px solid var(--border-color);
 }
 
 .typora-github table tr:nth-child(2n) {
-  background-color: #f6f8fa;
+  background-color: var(--table-stripe-bg);
 }
 
 .typora-github hr {
@@ -724,7 +795,7 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   margin: 0;
   font-size: 85%;
   font-family: "Droid Sans Mono", "DejaVu Sans Mono", monospace;
-  background-color: rgba(175, 184, 193, 0.2);
+  background-color: var(--code-inline-bg);
   border-radius: 6px;
 }
 
@@ -734,7 +805,7 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   overflow: auto;
   font-size: 85%;
   line-height: 1.45;
-  background-color: #f6f8fa;
+  background-color: var(--code-bg);
   border-radius: 6px;
   margin-bottom: 16px;
   font-family: "Droid Sans Mono", "DejaVu Sans Mono", "Menlo", monospace;
@@ -757,7 +828,7 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   overflow: auto;
   font-size: 85%;
   line-height: 1.45;
-  background-color: #f6f8fa;
+  background-color: var(--code-bg);
   border-radius: 6px;
   margin-bottom: 16px;
   font-family: "Droid Sans Mono", "DejaVu Sans Mono", "Menlo", monospace;
@@ -777,9 +848,9 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   right: 8px;
   padding: 4px 8px;
   font-size: 12px;
-  color: #57606a;
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid #d0d7de;
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   cursor: pointer;
   opacity: 0;
@@ -791,8 +862,8 @@ pre.astro-code:hover .code-copy {
 }
 
 .code-copy:hover {
-  background-color: #f3f4f6;
-  color: #0969da;
+  background-color: var(--dropdown-hover-bg);
+  color: var(--text-link);
 }
 
 pre.astro-code::before {

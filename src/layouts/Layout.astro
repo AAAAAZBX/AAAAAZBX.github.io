@@ -74,6 +74,16 @@ const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
     <meta charset="UTF-8" />
     <title>{title}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- 防止夜间模式闪烁的早期脚本 -->
+    <script is:inline>
+      (function() {
+        const theme = localStorage.getItem('preferred-theme') || 'light';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
 
     <!-- Favicon - 使用头像作为标签栏图标 -->
     <link rel="icon" type="image/png" href="/logo.png" />
@@ -257,6 +267,24 @@ const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
             <span class="lang-text" data-lang="en">中文</span>
             <span class="lang-text" data-lang="zh" style="display: none;">English</span>
           </button>
+          <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">
+            <!-- 太阳图标（亮色模式） -->
+            <svg class="theme-icon theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <!-- 月亮图标（暗色模式） -->
+            <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
         </nav>
       </div>
     </header>
@@ -267,6 +295,60 @@ const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        // 夜间模式切换功能
+        (function() {
+          // 从 localStorage 读取主题偏好，默认为亮色
+          const savedTheme = localStorage.getItem('preferred-theme') || 'light';
+          
+          function setTheme(theme) {
+            // 保存到 localStorage
+            localStorage.setItem('preferred-theme', theme);
+            
+            // 切换 body 的 dark 类
+            if (theme === 'dark') {
+              document.documentElement.classList.add('dark');
+              document.body.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+              document.body.classList.remove('dark');
+            }
+            
+            // 切换图标显示
+            const lightIcon = document.querySelector('.theme-icon-light');
+            const darkIcon = document.querySelector('.theme-icon-dark');
+            if (lightIcon && darkIcon) {
+              if (theme === 'dark') {
+                lightIcon.style.display = 'none';
+                darkIcon.style.display = '';
+              } else {
+                lightIcon.style.display = '';
+                darkIcon.style.display = 'none';
+              }
+            }
+          }
+          
+          // 初始化主题（在页面加载前执行，避免闪烁）
+          setTheme(savedTheme);
+          
+          // 主题切换按钮点击事件
+          const themeToggle = document.getElementById('theme-toggle');
+          if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+              const currentTheme = localStorage.getItem('preferred-theme') || 'light';
+              const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+              setTheme(newTheme);
+            });
+            
+            // 阻止空格键触发按钮点击（避免与小恐龙游戏冲突）
+            themeToggle.addEventListener('keydown', (e) => {
+              if (e.key === ' ' || e.keyCode === 32) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            });
+          }
+        })();
+        
         // 语言切换功能
         (function() {
           // 从 localStorage 读取语言偏好，默认为英文
@@ -299,6 +381,14 @@ const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
               const currentLang = localStorage.getItem('preferred-lang') || 'en';
               const newLang = currentLang === 'en' ? 'zh' : 'en';
               setLanguage(newLang);
+            });
+            
+            // 阻止空格键触发按钮点击（避免与小恐龙游戏冲突）
+            langToggle.addEventListener('keydown', (e) => {
+              if (e.key === ' ' || e.keyCode === 32) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
             });
           }
         })();

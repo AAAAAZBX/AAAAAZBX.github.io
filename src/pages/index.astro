@@ -741,7 +741,7 @@ const clientSiteStartDate = profile.siteStartDate;
       // originalSetArcadeMode.call(this);
     };
     
-    // 防止空格键滚动页面（桌面端和移动端）
+    // 防止空格键滚动页面和误触按钮（桌面端和移动端）
     // 只在游戏运行时阻止默认行为，但不阻止事件传播，让 Runner 能正常处理空格键
     document.addEventListener('keydown', function(e) {
       if (e.keyCode === 32 || e.key === ' ') {
@@ -750,6 +750,16 @@ const clientSiteStartDate = profile.siteStartDate;
           // 只阻止默认行为（滚动），但不阻止事件传播，让 Runner 能处理跳跃
           e.preventDefault();
           // 不调用 stopPropagation()，让事件继续传播到 Runner 的事件监听器
+          
+          // 移除所有按钮的焦点，防止空格键误触主题切换或语言切换按钮
+          const themeToggle = document.getElementById('theme-toggle');
+          const langToggle = document.getElementById('lang-toggle');
+          if (themeToggle && document.activeElement === themeToggle) {
+            themeToggle.blur();
+          }
+          if (langToggle && document.activeElement === langToggle) {
+            langToggle.blur();
+          }
         }
       }
     }, true); // 使用捕获阶段，确保在其他监听器之前执行
