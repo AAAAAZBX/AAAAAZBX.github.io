@@ -866,6 +866,13 @@ pre.astro-code:hover .code-copy {
   color: var(--text-link);
 }
 
+/* 评论区域 */
+.comment-section {
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border-color);
+}
+
 pre.astro-code::before {
   content: attr(data-language);
   position: absolute;

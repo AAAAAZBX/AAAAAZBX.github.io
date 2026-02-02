@@ -163,16 +163,16 @@
 }
 
 .tag-item.active {
-  background: var(--text-link);
+  background: var(--text-secondary);
   color: #ffffff;
-  border-color: var(--text-link);
+  border-color: var(--text-secondary);
   cursor: default;
 }
 
 .tag-item.active:hover {
-  background: var(--text-link);
+  background: var(--text-secondary);
   color: #ffffff;
-  border-color: var(--text-link);
+  border-color: var(--text-secondary);
 }
 
 /* 移动端适配 */
