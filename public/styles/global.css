@@ -416,7 +416,7 @@ footer {
   position: relative;
   /* 🌟 关键：提供定位上下文 */
   text-align: center;
-  padding: 40px 0 24px;
+  padding: 80px 0 24px;
   /* 顶部留出空间 */
   font-size: 12px;
   color: #57606a;

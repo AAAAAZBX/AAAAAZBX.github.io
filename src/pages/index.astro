@@ -819,31 +819,32 @@ const clientSiteStartDate = profile.siteStartDate;
         // 计算游戏顶部位置：确保游戏底部对齐地面线
         // 游戏容器底部应该对齐地面线，所以 gameTop = groundY - gameHeight
         let gameTop = groundY - gameHeight;
+        let adjustedForContributions = false;
         
         // 如果与 contributions 重合，调整位置
         if (contributionsBottom > 0) {
-          const minTop = contributionsBottom + 20; // 至少距离 20px
+          const minTop = contributionsBottom - 5; // 至少距离 20px
           if (gameTop < minTop) {
-            // 如果空间不足，调整游戏位置（向上移动）
             gameTop = minTop;
+            adjustedForContributions = true;
             // 重新计算游戏高度，确保底部不超过地面线
             const availableHeight = groundY - gameTop;
             if (availableHeight >= minGameHeight) {
               gameHeight = Math.min(availableHeight, maxGameHeight);
             } else {
-              // 如果空间真的不够，保持最小高度，但游戏可能会稍微超出地面线
+              // 空间不足时保持最小高度，但不重置 gameTop，保持在 contributions 下方
               gameHeight = minGameHeight;
-              gameTop = groundY - gameHeight;
             }
           }
         }
         
-        // 确保游戏底部不超过地面线太多（允许稍微超出，但不超过 10px）
-        const gameBottom = gameTop + gameHeight;
-        if (gameBottom > groundY + 10) {
-          // 如果超出太多，调整游戏位置
-          gameTop = groundY - gameHeight;
-          if (gameTop < 0) gameTop = 0;
+        // 仅在未因 contributions 调整时，才做底部越界修正
+        if (!adjustedForContributions) {
+          const gameBottom = gameTop + gameHeight;
+          if (gameBottom > groundY + 10) {
+            gameTop = groundY - gameHeight;
+            if (gameTop < 0) gameTop = 0;
+          }
         }
         
         // 设置全宽地面线的位置：对齐 footer 的 border-top
