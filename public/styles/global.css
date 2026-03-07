@@ -49,12 +49,11 @@
 html {
   /* 确保 html 有足够高度，让 sticky 定位正常工作 */
   min-height: 100%;
-  font-family: "Noto Serif", "DejaVu Serif", serif;
 }
 
 body {
   margin: 0;
-  font-family: "Noto Serif", "DejaVu Serif", serif !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
@@ -65,11 +64,6 @@ body {
   min-height: 100vh;
   /* 移除 position: relative; 这里的 Canvas 不需要依赖 body 定位 */
   transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* 确保所有元素继承字体 */
-* {
-  font-family: inherit;
 }
 
 /* ======= 2. 导航栏样式 (完全参考 axi404.top) ======= */
@@ -571,8 +565,7 @@ article.typora-github {
 .typora-github h6 {
   margin-top: 24px;
   margin-bottom: 16px;
-  font-family: "Open Sans", "DejaVu Sans", sans-serif;
-  font-weight: 400 !important;
+  font-weight: 600 !important;
   /* 确保标题加粗 */
   line-height: 1.25;
   color: var(--text-primary);
@@ -794,7 +787,7 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   padding: 0.2em 0.4em;
   margin: 0;
   font-size: 85%;
-  font-family: "Droid Sans Mono", "DejaVu Sans Mono", monospace;
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
   background-color: var(--code-inline-bg);
   border-radius: 6px;
 }
@@ -808,7 +801,7 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   background-color: var(--code-bg);
   border-radius: 6px;
   margin-bottom: 16px;
-  font-family: "Droid Sans Mono", "DejaVu Sans Mono", "Menlo", monospace;
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 }
 
 .typora-github pre code {
@@ -831,7 +824,7 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   background-color: var(--code-bg);
   border-radius: 6px;
   margin-bottom: 16px;
-  font-family: "Droid Sans Mono", "DejaVu Sans Mono", "Menlo", monospace;
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 }
 
 .typora-github pre.astro-code code {
