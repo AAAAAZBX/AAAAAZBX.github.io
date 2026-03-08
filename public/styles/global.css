@@ -314,9 +314,9 @@ header.scrolled .nav-links {
   flex-shrink: 0;
 }
 
-/* 语言切换按钮样式 - 参考 axi 博客风格 */
+/* 语言切换按钮样式 - 根据文字内容自适应宽度（中文时窄、English 时宽） */
 .lang-toggle {
-  padding: 0;
+  padding: 0 10px;
   text-decoration: none;
   color: var(--text-primary);
   font-size: 12px;
@@ -329,15 +329,14 @@ header.scrolled .nav-links {
   cursor: pointer;
   font-family: inherit;
   margin-left: 16px;
-  display: inline-block;
-  width: 80px;
-  min-width: 80px;
-  max-width: 80px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  width: min-content;
+  min-width: min-content;
   box-sizing: border-box;
   flex-shrink: 0;
-  height: 28px;
-  position: relative;
-  overflow: hidden;
   vertical-align: middle;
 }
 
@@ -355,26 +354,15 @@ header.scrolled .nav-links {
 .lang-toggle .lang-icon {
   width: 14px;
   height: 14px;
+  flex-shrink: 0;
   color: var(--text-primary);
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
 }
 
 .lang-toggle .lang-text {
   color: var(--text-primary);
   font-weight: 500;
-  display: inline-block;
-  position: absolute;
-  left: 29px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 46px;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
   font-size: 12px;
+  flex-shrink: 0;
 }
 
 /* 移除当前页面链接的背景高亮，只保留悬停效果 */
