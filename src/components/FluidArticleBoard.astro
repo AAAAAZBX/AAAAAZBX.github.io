@@ -19,9 +19,7 @@ const { seoTitle } = Astro.props;
         <div id="board">
           <article class="post-content mx-auto">
             <h1 id="seo-header">{seoTitle}</h1>
-            <div class="markdown-body">
-              <slot />
-            </div>
+            <div class="markdown-body"><slot /></div>
             <slot name="after" />
           </article>
         </div>

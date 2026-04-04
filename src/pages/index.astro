@@ -160,9 +160,67 @@ const recentPosts = merged.slice(0, 24);
       }
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", fluidHeroTyping);
-          } else {
+      } else {
         fluidHeroTyping();
       }
-  })();
-</script>
+
+      function fluidHeroParallax() {
+        var hero = document.querySelector(".fluid-index-header-inner");
+        var bg = document.querySelector(".fluid-banner.fluid-banner-photo-mode .fluid-banner-bg");
+        if (!hero || !bg) return;
+
+        var ticking = false;
+        function update() {
+          var top = window.pageYOffset || document.documentElement.scrollTop || 0;
+          var heroH = hero.clientHeight || 1;
+          var progress = Math.min(Math.max(top / heroH, 0), 1);
+          var y = Math.round(top * 0.28);
+          var scale = (1 + progress * 0.04).toFixed(3);
+          bg.style.transform = "translate3d(0," + y + "px,0) scale(" + scale + ")";
+          ticking = false;
+        }
+
+        function requestUpdate() {
+          if (!ticking) {
+            window.requestAnimationFrame(update);
+            ticking = true;
+          }
+        }
+
+        window.addEventListener("scroll", requestUpdate, { passive: true });
+        window.addEventListener("resize", requestUpdate);
+        update();
+      }
+
+      function fluidBoardLift() {
+        var hero = document.querySelector(".fluid-index-header-inner");
+        var board = document.querySelector("#board.fluid-board-home");
+        if (!hero || !board) return;
+
+        var ticking = false;
+        function update() {
+          var top = window.pageYOffset || document.documentElement.scrollTop || 0;
+          var heroH = hero.clientHeight || 1;
+          var progress = Math.min(Math.max(top / (heroH * 0.9), 0), 1);
+          var lift = Math.round(progress * 76);
+          board.style.transform = "translate3d(0," + (-lift) + "px,0)";
+          ticking = false;
+        }
+
+        function requestUpdate() {
+          if (!ticking) {
+            window.requestAnimationFrame(update);
+            ticking = true;
+          }
+        }
+
+        window.addEventListener("scroll", requestUpdate, { passive: true });
+        window.addEventListener("resize", requestUpdate);
+        update();
+      }
+
+      fluidHeroParallax();
+      fluidBoardLift();
+    })();
+  </script>
 </Layout>
