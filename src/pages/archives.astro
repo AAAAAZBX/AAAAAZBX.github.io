@@ -1,0 +1,151 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getMergedPosts } from "../lib/content-posts";
+
+const merged = await getMergedPosts();
+
+function formatDateMd(dateString: string | undefined): string {
+  if (!dateString) return "";
+  const d = new Date(dateString);
+  if (Number.isNaN(d.getTime())) return "";
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${m}-${day}`;
+}
+
+/** 按年份分组（新在前）；无日期的归入单独一组 */
+const undated: typeof merged = [];
+const byYear = new Map<number, typeof merged>();
+for (const p of merged) {
+  if (!p.date) {
+    undated.push(p);
+    continue;
+  }
+  const d = new Date(p.date);
+  if (Number.isNaN(d.getTime())) {
+    undated.push(p);
+    continue;
+  }
+  const y = d.getFullYear();
+  if (!byYear.has(y)) byYear.set(y, []);
+  byYear.get(y)!.push(p);
+}
+
+const yearsDesc = Array.from(byYear.keys()).sort((a, b) => b - a);
+
+const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
+const bannerTypedText = "Archives";
+---
+
+<Layout title="Archives — Boxuan Zhang" overlayNav>
+  <div class="fluid-index-header-inner fluid-header-inner-compact">
+    <div
+      id="banner"
+      class="fluid-banner"
+      style={{
+        backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
+      }}
+    >
+      <div class="fluid-banner-inner">
+        <div class="fluid-banner-mask">
+          <div class="fluid-banner-text">
+            <h1 class="fluid-banner-title" lang="en" aria-label={bannerTypedText}>
+              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}></span>
+            </h1>
+          </div>
+          <a
+            href="#fluid-board"
+            class="fluid-scroll-down"
+            aria-label="Scroll to archives"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main id="fluid-board" class="fluid-index-main fluid-board-page fluid-archives-main">
+    <div class="fluid-container fluid-nopadding-x-md">
+      <div id="board" class="fluid-board-surface">
+        <div class="fluid-container">
+          <div class="fluid-row">
+            <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
+              <div class="fluid-list-group list-group">
+                <p class="fluid-archives-stat">
+                  {merged.length} post{merged.length === 1 ? "" : "s"} in total
+                </p>
+                <hr class="fluid-list-hr" />
+
+                {yearsDesc.map((year) => (
+                  <>
+                    <p class="fluid-archives-year fluid-archives-year-heading" id={`y-${year}`}>{year}</p>
+                    {byYear.get(year)!.map((p) => (
+                      <a class="fluid-list-group-item list-group-item-action" href={p.href}>
+                        <time datetime={p.date ?? ""}>{formatDateMd(p.date)}</time>
+                        <div class="list-group-item-title">{p.title}</div>
+                      </a>
+                    ))}
+                  </>
+                ))}
+
+                {undated.length > 0 && (
+                  <>
+                    <p class="fluid-archives-year fluid-archives-year-heading" id="y-undated">Undated</p>
+                    {undated.map((p) => (
+                      <a class="fluid-list-group-item list-group-item-action" href={p.href}>
+                        <time datetime={p.date ?? ""}>—</time>
+                        <div class="list-group-item-title">{p.title}</div>
+                      </a>
+                    ))}
+                  </>
+                )}
+
+                {merged.length === 0 && <p class="fluid-archives-empty">No posts yet.</p>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
+  <script is:inline>
+    (function () {
+      function fluidHeroTyping() {
+        if (typeof window.Typed === "undefined") return;
+        var el = document.getElementById("fluid-hero-typed");
+        if (!el) return;
+        var text = el.getAttribute("data-typed-text");
+        if (!text) return;
+        el.textContent = "";
+        new window.Typed("#fluid-hero-typed", {
+          strings: ["  ", text],
+          typeSpeed: 50,
+          cursorChar: "_",
+          loop: false,
+          showCursor: true,
+        });
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", fluidHeroTyping);
+      } else {
+        fluidHeroTyping();
+      }
+    })();
+  </script>
+</Layout>

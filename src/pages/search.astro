@@ -2,11 +2,11 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="搜索">
+<Layout title="Search">
   <main style="max-width: 980px; margin: 0 auto; padding: 48px 16px;">
     <div style="margin-bottom: 24px;">
-      <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 16px;">搜索</h1>
-      <p style="color: #57606a; margin-bottom: 24px;">输入关键词搜索博客文章</p>
+      <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 16px;">Search</h1>
+      <p style="color: var(--text-secondary); margin-bottom: 24px;">Search posts by keyword.</p>
     </div>
     
     <div id="search"></div>
@@ -24,11 +24,11 @@ import Layout from "../layouts/Layout.astro";
         <input 
           type="text" 
           id="search-input" 
-          placeholder="搜索文章..." 
+          placeholder="Search posts…" 
           style="width: 100%; padding: 12px 16px; font-size: 16px; border: 1px solid #d0d7de; border-radius: 6px; outline: none; transition: border-color 0.2s;"
         />
       </div>
-      <div id="search-status" style="color: #57606a; padding: 16px; text-align: center; font-size: 14px;">正在加载搜索功能...</div>
+      <div id="search-status" style="color: #57606a; padding: 16px; text-align: center; font-size: 14px;">Loading search…</div>
       <div id="search-results"></div>
     `;
     
@@ -66,7 +66,7 @@ import Layout from "../layouts/Layout.astro";
           stack: importError.stack,
           name: importError.name
         });
-        throw new Error("无法加载 Pagefind 文件。请确保已运行 npm run build 生成搜索索引。错误: " + importError.message);
+        throw new Error("Could not load Pagefind. Run npm run build to generate the search index. " + importError.message);
       }
       
       // 检查是否有 init 和 search 函数
@@ -114,7 +114,7 @@ import Layout from "../layouts/Layout.astro";
         
         if (statusContainer) {
           statusContainer.style.display = "block";
-          statusContainer.textContent = "搜索中...";
+          statusContainer.textContent = "Searching…";
         }
         
         searchTimeout = setTimeout(async () => {
@@ -163,7 +163,7 @@ import Layout from "../layouts/Layout.astro";
                 // 主页的特征：URL 是 / 或 /index
                 const isHomePage = normalizedUrl === '/' || normalizedUrl === '/index';
                 // 目录页面的特征：URL 是 /research/, /learning/, /algorithms/, /travel/ 等，且没有子路径
-                const isDirectoryPage = /^\/(research|learning|algorithms|travel|projects)\/?$/.test(normalizedUrl);
+                const isDirectoryPage = /^\/(research|learning|algorithms|travel)\/?$/.test(normalizedUrl);
                 if (isHomePage || isDirectoryPage) {
                   return null; // 返回 null，后续过滤掉
                 }
@@ -305,7 +305,7 @@ import Layout from "../layouts/Layout.astro";
             
             if (statusContainer) {
               statusContainer.style.display = "block";
-              statusContainer.innerHTML = `<span style="color: #d1242f;">搜索出错：${error.message || '未知错误'}。请检查控制台获取详细信息。</span>`;
+              statusContainer.innerHTML = `<span style="color: #d1242f;">Search error: ${error.message || "Unknown error"}. See the browser console for details.</span>`;
             }
             if (resultsContainer) {
               resultsContainer.innerHTML = "";
@@ -322,22 +322,22 @@ import Layout from "../layouts/Layout.astro";
       const isPreview = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       
       if (statusContainer) {
-        let errorMessage = "搜索功能暂不可用";
+        let errorMessage = "Search is unavailable";
         let errorDetails = "";
         
-        if (error.message.includes("无法加载 Pagefind 文件")) {
+        if (error.message.includes("Could not load Pagefind")) {
           errorDetails = `
-            <p style="margin: 0 0 8px 0; color: #57606a; font-size: 14px;">Pagefind 文件未找到。请确保：</p>
+            <p style="margin: 0 0 8px 0; color: #57606a; font-size: 14px;">Pagefind assets were not found. Make sure that:</p>
             <ol style="margin: 8px 0 0 0; padding-left: 20px; color: #57606a; font-size: 14px; line-height: 1.8;">
-              <li>已运行 <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run build</code></li>
-              <li>构建成功生成了 <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">dist/pagefind</code> 目录</li>
-              <li>正在使用 <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run preview</code> 预览（不是 <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run dev</code>）</li>
+              <li>You ran <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run build</code></li>
+              <li>The build produced <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">dist/pagefind</code></li>
+              <li>You are using <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run preview</code> (not <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run dev</code>) to test search</li>
             </ol>
           `;
         } else {
           errorDetails = `
-            <p style="margin: 0 0 8px 0; color: #57606a; font-size: 14px;">错误详情：${escapeHtml(error.message)}</p>
-            <p style="margin: 8px 0 0 0; color: #57606a; font-size: 13px;">请打开浏览器控制台（F12）查看详细错误信息。</p>
+            <p style="margin: 0 0 8px 0; color: #57606a; font-size: 14px;">Details: ${escapeHtml(error.message)}</p>
+            <p style="margin: 8px 0 0 0; color: #57606a; font-size: 13px;">Open the browser console (F12) for more information.</p>
           `;
         }
         
@@ -345,14 +345,13 @@ import Layout from "../layouts/Layout.astro";
           <div style="padding: 24px; background: #fff4e6; border: 1px solid #ffd89b; border-radius: 6px;">
             <p style="margin: 0 0 12px 0; color: #d1242f; font-weight: 500;">${errorMessage}</p>
             ${errorDetails}
-            ${isPreview ? '<p style="margin: 12px 0 0 0; color: #57606a; font-size: 13px;">当前运行在预览模式，这是正确的。如果问题持续，请检查控制台错误信息。</p>' : ''}
+            ${isPreview ? '<p style="margin: 12px 0 0 0; color: #57606a; font-size: 13px;">You are on localhost preview; if issues persist, check the console.</p>' : ''}
           </div>
         `;
       }
-      // 禁用搜索输入框
       if (searchInput) {
         searchInput.disabled = true;
-        searchInput.placeholder = "搜索功能需要先构建网站";
+        searchInput.placeholder = "Build the site to enable search";
         searchInput.style.backgroundColor = "#f6f8fa";
         searchInput.style.cursor = "not-allowed";
       }
@@ -367,7 +366,7 @@ import Layout from "../layouts/Layout.astro";
     if (!container) return;
     
     if (!results || !results.results || results.results.length === 0) {
-      container.innerHTML = `<p style="color: #57606a; padding: 24px; text-align: center;">未找到相关文章</p>`;
+      container.innerHTML = `<p style="color: #57606a; padding: 24px; text-align: center;">No matching posts.</p>`;
       return;
     }
     

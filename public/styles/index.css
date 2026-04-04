@@ -38,11 +38,11 @@ aside.sidebar {
   text-align: left !important;
   position: sticky !important;
   /* 固定定位，滚动时保持在视口中 */
-  top: 80px !important;
-  /* 距离顶部 80px（为导航栏留出空间） */
+  top: var(--sticky-top-offset) !important;
+  /* 与全宽顶栏高度对齐 */
   align-self: flex-start !important;
   /* 与 flex 容器顶部对齐 */
-  max-height: calc(100vh - 100px) !important;
+  max-height: calc(100vh - var(--sticky-top-offset) - 32px) !important;
   /* 最大高度为视口高度减去顶部空间 */
   overflow-y: auto !important;
   /* 如果内容超出，允许垂直滚动 */

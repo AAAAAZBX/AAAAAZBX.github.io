@@ -1,0 +1,127 @@
+---
+import type { CatPathNode } from "../lib/category-tree";
+import { totalInSubtree } from "../lib/category-tree";
+import CategoryPathTree from "./CategoryPathTree.astro";
+
+function collapseIdFromPath(pathKey: string): string {
+  return (
+    "collapse-" +
+    pathKey.replace(/\//g, "--").replace(/[^a-zA-Z0-9\u4e00-\u9fff_-]/g, "-")
+  );
+}
+
+interface Props {
+  node: CatPathNode;
+  /** 0 = 集合虚拟根（无名称）；≥1 时为具名文件夹，渲染为 Fluid collapse 行 */
+  depth?: number;
+}
+
+const { node, depth = 0 } = Astro.props;
+
+const isVirtualRoot = depth === 0 && !node.name;
+const nestCollapseId = !isVirtualRoot ? collapseIdFromPath(node.pathKey) : "";
+const nestRowClass = !isVirtualRoot
+  ? depth === 1
+    ? "category"
+    : "category-sub"
+  : "";
+const nestItemClass = !isVirtualRoot
+  ? depth === 1
+    ? "category-item"
+    : "category-subitem"
+  : "";
+---
+
+{
+  isVirtualRoot ? (
+    <>
+      {node.posts.length > 0 ? (
+        <div class="category-post-list">
+          {node.posts.map((p) => (
+            <a
+              href={p.href}
+              class="list-group-item list-group-item-action"
+              title={p.title}
+            >
+              <span class="category-post">{p.title}</span>
+            </a>
+          ))}
+        </div>
+      ) : null}
+      <div class="cat-nested-roots">
+        {node.children.map((c) => (
+          <CategoryPathTree node={c} depth={1} />
+        ))}
+      </div>
+    </>
+  ) : (
+    <div class:list={[nestRowClass, "row", "nomargin-x"]}>
+      <a
+        class:list={[
+          nestItemClass,
+          "list-group-item",
+          "category-item-action",
+          "col-10",
+          "col-md-11",
+          "col-xm-11",
+          "collapsed",
+        ]}
+        id={`heading-${nestCollapseId}`}
+        role="tab"
+        data-toggle="collapse"
+        href={`#${nestCollapseId}`}
+        aria-expanded="false"
+        aria-controls={nestCollapseId}
+      >
+        {node.name}
+        <span class="list-group-count"></span>
+        <i class="iconfont icon-arrowright" aria-hidden="true" />
+      </a>
+      <span class="category-count col-2 col-md-1 col-xm-1">
+        <i class="iconfont icon-articles" aria-hidden="true" />
+        <span>{totalInSubtree(node)}</span>
+      </span>
+      <div
+        class="category-collapse collapse w-100"
+        id={nestCollapseId}
+        role="tabpanel"
+        aria-labelledby={`heading-${nestCollapseId}`}
+      >
+        {node.posts.length > 0 ? (
+          <div class="category-post-list">
+            {node.posts.map((p) => (
+              <a
+                href={p.href}
+                class="list-group-item list-group-item-action"
+                title={p.title}
+              >
+                <span class="category-post">{p.title}</span>
+              </a>
+            ))}
+          </div>
+        ) : null}
+        {node.children.map((c) => (
+          <CategoryPathTree node={c} depth={depth + 1} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+<style>
+  .cat-nested-roots {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .cat-nested-roots > :global(.category),
+  .cat-nested-roots > :global(.category-sub) {
+    margin-top: 0.2rem;
+  }
+
+  .cat-nested-roots > :global(.category:first-child),
+  .cat-nested-roots > :global(.category-sub:first-child) {
+    margin-top: 0;
+  }
+</style>

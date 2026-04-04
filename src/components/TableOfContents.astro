@@ -181,8 +181,8 @@
   /* 容器样式 */
   #toc-container.toc-container {
     position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 100px);
+    top: var(--sticky-top-offset);
+    max-height: calc(100vh - var(--sticky-top-offset) - 32px);
     overflow-y: auto;
     overflow-x: visible !important; /* 强制 visible，让圆点可以超出容器边界显示 */
     margin-right: 32px;

@@ -1,16 +1,33 @@
 /* ======= 0. CSS 变量定义 (亮色/暗色模式) ======= */
 :root {
-  /* 亮色模式变量 */
-  --bg-primary: #f6f8fa;
+  /*
+   * 正文字体栈：与 lynx-li.github.io 一致（先加载 Bootstrap 4.6.1，再加载 Fluid main.css）。
+   * 摘自 https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.css 根变量 --font-family-sans-serif
+   */
+  --font-family-sans-serif:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+  --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* 全宽顶栏占位：侧栏 sticky / 标题 scroll-margin 与 Fluid 顶栏高度对齐 */
+  --sticky-top-offset: 64px;
+  /* 亮色模式变量（参照 zhenglinblog.top / Hexo Fluid：白底 + 深蓝灰导航栏） */
+  --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f6f8fa;
+  --bg-tertiary: #f0f2f5;
   --text-primary: #24292f;
   --text-secondary: #57606a;
   --text-link: #0969da;
   --text-link-hover: #0550ae;
   --border-color: #d0d7de;
   --border-light: rgba(208, 215, 222, 0.8);
-  --nav-bg: rgba(255, 255, 255, 0.6);
+  --nav-bg: #2f4154;
+  --nav-text: #ffffff;
+  --nav-text-secondary: rgba(255, 255, 255, 0.82);
+  --nav-border: rgba(255, 255, 255, 0.14);
+  --nav-control-bg: rgba(255, 255, 255, 0.12);
+  --nav-control-border: rgba(255, 255, 255, 0.22);
   --code-bg: #f6f8fa;
   --code-inline-bg: rgba(175, 184, 193, 0.2);
   --table-bg: #fff;
@@ -20,21 +37,34 @@
   --blockquote-text: #6a737d;
   --dropdown-bg: #fff;
   --dropdown-hover-bg: #f6f8fa;
+  /* Hexo Fluid 列表/正文色（public/lynx-li.github.io/css/main.css :root） */
+  --fluid-text-color: #3c4858;
+  --fluid-sec-text-color: #718096;
+  --fluid-post-text-color: #2c3e50;
+  --fluid-post-heading-color: #1a202c;
+  --fluid-link-hover-color: #30a9de;
+  --fluid-link-hover-bg-color: #f8f9fa;
+  --fluid-line-color: #eaecef;
 }
 
 .dark {
-  /* 暗色模式变量 */
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-tertiary: #21262d;
-  --text-primary: #c9d1d9;
-  --text-secondary: #8b949e;
-  --text-link: #58a6ff;
-  --text-link-hover: #79c0ff;
-  --border-color: #30363d;
-  --border-light: rgba(48, 54, 61, 0.8);
-  --nav-bg: rgba(22, 27, 34, 0.8);
-  --code-bg: #161b22;
+  /* 暗色模式变量（与参考站 Fluid 暗色 board / navbar 一致） */
+  --bg-primary: #252d38;
+  --bg-secondary: #2c3544;
+  --bg-tertiary: #1f3144;
+  --text-primary: #d0d0d0;
+  --text-secondary: #9aa4b2;
+  --text-link: #6cb6ff;
+  --text-link-hover: #96ccff;
+  --border-color: #3d4758;
+  --border-light: rgba(255, 255, 255, 0.08);
+  --nav-bg: #1f3144;
+  --nav-text: #d0d0d0;
+  --nav-text-secondary: rgba(208, 208, 208, 0.82);
+  --nav-border: rgba(255, 255, 255, 0.1);
+  --nav-control-bg: rgba(255, 255, 255, 0.08);
+  --nav-control-border: rgba(255, 255, 255, 0.16);
+  --code-bg: #1a2332;
   --code-inline-bg: rgba(110, 118, 129, 0.4);
   --table-bg: #0d1117;
   --table-stripe-bg: #161b22;
@@ -43,107 +73,89 @@
   --blockquote-text: #8b949e;
   --dropdown-bg: #161b22;
   --dropdown-hover-bg: #21262d;
+  --fluid-text-color: #c4c6c9;
+  --fluid-sec-text-color: #a7a9ad;
+  --fluid-post-text-color: #c4c6c9;
+  --fluid-post-heading-color: #c4c6c9;
+  --fluid-link-hover-color: #30a9de;
+  --fluid-link-hover-bg-color: #364151;
+  --fluid-line-color: #435266;
 }
 
 /* ======= 1. 全局基础重置 (部分修改) ======= */
+/* Fluid public/lynx-li.github.io/css/main.css html, body */
 html {
-  /* 确保 html 有足够高度，让 sticky 定位正常工作 */
   min-height: 100%;
+  font-size: 16px;
+  letter-spacing: 0.02em;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: var(--font-family-sans-serif);
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
-  /* 确保 body 不阻止 sticky 定位 */
   overflow-x: hidden;
   overflow-y: visible;
-  /* 确保 body 有足够高度，让 sticky 定位在页面底部也能正常工作 */
   min-height: 100vh;
-  /* 移除 position: relative; 这里的 Canvas 不需要依赖 body 定位 */
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* ======= 2. 导航栏样式 (完全参考 axi404.top) ======= */
+/* Fluid main.css i.iconfont — 与主题 icon 尺寸一致 */
+i.iconfont {
+  font-size: 1em;
+  line-height: 1;
+}
+
+/* ======= 2. 导航栏样式（形状对齐 Hexo Fluid：viewport 全宽顶栏 + 内层 container） ======= */
 header {
   position: sticky;
-  top: 16px;
-  /* top-4 = 1rem = 16px */
+  top: 0;
   z-index: 100;
-  margin-bottom: 48px;
-  /* mb-12 = 3rem = 48px */
-  padding: 0 16px;
-  /* px-4 = 1rem = 16px */
-  max-width: 1120px;
-  /* max-w-[70rem] = 70 * 16px = 1120px */
-  margin-left: auto;
-  margin-right: auto;
-  /* 确保 header 在页面底部也能正常显示 */
+  width: 100%;
+  max-width: none;
+  margin: 0 0 32px;
+  padding: 0;
   align-self: start;
-}
-
-@media (min-width: 640px) {
-  header {
-    padding: 0 28px;
-    /* sm:px-7 = 1.75rem = 28px */
-  }
-}
-
-@media (min-width: 1024px) {
-  header {
-    padding: 0 40px;
-    /* lg:px-10 = 2.5rem = 40px */
-  }
+  box-sizing: border-box;
 }
 
 .nav {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 4px 24px;
-  /* 初始 padding 很小 */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  /* rounded-xl */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: none;
-}
-
-/* 滚动时的导航栏样式 */
-header.scrolled .nav {
+  width: 100%;
+  margin: 0;
+  padding: 12px 0;
+  box-sizing: border-box;
   background: var(--nav-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-color: var(--border-light);
-  border-radius: 16px;
-  /* sm:rounded-2xl */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  padding-left: 6px;
-  /* [&.not-top]:px-1.5 = 0.375rem = 6px */
-  padding-right: 6px;
+  border: none;
+  border-bottom: 1px solid var(--nav-border);
+  border-radius: 0;
+  transition: box-shadow 0.35s ease, padding 0.35s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.nav {
-  max-width: 1100px;
+/* Fluid：滚动后顶栏纵向压缩 */
+header.scrolled .nav {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.nav-inner {
+  max-width: 1140px;
   margin: 0 auto;
-  padding: 4px 32px;
-  /* 初始 padding 增加 */
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-header.scrolled .nav {
-  padding: 6px 32px;
-  /* 滚动时稍微增加 padding */
+  box-sizing: border-box;
+  padding: 0 clamp(16px, 4vw, 48px);
+  gap: 16px;
 }
 
 .nav-left a {
@@ -151,22 +163,13 @@ header.scrolled .nav {
   font-size: 1.25em;
   /* text-xl */
   text-decoration: none;
-  color: var(--text-primary);
-  transition: margin-inline 0.3s ease;
+  color: var(--nav-text);
+  transition: margin-inline 0.3s ease, color 0.2s ease, opacity 0.2s ease;
   display: inline-block;
 }
 
-/* 滚动时 Logo 左边距增加（参考 group-[.not-top]:ms-2 sm:group-[.not-top]:ms-3） */
-header.scrolled .nav-left a {
-  margin-left: 8px;
-  /* ms-2 = 0.5rem = 8px */
-}
-
-@media (min-width: 640px) {
-  header.scrolled .nav-left a {
-    margin-left: 12px;
-    /* sm:ms-3 = 0.75rem = 12px */
-  }
+.nav-left a:hover {
+  opacity: 0.92;
 }
 
 .nav-links {
@@ -187,7 +190,7 @@ header.scrolled .nav-links {
   padding: 8px 4px;
   /* 减少水平padding，让gap来控制间距 */
   text-decoration: none;
-  color: var(--text-secondary);
+  color: var(--nav-text-secondary);
   font-size: 14px;
   font-weight: 500;
   transition: color 0.2s ease;
@@ -195,98 +198,55 @@ header.scrolled .nav-links {
 }
 
 .nav-links a:hover {
-  color: var(--text-link);
-  /* hover:text-primary */
+  color: var(--nav-text);
 }
 
-/* 下拉菜单样式 */
-.nav-dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.nav-dropdown-trigger {
+.nav-links a.nav-link-iconed {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 4px;
+  gap: 6px;
+}
+
+.nav-links a.nav-link-iconed .iconfont {
+  font-size: 15px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.nav-search-link .iconfont {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.nav-search-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
   text-decoration: none;
-  color: var(--text-secondary);
-  font-size: 14px;
-  font-weight: 500;
+  color: var(--nav-text-secondary);
   transition: color 0.2s ease;
-  white-space: nowrap;
-  cursor: pointer;
 }
 
-.nav-dropdown-trigger:hover {
-  color: var(--text-link);
-}
-
-.nav-dropdown-trigger .dropdown-arrow {
-  transition: transform 0.2s ease;
-  margin-left: 2px;
-}
-
-.nav-dropdown:hover .dropdown-arrow {
-  transform: rotate(180deg);
-}
-
-.nav-dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 4px;
-  background: var(--dropdown-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 120px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-8px);
-  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
-  z-index: 1000;
-  padding: 4px 0;
-}
-
-.nav-dropdown:hover .nav-dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.nav-dropdown-item {
-  display: block;
-  padding: 8px 16px;
-  text-decoration: none;
-  color: var(--text-secondary);
-  font-size: 14px;
-  font-weight: 400;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  white-space: nowrap;
-}
-
-.nav-dropdown-item:hover {
-  background-color: var(--dropdown-hover-bg);
-  color: var(--text-link);
+.nav-search-link:hover {
+  color: var(--nav-text);
 }
 
 /* 主题切换按钮样式 - 与语言切换按钮保持一致 */
 .theme-toggle {
   padding: 0;
   text-decoration: none;
-  color: var(--text-primary);
+  color: var(--nav-text);
   font-size: 12px;
   font-weight: 500;
   transition: background-color 0.2s ease, border-color 0.2s ease;
   white-space: nowrap;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: var(--nav-control-bg);
+  border: 1px solid var(--nav-control-border);
   border-radius: 12px;
   cursor: pointer;
   font-family: inherit;
-  margin-left: 12px;
+  margin-left: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -299,69 +259,22 @@ header.scrolled .nav-links {
 }
 
 .theme-toggle:hover {
-  background: var(--dropdown-hover-bg);
-  border-color: var(--border-color);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: var(--nav-control-border);
+  color: var(--nav-text);
+}
+
+.dark .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .theme-toggle:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
 }
 
 .theme-icon {
   transition: opacity 0.2s ease;
-  flex-shrink: 0;
-}
-
-/* 语言切换按钮样式 - 根据文字内容自适应宽度（中文时窄、English 时宽） */
-.lang-toggle {
-  padding: 0 10px;
-  text-decoration: none;
-  color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 500;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-  white-space: nowrap;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  cursor: pointer;
-  font-family: inherit;
-  margin-left: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  width: min-content;
-  min-width: min-content;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  vertical-align: middle;
-}
-
-.lang-toggle:hover {
-  background: var(--dropdown-hover-bg);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-.lang-toggle:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
-}
-
-.lang-toggle .lang-icon {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  color: var(--text-primary);
-}
-
-.lang-toggle .lang-text {
-  color: var(--text-primary);
-  font-weight: 500;
-  font-size: 12px;
   flex-shrink: 0;
 }
 
@@ -407,7 +320,7 @@ footer {
   padding: 80px 0 24px;
   /* 顶部留出空间 */
   font-size: 12px;
-  color: #57606a;
+  color: var(--text-secondary);
   margin-top: 20px;
   /* 减少顶部边距，让视觉上更融合 */
   background-color: transparent;
@@ -493,7 +406,16 @@ article.typora-github {
 
   /* 导航栏移动端优化 */
   .nav {
-    padding: 12px 16px;
+    padding: 12px 0;
+  }
+
+  header.scrolled .nav {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .nav-inner {
+    padding: 0 16px;
   }
 
   .nav-links {
@@ -521,9 +443,17 @@ article.typora-github {
 
   /* 导航栏小屏幕优化 */
   .nav {
-    padding: 10px 16px;
+    padding: 10px 0;
+  }
+
+  header.scrolled .nav {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .nav-inner {
     flex-wrap: wrap;
-    gap: 8px;
+    row-gap: 8px;
   }
 
   .nav-left a {
@@ -557,7 +487,7 @@ article.typora-github {
   /* 确保标题加粗 */
   line-height: 1.25;
   color: var(--text-primary);
-  scroll-margin-top: 80px;
+  scroll-margin-top: var(--sticky-top-offset);
   /* 为固定导航栏留出空间 */
 }
 
@@ -864,4 +794,747 @@ pre.astro-code::before {
   color: #6e7781;
   text-transform: uppercase;
   display: none;
+}
+
+/* ======= Fluid 首页：全屏背景图 + fixed 顶栏（结构参考 public/lynx-li.github.io/index.html） ======= */
+body.home-fluid-index header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  margin-bottom: 0;
+}
+
+body.home-fluid-index header .nav {
+  background: rgba(47, 65, 84, 0.88);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+body.home-fluid-index .fluid-index-header-inner {
+  width: 100%;
+  height: 100vh;
+  min-height: 360px;
+  max-height: 100vh;
+  position: relative;
+  box-sizing: border-box;
+}
+
+@media (max-width: 100vh) {
+  body.home-fluid-index .fluid-index-header-inner {
+    max-height: 100vw;
+  }
+}
+
+/* Fluid 次级页（如 Categories）：顶图较矮，对齐 lynx-li.github.io/categories/ header-inner 60vh */
+body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-compact {
+  height: 60vh;
+  max-height: 60vh;
+  min-height: 300px;
+}
+
+@media (max-width: 100vh) {
+  body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-compact {
+    max-height: min(60vh, 100vw);
+  }
+}
+
+body.home-fluid-index .fluid-banner {
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  background: no-repeat center center;
+  background-size: cover;
+}
+
+body.home-fluid-index .fluid-banner-inner {
+  position: absolute;
+  inset: 0;
+}
+
+body.home-fluid-index .fluid-banner-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  padding: clamp(4rem, 12vh, 6rem) 16px 5rem;
+}
+
+body.home-fluid-index .fluid-banner-text {
+  text-align: center;
+  max-width: min(36rem, 90vw);
+}
+
+body.home-fluid-index .fluid-banner-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 3.6vw, 2rem);
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Typed.js 光标（对齐 Fluid .banner-text .typed-cursor） */
+body.home-fluid-index .fluid-banner-title .typed-cursor {
+  margin: 0 0.15em;
+  font-weight: 400;
+}
+
+body.home-fluid-index .fluid-scroll-down {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 1.25rem;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  font-size: 1.75rem;
+  line-height: 1;
+  animation: fluid-scroll-hint 1.5s ease-in-out infinite;
+}
+
+body.home-fluid-index .fluid-scroll-down:hover {
+  color: #fff;
+}
+
+@media (max-width: 79.99vh) {
+  body.home-fluid-index .fluid-scroll-down {
+    display: none;
+  }
+}
+
+@keyframes fluid-scroll-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(-0.5rem);
+    opacity: 0.45;
+  }
+}
+
+/* ---------- Fluid 正文区：Home / Archives / Categories（lynx-li.github.io 布局 + 配色 + 字重） ---------- */
+body.home-fluid-index .fluid-index-main.fluid-board-page {
+  position: relative;
+  z-index: 3;
+  scroll-margin-top: calc(var(--sticky-top-offset, 64px) + 8px);
+}
+
+main.fluid-board-page:not(.fluid-index-main) {
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
+}
+
+/* .container（Bootstrap 4.6.1 断点） */
+body.home-fluid-index .fluid-container,
+main.fluid-board-page .fluid-container {
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  box-sizing: border-box;
+}
+
+@media (min-width: 576px) {
+  body.home-fluid-index .fluid-container,
+  main.fluid-board-page .fluid-container {
+    max-width: 540px;
+  }
+}
+
+@media (min-width: 768px) {
+  body.home-fluid-index .fluid-container,
+  main.fluid-board-page .fluid-container {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 992px) {
+  body.home-fluid-index .fluid-container,
+  main.fluid-board-page .fluid-container {
+    max-width: 960px;
+  }
+}
+
+@media (min-width: 1200px) {
+  body.home-fluid-index .fluid-container,
+  main.fluid-board-page .fluid-container {
+    max-width: 1140px;
+  }
+}
+
+@media (max-width: 767px) {
+  body.home-fluid-index .fluid-nopadding-x-md,
+  main.fluid-board-page .fluid-nopadding-x-md {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+  }
+}
+
+/* #board（Fluid main.css #board） */
+main.fluid-board-page #board.fluid-board-surface {
+  position: relative;
+  margin-top: 0;
+  padding: 3rem 0;
+  background-color: var(--bg-secondary);
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  z-index: 3;
+  box-shadow:
+    0 12px 15px 0 rgba(0, 0, 0, 0.24),
+    0 17px 50px 0 rgba(0, 0, 0, 0.19);
+}
+
+body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
+  margin-top: -2rem;
+}
+
+body.home-fluid-index .fluid-row,
+main.fluid-board-page .fluid-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+body.home-fluid-index .fluid-col-12,
+main.fluid-board-page .fluid-col-12 {
+  position: relative;
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  box-sizing: border-box;
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+/* .col-md-10.m-auto（archives / categories / 首页内栏） */
+main.fluid-board-page .fluid-col-md-10 {
+  position: relative;
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  box-sizing: border-box;
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  main.fluid-board-page .fluid-col-md-10 {
+    flex: 0 0 83.333333%;
+    max-width: 83.333333%;
+  }
+}
+
+main.fluid-board-page .fluid-m-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Board 内：Fluid html/body 字间距与正文字号（main.css 768-781, 1393-1398） */
+main.fluid-board-page .home-feed,
+main.fluid-board-page .fluid-list-group,
+main.fluid-board-page .fluid-category-list {
+  font-size: 1rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--fluid-text-color);
+}
+
+body.home-fluid-index .home-feed,
+main.fluid-board-page .home-feed {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* —— 首页 Recent Posts：index-header / index-excerpt / index-btm（main.css 1213-1271） —— */
+main.fluid-board-page .home-feed-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1.4;
+  margin: 0 0 0.25rem;
+  color: var(--fluid-post-heading-color);
+}
+
+main.fluid-board-page .home-feed-desc {
+  margin: 0 0 1.5rem;
+  color: var(--fluid-sec-text-color);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+main.fluid-board-page .home-post-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+main.fluid-board-page .index-card-mimic {
+  margin-bottom: 2.5rem;
+}
+
+main.fluid-board-page .home-post-link {
+  text-decoration: none;
+  color: var(--fluid-text-color);
+}
+
+main.fluid-board-page .home-post-link:hover .home-post-title {
+  color: var(--fluid-link-hover-color);
+}
+
+main.fluid-board-page .home-post-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1.4;
+  margin: 0;
+  color: inherit;
+  transition: color 0.2s ease-in-out;
+}
+
+main.fluid-board-page .home-post-excerpt {
+  margin: 0.5rem 0;
+  color: var(--fluid-sec-text-color);
+  font-size: 1rem;
+  line-height: 1.4rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+main.fluid-board-page .home-post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: var(--fluid-sec-text-color);
+  margin-top: 0.25rem;
+  gap: 0.2rem 0.75rem;
+}
+
+main.fluid-board-page .home-post-meta a,
+main.fluid-board-page .home-post-cat {
+  color: inherit;
+}
+
+main.fluid-board-page .home-post-sep {
+  opacity: 0.7;
+}
+
+main.fluid-board-page .home-empty {
+  color: var(--fluid-sec-text-color);
+  margin-top: 1rem;
+}
+
+@media (max-width: 767px) {
+  main.fluid-board-page .home-post-title {
+    font-size: 1.25rem;
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+/* —— Archives：.list-group（main.css 1969-2001） —— */
+main.fluid-board-page .fluid-list-group a ~ .fluid-archives-year {
+  margin-top: 1rem;
+}
+
+main.fluid-board-page .fluid-archives-stat {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--fluid-post-heading-color);
+}
+
+main.fluid-board-page .fluid-list-hr {
+  margin: 1rem 0 1.25rem;
+  border: 0;
+  border-top: 1px solid var(--fluid-line-color);
+  background: initial;
+}
+
+main.fluid-board-page .fluid-archives-year {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--fluid-post-heading-color);
+}
+
+main.fluid-board-page .fluid-list-group-item {
+  display: flex;
+  align-items: baseline;
+  background-color: transparent;
+  border: 0;
+  padding: 0.5rem 0.75rem;
+  text-decoration: none;
+  color: var(--fluid-text-color);
+  border-radius: 0.25rem;
+  transition:
+    color 0.2s ease-in-out,
+    background-color 0.2s ease-in-out;
+}
+
+main.fluid-board-page .fluid-list-group-item time {
+  flex: 0 0 5rem;
+  color: var(--fluid-sec-text-color);
+  font-variant-numeric: tabular-nums;
+}
+
+main.fluid-board-page .fluid-list-group-item .list-group-item-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+main.fluid-board-page .fluid-list-group-item:hover,
+main.fluid-board-page .fluid-list-group-item:focus-visible {
+  color: var(--fluid-link-hover-color);
+  background-color: var(--fluid-link-hover-bg-color);
+  outline: none;
+}
+
+@media (max-width: 575px) {
+  main.fluid-board-page .fluid-list-group-item {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  main.fluid-board-page .fluid-list-group-item time {
+    flex: 0 0 4rem;
+  }
+}
+
+main.fluid-board-page .fluid-archives-empty {
+  color: var(--fluid-sec-text-color);
+  margin: 0;
+}
+
+/* —— Categories：Bootstrap 4 collapse + Fluid main.css 2095-2147（与 zhenglinblog 一致） —— */
+main.fluid-board-page .category-list .collapse:not(.show) {
+  display: none;
+}
+
+main.fluid-board-page .category-list .collapse.show {
+  display: block;
+}
+
+main.fluid-board-page .category-list .collapsing {
+  display: block;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.35s ease;
+}
+
+main.fluid-board-page .category-list .nomargin-x {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+main.fluid-board-page .category-list .w-100 {
+  width: 100% !important;
+}
+
+main.fluid-board-page .category-list .category.row,
+main.fluid-board-page .category-list .category-sub.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+main.fluid-board-page .category-list .col-10 {
+  flex: 0 0 83.333333%;
+  max-width: 83.333333%;
+}
+
+main.fluid-board-page .category-list .col-2 {
+  flex: 0 0 16.666667%;
+  max-width: 16.666667%;
+}
+
+@media (min-width: 768px) {
+  main.fluid-board-page .category-list .col-md-11 {
+    flex: 0 0 91.666667%;
+    max-width: 91.666667%;
+  }
+
+  main.fluid-board-page .category-list .col-md-1 {
+    flex: 0 0 8.333333%;
+    max-width: 8.333333%;
+  }
+
+  /* Fluid 模板中的 col-xm-*（与 md 同色阶） */
+  main.fluid-board-page .category-list .col-xm-11 {
+    flex: 0 0 91.666667%;
+    max-width: 91.666667%;
+  }
+
+  main.fluid-board-page .category-list .col-xm-1 {
+    flex: 0 0 8.333333%;
+    max-width: 8.333333%;
+  }
+}
+
+@media (max-width: 767px) {
+  main.fluid-board-page .category-list .col-xm-11 {
+    flex: 0 0 83.333333%;
+    max-width: 83.333333%;
+  }
+
+  main.fluid-board-page .category-list .col-xm-1 {
+    flex: 0 0 16.666667%;
+    max-width: 16.666667%;
+  }
+}
+
+/*
+ * 标题与篇数同一行：必须写在所有 col-* 之后。
+ * col 的 flex:0 0 X% + shrink:0 会在内容略宽时把 .category-count 整列 flex-wrap 到下一行；
+ * 改用「标题吃剩余空间 + 篇数 auto 宽」对齐 Fluid 的视觉效果。
+ */
+main.fluid-board-page .category-list .category.row > a.category-item-action,
+main.fluid-board-page .category-list .category-sub.row > a.category-item-action {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: none;
+}
+
+main.fluid-board-page .category-list .category.row > .category-count,
+main.fluid-board-page .category-list .category-sub.row > .category-count {
+  flex: 0 0 auto;
+  max-width: none;
+  width: auto;
+}
+
+main.fluid-board-page .category-list .category.row > .category-collapse,
+main.fluid-board-page .category-list .category-sub.row > .category-collapse {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+main.fluid-board-page .fluid-category-page-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0 0 0.25rem;
+  color: var(--fluid-post-heading-color);
+}
+
+main.fluid-board-page .fluid-category-page-desc {
+  margin: 0 0 1.5rem;
+  color: var(--fluid-sec-text-color);
+  font-size: 1rem;
+}
+
+main.fluid-board-page .fluid-category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+main.fluid-board-page .fluid-category-section {
+  margin-bottom: 1rem;
+}
+
+main.fluid-board-page .fluid-category-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Fluid main.css .category:not(:last-child) —— 由 .cat-section li 承担分区间距 */
+main.fluid-board-page .category-list .category:not(:last-child),
+main.fluid-board-page .category-list .category-sub:not(:last-child) {
+  margin-bottom: 0;
+}
+
+/* Fluid main.css .category .category-item、.category-subitem */
+main.fluid-board-page .category-list .category .category-item,
+main.fluid-board-page .category-list .category-sub .category-subitem {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+main.fluid-board-page .category-list .category .category-item {
+  font-size: 1.25rem;
+}
+
+main.fluid-board-page .category-list .category-sub .category-subitem {
+  font-size: 1.1rem;
+}
+
+main.fluid-board-page .category-list .category .category-collapse,
+main.fluid-board-page .category-list .category-sub .category-collapse {
+  padding-left: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+main.fluid-board-page .category-list .category-post-list {
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+main.fluid-board-page .category-list .category-count {
+  font-size: 0.9rem;
+  font-weight: initial;
+  min-width: 1.3em;
+  line-height: 1.3em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--fluid-sec-text-color);
+}
+
+main.fluid-board-page .category-list .category-count i {
+  padding-right: 0.25rem;
+}
+
+main.fluid-board-page .category-list .category-count span {
+  width: 2rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+main.fluid-board-page .category-list .category-item-action:not(.collapsed) > i {
+  transform: rotate(90deg);
+  transform-origin: center center;
+}
+
+main.fluid-board-page .category-list .category-item-action i {
+  transition: transform 0.3s ease-out;
+  display: inline-block;
+  margin-left: 0.25rem;
+  font-size: 1em;
+  line-height: 1;
+  color: var(--fluid-sec-text-color);
+}
+
+main.fluid-board-page .category-list .list-group-item {
+  display: flex;
+  background-color: transparent;
+  border: 0;
+  text-decoration: none;
+  color: var(--fluid-text-color);
+  padding: 0.75rem 0.25rem;
+  transition:
+    color 0.2s ease-in-out,
+    background-color 0.2s ease-in-out;
+}
+
+@media (max-width: 575px) {
+  main.fluid-board-page .category-list .list-group-item {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.25rem;
+  }
+}
+
+main.fluid-board-page .category-list .list-group-item-action:focus,
+main.fluid-board-page .category-list .list-group-item-action:hover {
+  color: var(--fluid-link-hover-color);
+  background-color: var(--fluid-link-hover-bg-color);
+}
+
+main.fluid-board-page .category-list .category-item-action:focus-visible {
+  outline: 2px solid var(--fluid-link-hover-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+main.fluid-board-page .cat-main-link.fluid-cat-link {
+  font-size: 0.9rem;
+  color: var(--fluid-post-text-color);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+main.fluid-board-page .cat-main-link.fluid-cat-link:hover {
+  color: var(--fluid-link-hover-color);
+  text-decoration: underline;
+}
+
+main.fluid-board-page .cat-sub.fluid-cat-sub a {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--fluid-sec-text-color);
+}
+
+main.fluid-board-page .cat-sub.fluid-cat-sub a:hover {
+  color: var(--fluid-link-hover-color);
+}
+
+/* Fluid main.css .category .category-post */
+main.fluid-board-page .category-list .category-post {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/*
+ * 分类页文章标题：与 zhenglinblog.top/categories 一致。
+ * HTML: a.list-group-item.list-group-item-action > span.category-post
+ * 字号/行高继承 Bootstrap 4.6 body（1rem / 1.5），非侧栏 .category-bar .category-post 的 0.9rem。
+ * padding 对齐 Bootstrap .list-group-item；main.css 1972-1976 仅覆盖 border/background。
+ * @575px：main.css 1985-1988 与 Bootstrap 一致。
+ */
+/* 分类下列表文章：a.list-group-item > span.category-post，对齐 Bootstrap 4.6 body */
+main.fluid-board-page .category-list .category-post-list .list-group-item {
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--fluid-post-text-color);
+  padding: 0.75rem 1.25rem;
+  align-items: center;
+}
+
+@media (max-width: 575px) {
+  main.fluid-board-page .category-list .category-post-list .list-group-item {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+@media (max-width: 767px) {
+  main.fluid-board-page #board.fluid-board-surface {
+    border-radius: 0.35rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  main.fluid-board-page .category-list .category .category-item {
+    font-size: 1.1rem;
+  }
 }

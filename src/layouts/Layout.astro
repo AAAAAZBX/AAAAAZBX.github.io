@@ -1,75 +1,13 @@
 ---
-import { getCollection } from "astro:content";
-
-const { title = "BoxuanZhang的个人空间", isArticle = false } = Astro.props;
+const {
+  title = "Boxuan Zhang",
+  isArticle = false,
+  overlayNav = false,
+} = Astro.props;
 const year = new Date().getFullYear();
-
-// 动态获取learning目录下的所有子目录
-// 只显示在learning目录下实际存在的子目录
-const learningPosts = await getCollection("learning");
-const directorySet = new Set<string>(); // 存储实际存在的目录名（小写）
-const directoryToTag = new Map<string, string>(); // Map<小写目录名, 原始标签名>
-
-// 第一步：从slug中提取所有实际存在的目录名（可能是小写）
-learningPosts.forEach((post) => {
-  if (post.slug.includes('/')) {
-    const parts = post.slug.split('/');
-    const dirNameFromSlug = parts[0].toLowerCase(); // slug中的目录名（可能是小写）
-    directorySet.add(dirNameFromSlug);
-  }
-});
-
-// 第二步：从标签中找到对应的原始大小写标签名
-learningPosts.forEach((post) => {
-  if (post.slug.includes('/')) {
-    const parts = post.slug.split('/');
-    const dirNameFromSlug = parts[0].toLowerCase();
-    
-    // 如果这个目录在目录集合中，尝试从标签中找到对应的原始大小写标签
-    if (directorySet.has(dirNameFromSlug) && post.data.tags && Array.isArray(post.data.tags)) {
-      post.data.tags.forEach((tag) => {
-        const tagLower = tag.toLowerCase();
-        // 如果标签的小写与目录名的小写匹配，使用标签的原始大小写
-        if (tagLower === dirNameFromSlug) {
-          // 如果还没有记录，或者当前标签的大小写更"标准"（全大写或首字母大写），则更新
-          const existing = directoryToTag.get(dirNameFromSlug);
-          if (!existing || (tag === tag.toUpperCase() || (tag[0] === tag[0].toUpperCase() && tag.length <= 10))) {
-            directoryToTag.set(dirNameFromSlug, tag);
-          }
-        }
-      });
-    }
-  }
-});
-
-// 第三步：构建最终的目录列表（使用标签中的原始大小写，如果没有找到标签则使用slug中的目录名）
-const subdirectories = new Set<string>();
-directorySet.forEach((dirLower) => {
-  const tagFromMap = directoryToTag.get(dirLower);
-  if (tagFromMap) {
-    // 使用标签中的原始大小写
-    subdirectories.add(tagFromMap);
-  } else {
-    // 如果没有找到对应的标签，使用slug中的目录名（首字母大写）
-    const capitalized = dirLower.charAt(0).toUpperCase() + dirLower.slice(1);
-    subdirectories.add(capitalized);
-  }
-});
-
-// 转换为数组并排序（使用原始大小写）
-const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
-  // 先按小写字母排序，但保持原始大小写
-  const aLower = a.toLowerCase();
-  const bLower = b.toLowerCase();
-  if (aLower !== bLower) {
-    return aLower.localeCompare(bLower);
-  }
-  // 如果小写相同，按原始大小写排序
-  return a.localeCompare(b);
-});
 ---
 
-<html lang="zh">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>{title}</title>
@@ -92,6 +30,10 @@ const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
     <!-- 全局样式 -->
     <link rel="stylesheet" href="/styles/global.css" />
 
+    <!-- Fluid 顶栏图标（与 Lynx Li Hexo Fluid iconfont 一致） -->
+    <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css" />
+    <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_1736178_k526ubmyhba.css" />
+
     <!-- 内联样式：确保 Markdown 内部链接样式生效 -->
     <style>
       /* 确保侧边栏 sticky 定位生效 */
@@ -99,7 +41,7 @@ const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
       .page-container .sidebar,
       aside.sidebar {
         position: sticky !important;
-        top: 80px !important;
+        top: var(--sticky-top-offset) !important;
         align-self: flex-start !important;
       }
 
@@ -219,55 +161,34 @@ const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
     />
   </head>
 
-  <body>
+  <body class:list={[overlayNav && "home-fluid-index"]}>
     <header>
       <div class="nav">
+        <div class="nav-inner">
         <div class="nav-left">
           <a href="/">Boxuan Zhang</a>
         </div>
         <nav class="nav-links">
-          <a href="/research">Research</a>
-          <div class="nav-dropdown">
-            <a href="/learning" class="nav-dropdown-trigger">
-              Technology
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-arrow">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </a>
-            <div class="nav-dropdown-menu">
-              {sortedSubdirectories.length > 0 ? (
-                sortedSubdirectories.map((dir) => (
-                  <a href={`/learning?tag=${encodeURIComponent(dir)}`} class="nav-dropdown-item">{dir}</a>
-                ))
-              ) : (
-                // 如果没有子目录，显示默认选项（向后兼容）
-                <>
-                  <a href="/learning?tag=AI" class="nav-dropdown-item">AI</a>
-                  <a href="/learning?tag=Tools" class="nav-dropdown-item">Tools</a>
-                </>
-              )}
-            </div>
-          </div>
-          <a href="/projects">Projects</a>
-          <a href="/algorithms">Competitive Programming</a>
-          <a href="/travel">Daily Life</a>
-          <a href="/search" title="搜索" style="display: inline-flex; align-items: center; padding: 8px 12px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-            <span style="display: none;">搜索</span>
+          <a href="/" class="nav-link-iconed">
+            <i class="iconfont icon-home-fill" aria-hidden="true"></i>
+            <span>Home</span>
           </a>
-          <button id="lang-toggle" class="lang-toggle" aria-label="切换语言">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lang-icon">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
-            <span class="lang-text" data-lang="en">中文</span>
-            <span class="lang-text" data-lang="zh" style="display: none;">English</span>
-          </button>
-          <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">
+          <a href="/archives" class="nav-link-iconed">
+            <i class="iconfont icon-archive-fill" aria-hidden="true"></i>
+            <span>Archives</span>
+          </a>
+          <a href="/categories" class="nav-link-iconed">
+            <i class="iconfont icon-category-fill" aria-hidden="true"></i>
+            <span>Categories</span>
+          </a>
+          <a href="/about" class="nav-link-iconed">
+            <i class="iconfont icon-user-fill" aria-hidden="true"></i>
+            <span>About</span>
+          </a>
+          <a href="/search" class="nav-search-link" title="Search" aria-label="Search">
+            <i class="iconfont icon-search" aria-hidden="true"></i>
+          </a>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
             <!-- 太阳图标（亮色模式） -->
             <svg class="theme-icon theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"></circle>
@@ -286,12 +207,13 @@ const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
             </svg>
           </button>
         </nav>
+        </div>
       </div>
     </header>
 
-      <slot />
+    <slot />
 
-    <footer>© {year} BoxuanZhang. All rights reserved.</footer>
+    <footer>© {year} Boxuan Zhang</footer>
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
@@ -341,50 +263,6 @@ const sortedSubdirectories = Array.from(subdirectories).sort((a, b) => {
             
             // 阻止空格键触发按钮点击（避免与小恐龙游戏冲突）
             themeToggle.addEventListener('keydown', (e) => {
-              if (e.key === ' ' || e.keyCode === 32) {
-                e.preventDefault();
-                e.stopPropagation();
-              }
-            });
-          }
-        })();
-        
-        // 语言切换功能
-        (function() {
-          // 从 localStorage 读取语言偏好，默认为英文
-          const savedLang = localStorage.getItem('preferred-lang') || 'en';
-          
-          function setLanguage(lang) {
-            // 保存到 localStorage
-            localStorage.setItem('preferred-lang', lang);
-            
-            // 切换所有带有 data-lang 属性的元素
-            document.querySelectorAll('[data-lang]').forEach(el => {
-              if (el.getAttribute('data-lang') === lang) {
-                el.style.display = '';
-              } else {
-                el.style.display = 'none';
-              }
-            });
-            
-            // 更新 HTML lang 属性
-            document.documentElement.lang = lang;
-          }
-          
-          // 初始化语言
-          setLanguage(savedLang);
-          
-          // 语言切换按钮点击事件
-          const langToggle = document.getElementById('lang-toggle');
-          if (langToggle) {
-            langToggle.addEventListener('click', () => {
-              const currentLang = localStorage.getItem('preferred-lang') || 'en';
-              const newLang = currentLang === 'en' ? 'zh' : 'en';
-              setLanguage(newLang);
-            });
-            
-            // 阻止空格键触发按钮点击（避免与小恐龙游戏冲突）
-            langToggle.addEventListener('keydown', (e) => {
               if (e.key === ' ' || e.keyCode === 32) {
                 e.preventDefault();
                 e.stopPropagation();

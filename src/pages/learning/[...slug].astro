@@ -1,14 +1,16 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection, getEntry } from "astro:content";
+import { getCollection } from "astro:content";
 import TableOfContents from "../../components/TableOfContents.astro";
 import WalineComment from "../../components/WalineComment.astro";
+import { LEARNING_TECHNOLOGY_INDEX_SLUG } from "../../lib/learning-constants";
 
 export async function getStaticPaths() {
   const posts = await getCollection("learning");
   const paths = [];
   
   posts.forEach((post) => {
+    if (post.slug === LEARNING_TECHNOLOGY_INDEX_SLUG) return;
     // 生成完整路径的路由（对于 [...slug]，直接使用字符串）
     paths.push({
       params: { slug: post.slug },

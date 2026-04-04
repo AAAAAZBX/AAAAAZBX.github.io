@@ -1,991 +1,150 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { getCollection } from "astro:content";
+import {
+  getMergedPosts,
+  formatDateIso,
+  collectionLabels,
+} from "../lib/content-posts";
 
-const profile = {
-  name: "Boxuan Zhang",
-  title: "Senior Undergraduate, Nanjing Agricultural University | ISElab, School of Software, Nanjing University",
-  university: "NJAU", 
-  location: "Nanjing, China", 
-  email: "zbx@stu.njau.edu.cn", 
-  github: "https://github.com/AAAAAZBX",
-  googleScholar: "", 
-  njauUrl: "http://www.njau.edu.cn/", // 新增学校链接
-  qq: "1604815119", // 请替换为您真实的QQ号码
-  siteStartDate: "2025-12-03", // 网站开始日期，用于计算在线天数
-};
+const siteTitle = "Boxuan Zhang";
 
-// 获取所有文章
-const algorithmsPosts = await getCollection("algorithms");
-const learningPosts = await getCollection("learning");
-const researchPosts = await getCollection("research");
-const travelPosts = await getCollection("travel");
-const allPosts = [...algorithmsPosts, ...learningPosts, ...researchPosts, ...travelPosts];
+/** 首屏打字机文案（与 Hexo Fluid + Typed.js 一致，见 lynx-li.github.io） */
+const heroTypedText = "等博主做完毕业设计，一定猛猛更新！";
 
-// 计算总文章数
-const totalPosts = allPosts.length;
+/** public/ 下资源；带 BASE_URL 以支持 GitHub Pages 子路径部署 */
+const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
 
-// 计算总字数
-function calculateWordCount(body: string): number {
-  let text = body
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/`[^`]+`/g, '')
-    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-    .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
-    .replace(/^#+\s+/gm, '')
-    .replace(/\*\*([^\*]+)\*\*/g, '$1')
-    .replace(/\*([^\*]+)\*/g, '$1')
-    .replace(/~~([^~]+)~~/g, '$1')
-    .replace(/^>\s+/gm, '')
-    .replace(/^[\*\-\+]\s+/gm, '')
-    .replace(/^\d+\.\s+/gm, '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\s+/g, ' ')
+function stripMd(text: string): string {
+  return text
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`]+`/g, " ")
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^\)]+\)/g, "")
+    .replace(/^#+\s+/gm, "")
+    .replace(/\*\*([^\*]+)\*\*/g, "$1")
+    .replace(/\*([^\*]+)\*/g, "$1")
+    .replace(/~~([^~]+)~~/g, "$1")
+    .replace(/^>\s+/gm, "")
+    .replace(/^[\*\-\+]\s+/gm, "")
+    .replace(/^\d+\.\s+/gm, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
     .trim();
-  
-  const chineseChars = (text.match(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g) || []).length;
-  const englishWords = text
-    .replace(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g, ' ')
-    .split(/\s+/)
-    .filter(word => word.length > 0).length;
-  
-  return chineseChars + englishWords;
 }
 
-const totalWords = allPosts.reduce((sum, post) => sum + calculateWordCount(post.body), 0);
-const totalWordsFormatted = totalWords >= 10000 ? `${(totalWords / 10000).toFixed(1)}w` : totalWords.toString();
-
-// 计算最后更新时间（最新文章的日期）
-const lastUpdated = allPosts
-  .map(post => post.data.date ? new Date(post.data.date) : new Date(0))
-  .sort((a, b) => b.getTime() - a.getTime())[0];
-
-function formatDate(date: Date): string {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+function excerptFromPost(description: string | undefined, body: string, maxLen = 220): string {
+  if (description?.trim()) return description.trim();
+  const plain = stripMd(body);
+  if (plain.length <= maxLen) return plain;
+  return `${plain.slice(0, maxLen)}…`;
 }
 
-const lastUpdatedFormatted = formatDate(lastUpdated);
-
-// 计算在线天数
-const startDate = new Date(profile.siteStartDate);
-const today = new Date();
-const daysOnline = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-
-// 准备传递给客户端的数据
-const postsData = allPosts.map(post => ({
-  date: post.data.date || null,
-  body: post.body || ''
-}));
-
-// 准备传递给客户端的 siteStartDate
-const clientSiteStartDate = profile.siteStartDate;
-
+const merged = await getMergedPosts();
+const recentPosts = merged.slice(0, 24);
 ---
 
-<Layout title={`${profile.name}的个人空间`}>
-  <main>
-    <div class="page-container">
-      
-      <aside class="sidebar" style="position: sticky !important; top: 80px !important; align-self: flex-start !important;">
-        <div class="avatar-container">
-          <img src="/logo.png" alt={profile.name} class="avatar" />
-        </div>
-        
-        <div class="profile-info">
-          <h1 class="name">{profile.name}</h1>
-          <p class="role">{profile.title}</p>
-
-        </div>
-
-<div class="spacer"></div>
-<div class="spacer"></div>
-
-        <div class="contact-list">
-          {/* Location (保持不变) */}
-          <div class="contact-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-            <span>{profile.location}</span>
-          </div>
-          {/* Website (可点击) */}
-          <div class="contact-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-            <a href="https://aaaaazbx.github.io/" target="_blank" rel="noopener noreferrer">Website</a>
+<Layout title={`${siteTitle} — Home`} overlayNav>
+  <!-- 对齐 Hexo Fluid：header-inner 100vh + #banner 铺满 + fixed navbar 叠在图上 -->
+  <div class="fluid-index-header-inner">
+    <div
+      id="banner"
+      class="fluid-banner"
+      style={{
+        backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
+      }}
+    >
+      <div class="fluid-banner-inner">
+        <div class="fluid-banner-mask">
+          <div class="fluid-banner-text">
+            <h1 class="fluid-banner-title" lang="zh-CN" aria-label={heroTypedText}>
+              <span id="fluid-hero-typed" data-typed-text={heroTypedText}></span>
+            </h1>
           </div>
-          {/* Email (可点击) */}
-          <div class="contact-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-            <a href={`mailto:${profile.email}`}>Email</a>
-          </div>
-          {/* QQ (可点击) */}
-          <div class="contact-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              <line x1="9" y1="10" x2="15" y2="10"></line>
-              <line x1="9" y1="14" x2="13" y2="14"></line>
+          <a
+            href="#fluid-board"
+            class="fluid-scroll-down"
+            aria-label="Scroll to recent posts"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 9l6 6 6-6"></path>
             </svg>
-            <a href={`http://wpa.qq.com/msgrd?v=3&uin=${profile.qq}&site=qq&menu=yes`} target="_blank">QQ</a>
-          </div>
-          {/* GitHub (可点击) */}
-          <div class="contact-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-            <a href={profile.github} target="_blank" rel="noopener noreferrer">GitHub</a>
-          </div>
-          </div>
-      </aside>
-
-      <div class="main-content-wrapper">
-        <section class="content-section">
-          <h2>About</h2>
-          <p class="about-en" data-lang="en">
-            Hello everyone, I'm a senior undergraduate student at Nanjing Agricultural University. I recently joined the <a href="https://nju-ise.github.io/" target="_blank" rel="noopener noreferrer">Intelligent Software Engineering Laboratory (ISElab)</a> at the School of Software, Nanjing University.
-          </p>
-          <p class="about-en" data-lang="en">
-            My primary programming languages are Python and C/C++. My long-term research interests focus on Deep Learning, Intelligent Agent Systems, C++ Development, Large Language Models, and Fintech. Over the past few months, I've been deeply engaged in researching these technologies. I look forward to sharing and exchanging more technical experiences with everyone.
-          </p>
-          <p class="about-cn" data-lang="zh" style="display: none;">
-            大家好，我是南京农业大学的大四本科生。我最近加入了南京大学软件学院的<a href="https://nju-ise.github.io/" target="_blank" rel="noopener noreferrer">智能软件工程实验室（ISElab）</a>。
-          </p>
-          <p class="about-cn" data-lang="zh" style="display: none;">
-            我的主要编程语言是 Python 和 C/C++。我长期的研究兴趣集中在深度学习、智能体系统、C++ 开发、大语言模型和金融科技。过去几个月里，我一直在深入研究这些技术。期待与大家分享和交流更多技术经验！
-          </p>
-        </section>
-
-        <hr class="divider" />
-
-        <section class="content-section">
-          <h3>Education</h3>
-          <div class="education-list">
-            <a href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer" class="education-item">
-              <div class="education-title" data-lang="en">Nanjing University</div>
-              <div class="education-title" data-lang="zh" style="display: none;">南京大学</div>
-              <div class="education-subtitle" data-lang="en">Software Engineering, Master's Degree</div>
-              <div class="education-subtitle" data-lang="zh" style="display: none;">软件工程专业，硕士研究生</div>
-              <div class="education-duration">Sep, 2026 - Present</div>
-            </a>
-            <a href="https://ai.njau.edu.cn/" target="_blank" rel="noopener noreferrer" class="education-item">
-              <div class="education-title" data-lang="en">Nanjing Agricultural University</div>
-              <div class="education-title" data-lang="zh" style="display: none;">南京农业大学</div>
-              <div class="education-subtitle" data-lang="en">Data Science and Big Data Technology, Bachelor's Degree</div>
-              <div class="education-subtitle" data-lang="zh" style="display: none;">数据科学与大数据技术专业，本科</div>
-              <div class="education-duration">Sep, 2022 - Jun, 2026</div>
             </a>
           </div>
-        </section>
-
-
-
-        <section class="content-section">
-          <h3>Statistics</h3>
-          <div class="statistics-cards">
-            <div class="stat-card">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <div class="stat-content">
-                <div class="stat-value" id="days-online">-</div>
-                <div class="stat-label">Days Online</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <div class="stat-content">
-                <div class="stat-value" id="last-updated">-</div>
-                <div class="stat-label">Last Updated</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-              </svg>
-              <div class="stat-content">
-                <div class="stat-value" id="total-posts">-</div>
-                <div class="stat-label">Total Posts</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-              <div class="stat-content">
-                <div class="stat-value" id="total-words">-</div>
-                <div class="stat-label">Total Words</div>
               </div>
             </div>
           </div>
-        </section>
 
-        <hr class="divider" />
+  <!-- 与 public/lynx-li.github.io/index.html 一致：main > .container.nopadding-x-md > #board > .container > .row > .col -->
+  <main id="fluid-board" class="fluid-index-main fluid-board-page">
+    <div class="fluid-container fluid-nopadding-x-md">
+      <div id="board" class="fluid-board-surface">
+        <div class="fluid-container">
+          <div class="fluid-row">
+            <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
+              <div class="home-feed">
+                <h2 class="home-feed-title">Recent Posts</h2>
+                <p class="home-feed-desc">Latest updates from all categories.</p>
 
-        <section class="content-section">
-          <h3>Contributions</h3>
-          <div class="contributions-container">
-            <div class="contributions-graph" id="contributions-graph">
-              <!-- 贡献图将通过 JavaScript 生成 -->
+                <ul class="home-post-list">
+                  {recentPosts.map((item) => (
+                    <li class="home-post-item index-card-mimic">
+                      <a class="home-post-link" href={item.href}>
+                        <span class="home-post-title">{item.title}</span>
+                      </a>
+                      <p class="home-post-excerpt">{excerptFromPost(item.description, item.body)}</p>
+                      <div class="home-post-meta">
+                        <time class="home-post-date" datetime={item.date ?? ""}>{formatDateIso(item.date)}</time>
+                        <span class="home-post-sep" aria-hidden="true">·</span>
+                        <span class="home-post-cat">{collectionLabels[item.collection].en}</span>
             </div>
-            <div class="contributions-legend">
-              <span>Less</span>
-              <div class="legend-squares">
-                <div class="legend-square" style="background-color: #EFF2F5;"></div>
-                <div class="legend-square" style="background-color: #9be9a8;"></div>
-                <div class="legend-square" style="background-color: #40c463;"></div>
-                <div class="legend-square" style="background-color: #30a14e;"></div>
-                <div class="legend-square" style="background-color: #216e39;"></div>
+                    </li>
+                  ))}
+                </ul>
+
+                {recentPosts.length === 0 && <p class="home-empty">No posts yet.</p>}
               </div>
-              <span>More</span>
-            </div>
-            <div class="contributions-summary" id="contributions-summary">
-              - contributions in {new Date().getFullYear() - 1} ~ {new Date().getFullYear()}
             </div>
           </div>
-        </section>
-
+        </div>
       </div>
     </div>
   </main>
-</Layout>
 
-<script define:vars={{ postsData, siteStartDate: clientSiteStartDate }}>
-  (function() {
-    'use strict';
-    
-    // 立即检查变量
-    console.log('=== DEBUG START ===');
-    console.log('postsData type:', typeof postsData);
-    console.log('postsData is array:', Array.isArray(postsData));
-    console.log('postsData length:', Array.isArray(postsData) ? postsData.length : 'N/A');
-    console.log('siteStartDate:', siteStartDate);
-    console.log('=== DEBUG END ===');
-    
-    // 工具函数：计算总字数
-    function calculateWordCount(body) {
-      if (!body) return 0;
-      let text = body
-        .replace(/```[\s\S]*?```/g, '')
-        .replace(/`[^`]+`/g, '')
-        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-        .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
-        .replace(/^#+\s+/gm, '')
-        .replace(/\*\*([^\*]+)\*\*/g, '$1')
-        .replace(/\*([^\*]+)\*/g, '$1')
-        .replace(/~~([^~]+)~~/g, '$1')
-        .replace(/^>\s+/gm, '')
-        .replace(/^[\*\-\+]\s+/gm, '')
-        .replace(/^\d+\.\s+/gm, '')
-        .replace(/<[^>]+>/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      const chineseChars = (text.match(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g) || []).length;
-      const englishWords = text
-        .replace(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g, ' ')
-        .split(/\s+/)
-        .filter(word => word.length > 0).length;
-      
-      return chineseChars + englishWords;
-    }
-    
-    // 更新统计数据
-    function updateStatistics() {
-      console.log('[updateStatistics] Called');
-      try {
-        const posts = Array.isArray(postsData) ? postsData : [];
-        console.log('[updateStatistics] Posts count:', posts.length);
-        
-        // 更新总文章数
-        const totalPostsEl = document.getElementById('total-posts');
-        console.log('[updateStatistics] total-posts element:', !!totalPostsEl);
-        if (totalPostsEl) {
-          totalPostsEl.textContent = posts.length;
-          console.log('[updateStatistics] Set total-posts to:', posts.length);
-        } else {
-          console.error('[updateStatistics] total-posts element NOT FOUND!');
-        }
-        
-        // 更新总字数
-        const totalWords = posts.reduce((sum, post) => sum + calculateWordCount(post.body || ''), 0);
-        const totalWordsFormatted = totalWords >= 10000 ? `${(totalWords / 10000).toFixed(1)}w` : totalWords.toString();
-        const totalWordsEl = document.getElementById('total-words');
-        if (totalWordsEl) {
-          totalWordsEl.textContent = totalWordsFormatted;
-        }
-        
-        // 更新最后更新时间
-        const dates = posts
-          .map(post => post.date ? new Date(post.date) : null)
-          .filter(date => date !== null && !isNaN(date.getTime()))
-          .sort((a, b) => b.getTime() - a.getTime());
-        
-        if (dates.length > 0) {
-          const lastUpdated = dates[0];
-          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          const lastUpdatedFormatted = `${months[lastUpdated.getMonth()]} ${lastUpdated.getDate()}, ${lastUpdated.getFullYear()}`;
-          const lastUpdatedEl = document.getElementById('last-updated');
-          if (lastUpdatedEl) {
-            lastUpdatedEl.textContent = lastUpdatedFormatted;
-          }
-        }
-        
-        // 更新在线天数
-        if (siteStartDate) {
-          const startDate = new Date(siteStartDate);
-          const today = new Date();
-          if (!isNaN(startDate.getTime())) {
-            const daysOnline = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-            const daysOnlineEl = document.getElementById('days-online');
-            if (daysOnlineEl) {
-              daysOnlineEl.textContent = daysOnline;
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error updating statistics:', error);
-      }
-    }
-  
-    // 加载贡献图 - 使用解析后的数据重新渲染
-    async function loadContributions() {
-      const graphEl = document.getElementById('contributions-graph');
-      const summaryEl = document.getElementById('contributions-summary');
-      
-      if (!graphEl) {
-        return;
-      }
-      
-      graphEl.innerHTML = '<p style="color: #666; padding: 20px;">Loading contributions...</p>';
-      
-      try {
-        const apiUrl = '/api/github-contributions.json';
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
+  <script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
+  <script is:inline>
+    (function () {
+      function fluidHeroTyping() {
+        if (typeof window.Typed === "undefined") return;
+        var el = document.getElementById("fluid-hero-typed");
+        if (!el) return;
+        var text = el.getAttribute("data-typed-text");
+        if (!text) return;
+        el.textContent = "";
+        /* 对齐 public/lynx-li.github.io/js/plugins.js typing：strings 先占位再正文 */
+        new window.Typed("#fluid-hero-typed", {
+          strings: ["  ", text],
+          typeSpeed: 50,
+          cursorChar: "_",
+          loop: false,
+          showCursor: true,
         });
-
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log('[Contributions] API result:', result);
-        console.log('[Contributions] Has error:', result.error);
-        console.log('[Contributions] Contributions type:', typeof result.contributions);
-        console.log('[Contributions] Is array:', Array.isArray(result.contributions));
-        console.log('[Contributions] Length:', result.contributions?.length);
-
-        const contributions = result.contributions || [];
-
-        if (result.error) {
-          console.error('[Contributions] API error:', result.error);
-          throw new Error(result.error);
-        }
-
-        if (!Array.isArray(contributions)) {
-          console.error('[Contributions] Contributions is not an array:', contributions);
-          graphEl.innerHTML = '<p style="color: #666; padding: 20px;">Invalid contributions data format. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>';
-          return;
-        }
-
-        if (contributions.length === 0) {
-          console.warn('[Contributions] Contributions array is empty');
-          graphEl.innerHTML = '<p style="color: #666; padding: 20px;">No contributions data available. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>';
-          if (summaryEl) {
-            summaryEl.textContent = `0 contributions in ${new Date().getFullYear() - 1} ~ ${new Date().getFullYear()}`;
-          }
-          return;
-        }
-
-        console.log('[Contributions] Rendering graph with', contributions.length, 'contributions');
-        renderContributionGraph(contributions, graphEl, summaryEl);
-        
-      } catch (error) {
-        console.error('[Contributions] Error:', error);
-        graphEl.innerHTML = `<p style="color: #666; padding: 20px;">Error: ${error.message}. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>`;
-        if (summaryEl) {
-          summaryEl.textContent = '';
-        }
       }
-    }
-    
-    // 渲染贡献图 - 重构以匹配GitHub官方样式
-    function renderContributionGraph(contributions, graphEl, summaryEl) {
-      graphEl.innerHTML = '';
-
-      if (!contributions || contributions.length === 0) {
-        graphEl.innerHTML = '<p style="color: #666; padding: 20px;">No contributions data available.</p>';
-        return;
-      }
-
-      // 按日期排序，确保数据按时间顺序排列
-      const sortedContributions = [...contributions].sort((a, b) => {
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        return a.date.localeCompare(b.date);
-      });
-
-      // 找到最早和最晚的日期
-      const dates = sortedContributions.filter(c => c.date).map(c => new Date(c.date + 'T00:00:00Z'));
-      if (dates.length === 0) {
-        graphEl.innerHTML = '<p style="color: #666; padding: 20px;">No valid dates found.</p>';
-        return;
-      }
-
-      const earliestDate = new Date(Math.min(...dates.map(d => d.getTime())));
-      const latestDate = new Date(Math.max(...dates.map(d => d.getTime())));
-
-      // 获取今天的日期（UTC，只比较日期部分）
-      const today = new Date();
-      today.setUTCHours(0, 0, 0, 0);
-
-      // 确保最晚日期不超过今天
-      const endDate = latestDate > today ? today : latestDate;
-
-      // 计算需要显示的周数（从最早日期到今天）
-      const daysDiff = Math.ceil((endDate.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24));
-      const weeks = Math.ceil((daysDiff + 1) / 7);
-
-      // 创建日期到贡献数据的映射
-      const contributionMap = new Map();
-      sortedContributions.forEach(c => {
-        if (c.date) {
-          contributionMap.set(c.date, c);
-        }
-      });
-
-      // 创建容器
-      const container = document.createElement('div');
-      container.style.position = 'relative';
-      container.style.display = 'inline-block';
-
-      // 创建月份标签行
-      const monthRow = document.createElement('div');
-      monthRow.style.position = 'relative';
-      monthRow.style.height = '20px';
-      monthRow.style.marginBottom = '8px';
-      monthRow.style.marginLeft = '30px';
-
-      // 创建主内容区
-      const mainArea = document.createElement('div');
-      mainArea.style.display = 'flex';
-
-      // 创建日期标签列 - 显示完整的7天
-      const dayCol = document.createElement('div');
-      dayCol.style.width = '30px';
-      dayCol.style.marginRight = '3px';
-      dayCol.style.display = 'flex';
-      dayCol.style.flexDirection = 'column';
-      // GitHub 贡献图从周日开始，所以顺序是 Sun, Mon, Tue, Wed, Thu, Fri, Sat
-      const dayNames = ['Sun', '', 'Tue', '', 'Thu', '', 'Sat'];
-      for (let i = 0; i < 7; i++) {
-        const dayLabel = document.createElement('div');
-        dayLabel.textContent = dayNames[i];
-        dayLabel.style.height = '11px';
-        dayLabel.style.lineHeight = '11px';
-        dayLabel.style.fontSize = '0.75rem';
-        dayLabel.style.color = '#666';
-        dayLabel.style.textAlign = 'right';
-        dayLabel.style.paddingRight = '8px';
-        dayCol.appendChild(dayLabel);
-      }
-
-      // 创建贡献网格
-      // GitHub 贡献图：7行（周日到周六），weeks列（多少周）
-      const grid = document.createElement('div');
-      grid.style.display = 'grid';
-      grid.style.gridTemplateRows = `repeat(7, 11px)`;  // 7行：周日到周六
-      grid.style.gridTemplateColumns = `repeat(${weeks}, 11px)`;  // weeks列：多少周
-      grid.style.gap = '3px';
-
-      // 生成网格数据
-      const gridData = [];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-      // 从最早日期开始，按周填充数据
-      for (let week = 0; week < weeks; week++) {
-        for (let day = 0; day < 7; day++) {
-          // 计算当前日期（从周日开始）
-          const currentDate = new Date(earliestDate);
-          currentDate.setUTCDate(earliestDate.getUTCDate() + week * 7 + day);
-
-          if (!gridData[day]) {
-            gridData[day] = [];
-          }
-
-          // 如果日期超过今天，标记为 null（不渲染，但保留位置）
-          if (currentDate > today) {
-            gridData[day][week] = null;
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", fluidHeroTyping);
           } else {
-            // 格式化为 YYYY-MM-DD
-            const dateStr = currentDate.toISOString().split('T')[0];
-
-            // 获取该日期的贡献数据
-            const contribution = contributionMap.get(dateStr) || { date: dateStr, count: 0 };
-
-            gridData[day][week] = contribution;
-          }
-        }
+        fluidHeroTyping();
       }
-
-      // 生成月份标签（使用第一行，即周日的数据）
-      const monthLabels = [];
-      let lastMonth = -1;
-      for (let week = 0; week < weeks; week++) {
-        const item = gridData[0][week];
-        if (item && item.date) {
-          try {
-            const date = new Date(item.date + 'T00:00:00Z');
-            if (!isNaN(date.getTime())) {
-              const month = date.getUTCMonth();
-              if (week === 0 || month !== lastMonth) {
-                monthLabels.push({ week, month });
-                lastMonth = month;
-              }
-            }
-          } catch (e) {
-            // 忽略错误
-          }
-        }
-      }
-
-      // 渲染月份标签
-      monthLabels.forEach(({ week, month }) => {
-        const label = document.createElement('div');
-        label.textContent = months[month];
-        label.style.position = 'absolute';
-        label.style.left = `${week * 14}px`; // 每个方块 11px + 间距 3px = 14px
-        label.style.fontSize = '0.75rem';
-        label.style.color = '#666';
-        label.style.height = '20px';
-        label.style.lineHeight = '20px';
-        label.style.whiteSpace = 'nowrap';
-        monthRow.appendChild(label);
-      });
-
-      // 生成贡献方块（按行优先填充：先所有周的周日，再所有周的周一...）
-      for (let day = 0; day < 7; day++) {
-        for (let week = 0; week < weeks; week++) {
-          // 确保 gridData[day] 存在
-          if (!gridData[day]) {
-            gridData[day] = [];
-          }
-
-          // 计算这个位置对应的日期
-          const currentDate = new Date(earliestDate);
-          currentDate.setUTCDate(earliestDate.getUTCDate() + week * 7 + day);
-
-          const square = document.createElement('div');
-          square.className = 'contribution-square';
-
-          // 如果日期超过今天，创建隐藏的占位元素
-          if (currentDate > today) {
-            square.style.visibility = 'hidden'; // 隐藏但保留空间
-            square.style.pointerEvents = 'none'; // 禁用交互
-            grid.appendChild(square);
-            continue;
-          }
-
-          const item = gridData[day][week];
-
-          // 如果该项为 null 或 undefined，创建一个空方块
-          if (item === null || item === undefined) {
-            square.style.backgroundColor = '#EFF2F5';
-            grid.appendChild(square);
-            continue;
-          }
-
-          const count = item?.count || 0;
-          const date = item?.date || null;
-
-          // 使用 GitHub 官方颜色方案
-          if (count === 0) {
-            square.style.backgroundColor = '#EFF2F5'; // 无贡献
-          } else if (count <= 3) {
-            square.style.backgroundColor = '#9be9a8'; // 1-3 贡献
-          } else if (count <= 7) {
-            square.style.backgroundColor = '#40c463'; // 4-7 贡献
-          } else if (count <= 11) {
-            square.style.backgroundColor = '#30a14e'; // 8-11 贡献
-          } else {
-            square.style.backgroundColor = '#216e39'; // 12+ 贡献
-          }
-
-          // 设置提示
-          if (date) {
-            try {
-              const d = new Date(date + 'T00:00:00Z');
-              const dateStr = d.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                timeZone: 'UTC'
-              });
-              square.title = `${count} contribution${count !== 1 ? 's' : ''} on ${dateStr}`;
-            } catch (e) {
-              square.title = `${count} contribution${count !== 1 ? 's' : ''} on ${date}`;
-            }
-          } else {
-            square.title = `${count} contribution${count !== 1 ? 's' : ''}`;
-          }
-
-          grid.appendChild(square);
-        }
-      }
-
-      // 组装
-      mainArea.appendChild(dayCol);
-      mainArea.appendChild(grid);
-      container.appendChild(monthRow);
-      container.appendChild(mainArea);
-      graphEl.appendChild(container);
-
-      // 更新摘要
-      if (summaryEl) {
-        const total = contributions.reduce((sum, c) => sum + (c.count || 0), 0);
-        const year = new Date().getFullYear();
-        summaryEl.textContent = `${total} contributions in ${year - 1} ~ ${year}`;
-      }
-    }
-    
-    // 初始化函数
-    function init() {
-      console.log('=== INIT START ===');
-      console.log('DOM ready state:', document.readyState);
-      
-      // 检查元素
-      const el1 = document.getElementById('total-posts');
-      const el2 = document.getElementById('days-online');
-      const el3 = document.getElementById('contributions-graph');
-      console.log('Elements found:', {
-        'total-posts': !!el1,
-        'days-online': !!el2,
-        'contributions-graph': !!el3
-      });
-      
-      try {
-        updateStatistics();
-        console.log('updateStatistics() completed');
-      } catch (e) {
-        console.error('updateStatistics() error:', e);
-      }
-      
-      try {
-        loadContributions();
-        console.log('loadContributions() called');
-      } catch (e) {
-        console.error('loadContributions() error:', e);
-      }
-      
-      console.log('=== INIT END ===');
-    }
-    
-    // 确保在 DOM 加载后执行
-    console.log('Script executing, readyState:', document.readyState);
-    if (document.readyState === 'loading') {
-      console.log('Waiting for DOMContentLoaded...');
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      console.log('DOM ready, calling init...');
-      setTimeout(init, 100);
-    }
-    
-    // 定期更新（每100h）
-    setInterval(() => {
-      updateStatistics();
-      loadContributions();
-    }, 360000000);
   })();
 </script>
-
-<link rel="stylesheet" href="/styles/index.css" />
-<link rel="stylesheet" href="/t-rex-runner-gh-pages/index.css" />
-
-<!-- T-Rex Runner Game -->
-<!-- 全宽地面线 - 已隐藏 -->
-<div id="ground-line" style="display: none; position: absolute; left: 0; width: 100%; height: 1px; background-color: #535353; z-index: 1; pointer-events: none;"></div>
-
-<div id="main-frame-error" class="interstitial-wrapper">
-  <div id="main-content">
-    <div class="icon icon-offline" alt=""></div>
-  </div>
-  <div id="offline-resources">
-    <img id="offline-resources-1x" src="/t-rex-runner-gh-pages/assets/default_100_percent/100-offline-sprite.png">
-    <img id="offline-resources-2x" src="/t-rex-runner-gh-pages/assets/default_200_percent/200-offline-sprite.png">
-    <template id="audio-resources">
-      <audio id="offline-sound-press" src="data:audio/mpeg;base64,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"></audio>
-      <audio id="offline-sound-hit" src="data:audio/mpeg;base64,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"></audio>
-      <audio id="offline-sound-reached" src="data:audio/mpeg;base64,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"></audio>
-    </template>
-  </div>
-</div>
-
-<script is:inline src="/t-rex-runner-gh-pages/index.js"></script>
-<script is:inline>
-  function onDocumentLoad() {
-    const runner = new Runner('.interstitial-wrapper');
-    
-    // 禁用 arcade mode（全屏居中模式）
-    const originalSetArcadeMode = Runner.instance_.setArcadeMode;
-    Runner.instance_.setArcadeMode = function() {
-      // 不执行任何操作，禁用 arcade mode
-      // originalSetArcadeMode.call(this);
-    };
-    
-    // 防止空格键滚动页面和误触按钮（桌面端和移动端）
-    // 只在游戏运行时阻止默认行为，但不阻止事件传播，让 Runner 能正常处理空格键
-    document.addEventListener('keydown', function(e) {
-      if (e.keyCode === 32 || e.key === ' ') {
-        // 检查 Runner 实例是否存在且正在运行
-        if (window.Runner && Runner.instance_ && Runner.instance_.playing) {
-          // 只阻止默认行为（滚动），但不阻止事件传播，让 Runner 能处理跳跃
-          e.preventDefault();
-          // 不调用 stopPropagation()，让事件继续传播到 Runner 的事件监听器
-          
-          // 移除所有按钮的焦点，防止空格键误触主题切换或语言切换按钮
-          const themeToggle = document.getElementById('theme-toggle');
-          const langToggle = document.getElementById('lang-toggle');
-          if (themeToggle && document.activeElement === themeToggle) {
-            themeToggle.blur();
-          }
-          if (langToggle && document.activeElement === langToggle) {
-            langToggle.blur();
-          }
-        }
-      }
-    }, true); // 使用捕获阶段，确保在其他监听器之前执行
-    
-    // 调整游戏位置到 footer 上方，地面对齐 footer 的 border-top，并与右侧内容对齐
-    function adjustGamePosition() {
-      const footer = document.querySelector('footer');
-      const gameContainer = document.querySelector('.interstitial-wrapper');
-      const runnerContainer = document.querySelector('.runner-container');
-      const groundLine = document.getElementById('ground-line');
-      const mainContentWrapper = document.querySelector('.main-content-wrapper');
-      const contributionsSection = document.querySelector('.content-section');
-      
-      if (footer && gameContainer && runnerContainer && groundLine && mainContentWrapper) {
-        // 移除 arcade-mode 类（如果存在）
-        document.body.classList.remove('arcade-mode');
-        
-        // 获取 footer 的位置（页面坐标）
-        const footerRect = footer.getBoundingClientRect();
-        const footerTop = footerRect.top + window.scrollY;
-        
-        // 获取主要内容区域的宽度和位置
-        const mainContentRect = mainContentWrapper.getBoundingClientRect();
-        const mainContentLeft = mainContentRect.left + window.scrollX;
-        const mainContentWidth = mainContentRect.width;
-        
-        // 查找 contributions section（通过检查是否有 contributions-container）
-        let contributionsBottom = 0;
-        const allSections = document.querySelectorAll('.content-section');
-        allSections.forEach(section => {
-          if (section.querySelector('.contributions-container')) {
-            const rect = section.getBoundingClientRect();
-            contributionsBottom = Math.max(contributionsBottom, rect.bottom + window.scrollY);
-          }
-        });
-        
-        // 计算游戏应该的高度，避免与 contributions 文字重合
-        // 适度放大，但不要太大（限制最大宽度为 900px）
-        const maxGameWidth = 900;
-        const targetWidth = Math.min(mainContentWidth, maxGameWidth);
-        const scale = targetWidth / 600; // 600 是默认宽度
-        let gameHeight = Math.floor(150 * scale); // 按比例缩放高度
-        
-        // 限制最大高度，但确保有足够空间显示游戏（至少 150px）
-        const maxGameHeight = 250;
-        const minGameHeight = 150; // 最小高度，确保游戏完整显示
-        if (gameHeight > maxGameHeight) {
-          gameHeight = maxGameHeight;
-        }
-        if (gameHeight < minGameHeight) {
-          gameHeight = minGameHeight;
-        }
-        
-        // 地面位置：对齐 footer 的 border-top（不向上移动太多）
-        const groundY = footerTop; // 地面对齐 footer 的 border-top
-        
-        // 计算游戏顶部位置：确保游戏底部对齐地面线
-        // 游戏容器底部应该对齐地面线，所以 gameTop = groundY - gameHeight
-        let gameTop = groundY - gameHeight;
-        let adjustedForContributions = false;
-        
-        // 如果与 contributions 重合，调整位置
-        if (contributionsBottom > 0) {
-          const minTop = contributionsBottom - 5; // 至少距离 20px
-          if (gameTop < minTop) {
-            gameTop = minTop;
-            adjustedForContributions = true;
-            // 重新计算游戏高度，确保底部不超过地面线
-            const availableHeight = groundY - gameTop;
-            if (availableHeight >= minGameHeight) {
-              gameHeight = Math.min(availableHeight, maxGameHeight);
-            } else {
-              // 空间不足时保持最小高度，但不重置 gameTop，保持在 contributions 下方
-              gameHeight = minGameHeight;
-            }
-          }
-        }
-        
-        // 仅在未因 contributions 调整时，才做底部越界修正
-        if (!adjustedForContributions) {
-          const gameBottom = gameTop + gameHeight;
-          if (gameBottom > groundY + 10) {
-            gameTop = groundY - gameHeight;
-            if (gameTop < 0) gameTop = 0;
-          }
-        }
-        
-        // 设置全宽地面线的位置：对齐 footer 的 border-top
-        groundLine.style.top = groundY + 'px';
-        groundLine.style.position = 'absolute';
-        
-        // 设置游戏容器位置：与右侧内容对齐，放大到与主要内容区域同宽
-        gameContainer.style.position = 'absolute';
-        gameContainer.style.top = gameTop + 'px';
-        gameContainer.style.left = mainContentLeft + 'px'; // 与主要内容区域左对齐
-        gameContainer.style.width = targetWidth + 'px'; // 放大后的宽度
-        gameContainer.style.height = gameHeight + 'px';
-        gameContainer.style.zIndex = '2'; // 游戏在地面线上方
-        gameContainer.style.paddingTop = '0';
-        gameContainer.style.marginTop = '0';
-        gameContainer.style.marginBottom = '0';
-        gameContainer.style.maxWidth = 'none'; // 移除最大宽度限制
-        gameContainer.style.overflow = 'visible'; // 确保内容可见
-        
-        // 调试信息（可以在控制台查看）
-        console.log('Game position:', {
-          gameTop,
-          gameHeight,
-          groundY,
-          footerTop,
-          gameBottom: gameTop + gameHeight,
-          gameContainerHeight: gameContainer.offsetHeight,
-          runnerContainerHeight: runnerContainer ? runnerContainer.offsetHeight : 'N/A'
-        });
-        
-        // 调整 runner-container 的位置和大小
-        runnerContainer.style.position = 'absolute';
-        runnerContainer.style.bottom = '0';
-        runnerContainer.style.left = '0';
-        runnerContainer.style.width = '100%';
-        runnerContainer.style.maxWidth = '100%';
-        runnerContainer.style.transform = 'none'; // 移除 arcade mode 的缩放
-        runnerContainer.style.height = gameHeight + 'px'; // 确保高度正确
-        
-        // 更新 Runner 的内部尺寸
-        if (Runner.instance_) {
-          // 更新 Runner 的默认尺寸
-          Runner.defaultDimensions.WIDTH = targetWidth;
-          Runner.defaultDimensions.HEIGHT = gameHeight;
-          
-          // 更新实例的尺寸
-          Runner.instance_.dimensions.WIDTH = targetWidth;
-          Runner.instance_.dimensions.HEIGHT = gameHeight;
-          
-          // 重写 adjustDimensions 方法，移除宽度限制
-          Runner.instance_.adjustDimensions = function() {
-            clearInterval(this.resizeTimerId_);
-            this.resizeTimerId_ = null;
-            
-            // 使用我们设置的容器宽度和高度
-            this.dimensions.WIDTH = this.outerContainerEl.offsetWidth || targetWidth;
-            this.dimensions.HEIGHT = gameHeight;
-            
-            // Redraw the elements back onto the canvas.
-            if (this.canvas) {
-              this.canvas.width = this.dimensions.WIDTH;
-              this.canvas.height = this.dimensions.HEIGHT;
-              
-              Runner.updateCanvasScaling(this.canvas);
-              
-              // 更新小恐龙的地面位置（按照原始代码的逻辑）
-              if (this.tRex) {
-                // 原始逻辑：groundYPos 是小恐龙的 y 坐标（顶部位置）
-                // groundYPos = HEIGHT - tRex.HEIGHT - BOTTOM_PAD
-                const bottomPad = Runner.config.BOTTOM_PAD || 10;
-                this.tRex.groundYPos = this.dimensions.HEIGHT - this.tRex.config.HEIGHT - bottomPad;
-                this.tRex.yPos = this.tRex.groundYPos;
-                this.tRex.minJumpHeight = this.tRex.groundYPos - this.tRex.config.MIN_JUMP_HEIGHT;
-              }
-              
-              if (this.distanceMeter) {
-                this.distanceMeter.calcXPos(this.dimensions.WIDTH);
-              }
-              this.clearCanvas();
-              if (this.horizon) {
-                this.horizon.update(0, 0, true);
-              }
-              if (this.tRex) {
-                this.tRex.update(0);
-              }
-              
-              // Outer container and distance meter.
-              if (this.playing || this.crashed || this.paused) {
-                if (this.containerEl) {
-                  this.containerEl.style.width = this.dimensions.WIDTH + 'px';
-                  this.containerEl.style.height = this.dimensions.HEIGHT + 'px';
-                }
-                if (this.distanceMeter) {
-                  this.distanceMeter.update(0, Math.ceil(this.distanceRan));
-                }
-                this.stop();
-              } else {
-                if (this.tRex) {
-                  this.tRex.draw(0, 0);
-                }
-              }
-            }
-          };
-          
-          // 调用 adjustDimensions 更新游戏尺寸
-          if (Runner.instance_.canvas) {
-            Runner.instance_.adjustDimensions.call(Runner.instance_);
-          }
-          
-          // 如果游戏已经初始化，重新初始化小恐龙的位置
-          if (Runner.instance_.tRex && Runner.instance_.tRex.init) {
-            Runner.instance_.tRex.init();
-          }
-        }
-      }
-    }
-    
-    // 延迟执行，确保 DOM 完全加载
-    setTimeout(adjustGamePosition, 500);
-    
-    // 监听窗口大小变化和滚动，重新调整位置
-    window.addEventListener('resize', adjustGamePosition);
-    window.addEventListener('scroll', adjustGamePosition);
-    
-    // 监听游戏启动事件，确保 arcade mode 被禁用
-    const observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          if (document.body.classList.contains('arcade-mode')) {
-            document.body.classList.remove('arcade-mode');
-            adjustGamePosition();
-          }
-        }
-      });
-    });
-    observer.observe(document.body, { attributes: true });
-  }
-  
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', onDocumentLoad);
-  } else {
-    onDocumentLoad();
-  }
-</script>
+</Layout>

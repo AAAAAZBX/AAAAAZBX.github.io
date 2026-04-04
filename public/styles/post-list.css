@@ -111,8 +111,8 @@
   width: 240px;
   flex-shrink: 0;
   position: sticky;
-  top: 80px;
-  max-height: calc(100vh - 100px);
+  top: var(--sticky-top-offset);
+  max-height: calc(100vh - var(--sticky-top-offset) - 32px);
   overflow-y: auto;
 }
 
