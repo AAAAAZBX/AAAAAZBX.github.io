@@ -27,7 +27,15 @@ const year = new Date().getFullYear();
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="shortcut icon" type="image/png" href="/logo.png" />
 
-    <!-- 全局样式 -->
+    <!-- 与 lynx-li.github.io 文章页一致：Bootstrap 栅格 + GitHub Markdown 底座，再由 global 覆盖主题 -->
+    <link
+      rel="stylesheet"
+      href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css"
+    />
     <link rel="stylesheet" href="/styles/global.css" />
 
     <!-- Fluid 顶栏图标（与 Lynx Li Hexo Fluid iconfont 一致） -->
@@ -45,104 +53,66 @@ const year = new Date().getFullYear();
         align-self: flex-start !important;
       }
 
-      /* 确保标题加粗 */
-      article.typora-github h1,
-      article.typora-github h2,
-      article.typora-github h3,
-      article.typora-github h4,
-      article.typora-github h5,
-      article.typora-github h6,
-      .typora-github h1,
-      .typora-github h2,
-      .typora-github h3,
-      .typora-github h4,
-      .typora-github h5,
-      .typora-github h6 {
+      /* Fluid 正文区：与 global.css 一致，!important 兜底 */
+      #board .markdown-body h1,
+      #board .markdown-body h2,
+      #board .markdown-body h3,
+      #board .markdown-body h4,
+      #board .markdown-body h5,
+      #board .markdown-body h6 {
         font-weight: 600 !important;
       }
 
-      /* 确保加粗内容显示 */
-      article.typora-github strong,
-      article.typora-github b,
-      .typora-github strong,
-      .typora-github b {
+      #board .markdown-body strong,
+      #board .markdown-body b {
         font-weight: 600 !important;
       }
 
-      /* 锚点链接（目录链接）：浅灰色，无下划线 */
-      article.typora-github a[href^="#"],
-      .typora-github a[href^="#"] {
+      #board .markdown-body a[href^="#"] {
         color: #8590a6 !important;
         text-decoration: none !important;
       }
-      article.typora-github a[href^="#"]:link,
-      article.typora-github a[href^="#"]:visited,
-      article.typora-github a[href^="#"]:active,
-      .typora-github a[href^="#"]:link,
-      .typora-github a[href^="#"]:visited,
-      .typora-github a[href^="#"]:active {
+      #board .markdown-body a[href^="#"]:link,
+      #board .markdown-body a[href^="#"]:visited,
+      #board .markdown-body a[href^="#"]:active {
         color: #8590a6 !important;
         text-decoration: none !important;
       }
-      article.typora-github a[href^="#"]:hover,
-      .typora-github a[href^="#"]:hover {
+      #board .markdown-body a[href^="#"]:hover {
         color: #8590a6 !important;
         text-decoration: none !important;
       }
-      /* 锚点链接激活状态：蓝色 */
-      article.typora-github a[href^="#"].active,
-      article.typora-github a[href^="#"].active:link,
-      article.typora-github a[href^="#"].active:visited,
-      article.typora-github a[href^="#"].active:hover,
-      article.typora-github a[href^="#"].active:active,
-      .typora-github a[href^="#"].active,
-      .typora-github a[href^="#"].active:link,
-      .typora-github a[href^="#"].active:visited,
-      .typora-github a[href^="#"].active:hover,
-      .typora-github a[href^="#"].active:active {
+      #board .markdown-body a[href^="#"].active,
+      #board .markdown-body a[href^="#"].active:link,
+      #board .markdown-body a[href^="#"].active:visited,
+      #board .markdown-body a[href^="#"].active:hover,
+      #board .markdown-body a[href^="#"].active:active {
         color: #1890ff !important;
         font-weight: 500 !important;
         text-decoration: none !important;
       }
-      /* 外部链接和文件链接（http/https/本地文件）：蓝色，无下划线 */
-      article.typora-github a[href^="http://"],
-      article.typora-github a[href^="https://"],
-      article.typora-github a[href^="//"],
-      article.typora-github a[href^="/"]:not([href^="#"]),
-      .typora-github a[href^="http://"],
-      .typora-github a[href^="https://"],
-      .typora-github a[href^="//"],
-      .typora-github a[href^="/"]:not([href^="#"]) {
+      #board .markdown-body a[href^="http://"],
+      #board .markdown-body a[href^="https://"],
+      #board .markdown-body a[href^="//"],
+      #board .markdown-body a[href^="/"]:not([href^="#"]) {
         color: #0969da !important;
         text-decoration: none !important;
       }
-      article.typora-github a[href^="http://"]:link,
-      article.typora-github a[href^="http://"]:visited,
-      article.typora-github a[href^="https://"]:link,
-      article.typora-github a[href^="https://"]:visited,
-      article.typora-github a[href^="//"]:link,
-      article.typora-github a[href^="//"]:visited,
-      article.typora-github a[href^="/"]:not([href^="#"]):link,
-      article.typora-github a[href^="/"]:not([href^="#"]):visited,
-      .typora-github a[href^="http://"]:link,
-      .typora-github a[href^="http://"]:visited,
-      .typora-github a[href^="https://"]:link,
-      .typora-github a[href^="https://"]:visited,
-      .typora-github a[href^="//"]:link,
-      .typora-github a[href^="//"]:visited,
-      .typora-github a[href^="/"]:not([href^="#"]):link,
-      .typora-github a[href^="/"]:not([href^="#"]):visited {
+      #board .markdown-body a[href^="http://"]:link,
+      #board .markdown-body a[href^="http://"]:visited,
+      #board .markdown-body a[href^="https://"]:link,
+      #board .markdown-body a[href^="https://"]:visited,
+      #board .markdown-body a[href^="//"]:link,
+      #board .markdown-body a[href^="//"]:visited,
+      #board .markdown-body a[href^="/"]:not([href^="#"]):link,
+      #board .markdown-body a[href^="/"]:not([href^="#"]):visited {
         color: #0969da !important;
         text-decoration: none !important;
       }
-      article.typora-github a[href^="http://"]:hover,
-      article.typora-github a[href^="https://"]:hover,
-      article.typora-github a[href^="//"]:hover,
-      article.typora-github a[href^="/"]:not([href^="#"]):hover,
-      .typora-github a[href^="http://"]:hover,
-      .typora-github a[href^="https://"]:hover,
-      .typora-github a[href^="//"]:hover,
-      .typora-github a[href^="/"]:not([href^="#"]):hover {
+      #board .markdown-body a[href^="http://"]:hover,
+      #board .markdown-body a[href^="https://"]:hover,
+      #board .markdown-body a[href^="//"]:hover,
+      #board .markdown-body a[href^="/"]:not([href^="#"]):hover {
         color: #0550ae !important;
         text-decoration: none !important;
       }
@@ -279,8 +249,8 @@ const year = new Date().getFullYear();
         const updateHeader = () => {
           const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
           
-          // 参考 axi404.top：滚动超过一定距离后添加 not-top 类（这里用 scrolled）
-          if (scrollTop > 16) { // 超过 top-4 (16px) 后显示背景和边框
+          // 与 Lynx Fluid events.js 一致：约 50px 后顶栏由透明变为实色（top-nav-collapse）
+          if (scrollTop > 50) {
             header?.classList.add('scrolled');
           } else {
             header?.classList.remove('scrolled');
@@ -333,7 +303,7 @@ const year = new Date().getFullYear();
         });
 
         // Markdown 内部目录链接的高亮功能
-        const article = document.querySelector("article.typora-github");
+        const article = document.querySelector("#board .markdown-body");
         if (!article) return;
 
         // 获取所有锚点链接（href 以 # 开头的链接）

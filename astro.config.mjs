@@ -6,6 +6,11 @@ import rehypeKatex from 'rehype-katex';
 
 // https://astro.build/config
 export default defineConfig({
+  /** 旧栏目路径（已拆为 /ai、/tools，Research 已下线） */
+  redirects: {
+    "/learning": "/ai",
+    "/research": "/categories",
+  },
   markdown: {
     syntaxHighlight: 'shiki',
     // 启用 GFM 支持，确保基本的 Markdown 链接 []() 格式能正确解析

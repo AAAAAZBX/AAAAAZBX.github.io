@@ -1,15 +1,22 @@
 import { getCollection } from "astro:content";
-import { LEARNING_TECHNOLOGY_INDEX_SLUG } from "./learning-constants";
 
-export type ColKey = "algorithms" | "learning" | "research" | "travel";
+export type ColKey = "algorithms" | "ai" | "tools" | "travel";
 
-export const collectionKeys: ColKey[] = ["algorithms", "learning", "research", "travel"];
+export const collectionKeys: ColKey[] = ["algorithms", "ai", "tools", "travel"];
 
 export const collectionLabels: Record<ColKey, { en: string; zh: string }> = {
   algorithms: { en: "Competitive Programming", zh: "算法竞赛" },
-  learning: { en: "Technology", zh: "技术笔记" },
-  research: { en: "Research", zh: "研究" },
+  ai: { en: "AI", zh: "人工智能" },
+  tools: { en: "Tools", zh: "工具与环境" },
   travel: { en: "Daily Life", zh: "日常" },
+};
+
+/** src/content 下实际文件夹名（可与集合键不同，例如 ai → `AI`） */
+export const contentFolderByColKey: Record<ColKey, string> = {
+  algorithms: "algorithms",
+  ai: "AI",
+  tools: "Tools",
+  travel: "travel",
 };
 
 export type MergedPost = {
@@ -26,20 +33,16 @@ export async function getMergedPosts(): Promise<MergedPost[]> {
   const buckets = await Promise.all(
     collectionKeys.map(async (key) => {
       const posts = await getCollection(key);
-      return posts
-        .filter(
-          (post) =>
-            key !== "learning" || post.slug !== LEARNING_TECHNOLOGY_INDEX_SLUG
-        )
-        .map((post) => ({
-          collection: key,
-          slug: post.slug,
-          title: post.data.title,
-          date: post.data.date,
-          href: `/${key}/${post.slug}`,
-          description: post.data.description,
-          body: post.body,
-        }));
+      return posts.map((post) => ({
+        collection: key,
+        /* glob loader 集合无 slug，路径键与 getEntry(collection, id) 一致 */
+        slug: post.id,
+        title: post.data.title,
+        date: post.data.date,
+        href: `/${key}/${post.id}`,
+        description: post.data.description,
+        body: post.body,
+      }));
     })
   );
   return buckets.flat().sort((a, b) => {

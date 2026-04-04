@@ -162,8 +162,8 @@ import Layout from "../layouts/Layout.astro";
                 // 排除主页和目录页面（只搜索具体的文章，不搜索目录列表页和主页）
                 // 主页的特征：URL 是 / 或 /index
                 const isHomePage = normalizedUrl === '/' || normalizedUrl === '/index';
-                // 目录页面的特征：URL 是 /research/, /learning/, /algorithms/, /travel/ 等，且没有子路径
-                const isDirectoryPage = /^\/(research|learning|algorithms|travel)\/?$/.test(normalizedUrl);
+                // 目录页面的特征：URL 是 /ai/, /tools/, /algorithms/, /travel/ 等，且没有子路径
+                const isDirectoryPage = /^\/(ai|tools|algorithms|travel)\/?$/.test(normalizedUrl);
                 if (isHomePage || isDirectoryPage) {
                   return null; // 返回 null，后续过滤掉
                 }

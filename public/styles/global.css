@@ -45,6 +45,18 @@
   --fluid-link-hover-color: #30a9de;
   --fluid-link-hover-bg-color: #f8f9fa;
   --fluid-line-color: #eaecef;
+  /* Hexo Fluid main.css 正文区变量（与 post-content / markdown-body 对齐） */
+  --board-bg-color: var(--bg-secondary);
+  --post-text-color: var(--fluid-post-text-color);
+  --post-heading-color: var(--fluid-post-heading-color);
+  --post-link-color: var(--text-link);
+  --line-color: var(--fluid-line-color);
+  --inlinecode-bg-color: var(--code-inline-bg);
+  --highlight-bg-color: var(--code-bg);
+  --text-color: var(--fluid-text-color);
+  --sec-text-color: var(--fluid-sec-text-color);
+  --link-hover-color: var(--fluid-link-hover-color);
+  --link-hover-bg-color: var(--fluid-link-hover-bg-color);
 }
 
 .dark {
@@ -80,6 +92,17 @@
   --fluid-link-hover-color: #30a9de;
   --fluid-link-hover-bg-color: #364151;
   --fluid-line-color: #435266;
+  --board-bg-color: var(--bg-secondary);
+  --post-text-color: var(--fluid-post-text-color);
+  --post-heading-color: var(--fluid-post-heading-color);
+  --post-link-color: var(--text-link);
+  --line-color: var(--fluid-line-color);
+  --inlinecode-bg-color: var(--code-inline-bg);
+  --highlight-bg-color: var(--code-bg);
+  --text-color: var(--fluid-text-color);
+  --sec-text-color: var(--fluid-sec-text-color);
+  --link-hover-color: var(--fluid-link-hover-color);
+  --link-hover-bg-color: var(--fluid-link-hover-bg-color);
 }
 
 /* ======= 1. 全局基础重置 (部分修改) ======= */
@@ -292,22 +315,205 @@ header.scrolled .nav-links {
   /* 侧边留白 */
 }
 
-/* 文章页面布局：左右分栏（目录 + 内容） */
-.article-wrapper {
-  display: flex;
-  max-width: 1200px;
-  margin: 32px auto 48px;
-  padding: 0 24px;
-  gap: 32px;
-  align-items: flex-start;
-  overflow-x: visible !important;
-  /* 确保目录的圆点可以超出边界显示 */
+/* Fluid 文章外壳：栅格用 Bootstrap 4.6.1（与 public/lynx-li.github.io 一致），此处只保留 lynx main 的补充类 */
+.fluid-board-outer.container-fluid.nopadding-x {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
-.article-content {
-  flex: 1;
-  min-width: 0;
-  /* 防止 flex item 溢出 */
+.row.nomargin-x {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.nopadding-x {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+@media (max-width: 767px) {
+  .nopadding-x-md {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+.nomargin-x {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+#board {
+  position: relative;
+  margin-top: -2rem;
+  padding: 3rem 0;
+  background-color: var(--board-bg-color);
+  transition: background-color 0.2s ease-in-out;
+  border-radius: 0.5rem;
+  z-index: 3;
+  box-shadow: 0 12px 15px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
+}
+
+.post-content,
+post-custom {
+  box-sizing: border-box;
+  padding-left: 10%;
+  padding-right: 10%;
+}
+
+@media (max-width: 767px) {
+  .post-content,
+  post-custom {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .post-content {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 424px) {
+  .post-content,
+  post-custom {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .post-content {
+    overflow: hidden;
+  }
+}
+
+.post-content strong {
+  font-weight: bold;
+}
+
+.post-content > *:nth-child(2) {
+  margin-top: 0;
+}
+
+.post-content img {
+  object-fit: cover;
+  max-width: 100%;
+}
+
+/* Fluid：屏上隐藏 SEO 标题，打印时显示 */
+@media not print {
+  #seo-header {
+    display: none;
+  }
+}
+
+/* tocbot 目录（lynx main.css） */
+#toc {
+  visibility: hidden;
+}
+
+.toc-header {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.toc-header,
+.toc-header > i {
+  font-size: 1.25rem;
+}
+
+.toc-body {
+  max-height: 75vh;
+  overflow-y: auto;
+  overflow: -moz-scrollbars-none;
+  -ms-overflow-style: none;
+}
+
+.toc-body ol {
+  list-style: none;
+  padding-inline-start: 1rem;
+}
+
+.toc-body::-webkit-scrollbar {
+  display: none;
+}
+
+.tocbot-list {
+  position: relative;
+}
+
+.tocbot-list ol {
+  list-style: none;
+  padding-left: 1rem;
+}
+
+.tocbot-list a {
+  font-size: 0.95rem;
+}
+
+.tocbot-link {
+  color: var(--text-color);
+}
+
+/* 右侧目录：悬停不要下划线（Bootstrap reboot / 主题链接样式会画蓝underline，很丑） */
+#toc a,
+#toc a:link,
+#toc a:visited,
+#toc a:hover,
+#toc a:active,
+#toc a:focus,
+.tocbot-link:link,
+.tocbot-link:visited,
+.tocbot-link:hover,
+.tocbot-link:active,
+.tocbot-link:focus {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  box-shadow: none;
+}
+
+.tocbot-active-link {
+  font-weight: bold;
+  color: var(--link-hover-color);
+}
+
+.tocbot-is-collapsed {
+  max-height: 0;
+}
+
+.tocbot-is-collapsible {
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.toc-list-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toc-list-item.is-active-li::before {
+  height: 1rem;
+  margin: 0.25rem 0;
+  visibility: visible;
+}
+
+.toc-list-item::before {
+  width: 0.15rem;
+  height: 0.2rem;
+  position: absolute;
+  left: 0.25rem;
+  content: "";
+  border-radius: 2px;
+  margin: 0.65rem 0;
+  background: var(--link-hover-color);
+  visibility: hidden;
+  transition: height 0.1s ease-in-out, margin 0.1s ease-in-out, visibility 0.1s ease-in-out;
+}
+
+.sidebar {
+  position: sticky;
+  top: var(--sticky-top-offset);
+  padding: 3rem 0;
 }
 
 /* ... (上方的 body, header, nav 等样式保持不变) ... */
@@ -329,6 +535,17 @@ footer {
   /* 移除顶部边框，消除颜色隔离感 */
 }
 
+/* Fluid 顶栏布局页：页脚疏密对齐 lynx main.css .footer-inner；实底与页面基色一致，避免透明页脚叠在默认白/继承色上 */
+body.home-fluid-index footer {
+  padding: 3rem 0 1rem;
+  margin-top: 0;
+  background-color: #eee !important;
+}
+html.dark body.home-fluid-index footer,
+body.home-fluid-index.dark footer {
+  background-color: #181c27 !important;
+}
+
 /* 3. 定义新的 Canvas 容器样式 - 覆盖底部横线区域 */
 #dino-canvas-container {
   position: absolute;
@@ -343,19 +560,6 @@ footer {
   z-index: 1;
   /* 确保它在 footer 的文本内容之下 */
   overflow: hidden;
-}
-
-/* ======= 4. Typora GitHub 风格文章容器 (仅用于文章内容) ======= */
-article.typora-github {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 48px;
-  font-size: 16px;
-  line-height: 1.6;
-  word-wrap: break-word;
-  /* 文章页不需要 max-width，因为它已经被 .content-wrapper 限制了 */
-  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* 列表页的基础样式 */
@@ -395,15 +599,6 @@ article.typora-github {
 
 /* 移动端适配 */
 @media (max-width: 1024px) {
-  .article-wrapper {
-    flex-direction: column;
-    padding: 0 16px;
-  }
-
-  .article-content {
-    width: 100%;
-  }
-
   /* 导航栏移动端优化 */
   .nav {
     padding: 12px 0;
@@ -429,15 +624,7 @@ article.typora-github {
 }
 
 @media (max-width: 768px) {
-  article.typora-github {
-    padding: 24px 16px;
-  }
-
   .content-wrapper {
-    margin: 20px auto 30px;
-  }
-
-  .article-wrapper {
     margin: 20px auto 30px;
   }
 
@@ -473,191 +660,188 @@ article.typora-github {
   }
 }
 
-/* ======= 5. Markdown 元素详情样式 ======= */
+/* ======= 5. Hexo Fluid post-content / markdown-body（替代原 Typora 容器） ======= */
 
-.typora-github h1,
-.typora-github h2,
-.typora-github h3,
-.typora-github h4,
-.typora-github h5,
-.typora-github h6 {
-  margin-top: 24px;
-  margin-bottom: 16px;
-  font-weight: 600 !important;
-  /* 确保标题加粗 */
-  line-height: 1.25;
-  color: var(--text-primary);
+.markdown-body {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-family: var(--font-family-sans-serif);
+  margin-bottom: 2rem;
+  color: var(--post-text-color);
+  word-wrap: break-word;
+}
+
+.markdown-body > h1,
+.markdown-body h2 {
+  border-bottom: 1px solid var(--line-color);
+}
+
+.markdown-body > h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  color: var(--post-heading-color);
+  transition: color 0.2s ease-in-out, border-bottom-color 0.2s ease-in-out;
+  font-weight: bold;
+  margin-bottom: 0.75em;
+  margin-top: 2em;
   scroll-margin-top: var(--sticky-top-offset);
-  /* 为固定导航栏留出空间 */
 }
 
-.typora-github h1 {
+.markdown-body > h1::before,
+.markdown-body h2::before,
+.markdown-body h3::before,
+.markdown-body h4::before,
+.markdown-body h5::before,
+.markdown-body h6::before {
+  display: block;
+  content: "";
+  margin-top: -5rem;
+  height: 5rem;
+  width: 1px;
+  visibility: hidden;
+}
+
+.markdown-body > h1:focus,
+.markdown-body h2:focus,
+.markdown-body h3:focus,
+.markdown-body h4:focus,
+.markdown-body h5:focus,
+.markdown-body h6:focus {
+  outline: none;
+}
+
+.markdown-body > h1 {
   font-size: 2em;
-  padding-bottom: 0.3em;
-  border-bottom: none;
+  line-height: 1.25;
 }
 
-.typora-github h2 {
+.markdown-body h2 {
   font-size: 1.5em;
-  padding-bottom: 0.3em;
-  border-bottom: none;
+  line-height: 1.25;
 }
 
-.typora-github h3 {
+.markdown-body h3 {
   font-size: 1.25em;
 }
 
-.typora-github h4 {
+.markdown-body h4 {
   font-size: 1em;
 }
 
-.typora-github p {
+.markdown-body p {
   margin-top: 0;
   margin-bottom: 16px;
 }
 
-/* 确保 strong 和 b 标签能够正常加粗显示 */
-.typora-github strong,
-.typora-github b,
-article.typora-github strong,
-article.typora-github b {
-  font-weight: 600 !important;
-  /* 确保加粗生效 */
+.markdown-body a {
+  color: var(--post-link-color);
+}
+
+.markdown-body strong,
+.markdown-body b {
+  font-weight: bold;
   color: inherit;
 }
 
-/* 全局的 strong 和 b 标签样式（用于所有文章内容） */
-article strong,
-article b {
-  font-weight: 600 !important;
-  /* 确保加粗生效 */
+.post-content strong,
+.post-content b,
+article.post-content strong,
+article.post-content b {
+  font-weight: 600;
   color: inherit;
 }
 
-/* Markdown 内部链接样式 - 区分锚点链接和外部链接 */
-
-/* 锚点链接（目录链接）：浅灰色，无下划线 */
-article.typora-github a[href^="#"],
-.typora-github a[href^="#"] {
+/* 锚点：正文内与 Fluid/tocbot 协调 */
+#board .markdown-body a[href^="#"] {
   color: #8590a6 !important;
-  /* 默认浅灰色，类似知乎 */
   text-decoration: none !important;
-  /* 没有下划线 */
   transition: color 0.2s;
 }
 
-article.typora-github a[href^="#"]:link,
-article.typora-github a[href^="#"]:visited,
-article.typora-github a[href^="#"]:active,
-.typora-github a[href^="#"]:link,
-.typora-github a[href^="#"]:visited,
-.typora-github a[href^="#"]:active {
+#board .markdown-body a[href^="#"]:link,
+#board .markdown-body a[href^="#"]:visited,
+#board .markdown-body a[href^="#"]:active {
   color: #8590a6 !important;
   text-decoration: none !important;
 }
 
-article.typora-github a[href^="#"]:hover,
-.typora-github a[href^="#"]:hover {
+#board .markdown-body a[href^="#"]:hover {
   color: #8590a6 !important;
-  text-decoration: none !important;
 }
 
-/* 锚点链接激活状态：蓝色 */
-article.typora-github a[href^="#"].active,
-article.typora-github a[href^="#"].active:link,
-article.typora-github a[href^="#"].active:visited,
-article.typora-github a[href^="#"].active:hover,
-article.typora-github a[href^="#"].active:active,
-.typora-github a[href^="#"].active,
-.typora-github a[href^="#"].active:link,
-.typora-github a[href^="#"].active:visited,
-.typora-github a[href^="#"].active:hover,
-.typora-github a[href^="#"].active:active {
+#board .markdown-body a[href^="#"].active,
+#board .markdown-body a[href^="#"].active:link,
+#board .markdown-body a[href^="#"].active:visited,
+#board .markdown-body a[href^="#"].active:hover,
+#board .markdown-body a[href^="#"].active:active {
   color: #1890ff !important;
   font-weight: 500 !important;
   text-decoration: none !important;
 }
 
-/* 外部链接和文件链接（http/https/本地文件）：蓝色，无下划线 */
-article.typora-github a[href^="http://"],
-article.typora-github a[href^="https://"],
-article.typora-github a[href^="//"],
-article.typora-github a[href^="/"]:not([href^="#"]),
-.typora-github a[href^="http://"],
-.typora-github a[href^="https://"],
-.typora-github a[href^="//"],
-.typora-github a[href^="/"]:not([href^="#"]) {
+#board .markdown-body a[href^="http://"],
+#board .markdown-body a[href^="https://"],
+#board .markdown-body a[href^="//"],
+#board .markdown-body a[href^="/"]:not([href^="#"]) {
   color: var(--text-link) !important;
-  /* 蓝色 */
   text-decoration: none !important;
-  /* 无下划线 */
   transition: color 0.2s;
 }
 
-article.typora-github a[href^="http://"]:link,
-article.typora-github a[href^="http://"]:visited,
-article.typora-github a[href^="https://"]:link,
-article.typora-github a[href^="https://"]:visited,
-article.typora-github a[href^="//"]:link,
-article.typora-github a[href^="//"]:visited,
-article.typora-github a[href^="/"]:not([href^="#"]):link,
-article.typora-github a[href^="/"]:not([href^="#"]):visited,
-.typora-github a[href^="http://"]:link,
-.typora-github a[href^="http://"]:visited,
-.typora-github a[href^="https://"]:link,
-.typora-github a[href^="https://"]:visited,
-.typora-github a[href^="//"]:link,
-.typora-github a[href^="//"]:visited,
-.typora-github a[href^="/"]:not([href^="#"]):link,
-.typora-github a[href^="/"]:not([href^="#"]):visited {
+#board .markdown-body a[href^="http://"]:link,
+#board .markdown-body a[href^="http://"]:visited,
+#board .markdown-body a[href^="https://"]:link,
+#board .markdown-body a[href^="https://"]:visited,
+#board .markdown-body a[href^="//"]:link,
+#board .markdown-body a[href^="//"]:visited,
+#board .markdown-body a[href^="/"]:not([href^="#"]):link,
+#board .markdown-body a[href^="/"]:not([href^="#"]):visited {
   color: #0969da !important;
   text-decoration: none !important;
 }
 
-article.typora-github a[href^="http://"]:hover,
-article.typora-github a[href^="https://"]:hover,
-article.typora-github a[href^="//"]:hover,
-article.typora-github a[href^="/"]:not([href^="#"]):hover,
-.typora-github a[href^="http://"]:hover,
-.typora-github a[href^="https://"]:hover,
-.typora-github a[href^="//"]:hover,
-.typora-github a[href^="/"]:not([href^="#"]):hover {
+#board .markdown-body a[href^="http://"]:hover,
+#board .markdown-body a[href^="https://"]:hover,
+#board .markdown-body a[href^="//"]:hover,
+#board .markdown-body a[href^="/"]:not([href^="#"]):hover {
   color: var(--text-link-hover) !important;
-  /* 悬停时稍深的蓝色 */
   text-decoration: none !important;
 }
 
-.typora-github ul,
-.typora-github ol {
+.markdown-body ul,
+.markdown-body ol {
   margin-top: 0;
   margin-bottom: 16px;
   padding-left: 2em;
 }
 
-.typora-github li {
+.markdown-body li {
   margin: 0.25em 0;
 }
 
-.typora-github li>p {
+.markdown-body li > p {
   margin-top: 16px;
 }
 
-.typora-github blockquote {
+.markdown-body blockquote {
   margin: 0 0 16px;
   padding: 0 1em;
   color: var(--blockquote-text);
   border-left: 0.25em solid var(--blockquote-border);
 }
 
-.typora-github blockquote> :first-child {
+.markdown-body blockquote > :first-child {
   margin-top: 0;
 }
 
-.typora-github blockquote> :last-child {
+.markdown-body blockquote > :last-child {
   margin-bottom: 0;
 }
 
-.typora-github table {
+.markdown-body table {
   display: block;
   width: 100%;
   overflow: auto;
@@ -667,62 +851,57 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   margin-bottom: 16px;
 }
 
-.typora-github table th {
+.markdown-body table th {
   font-weight: 600;
   background-color: var(--table-header-bg);
 }
 
-.typora-github table th,
-.typora-github table td {
+.markdown-body table th,
+.markdown-body table td {
   padding: 6px 13px;
   border: 1px solid var(--border-color);
 }
 
-.typora-github table tr {
+.markdown-body table tr {
   background-color: var(--table-bg);
   border-top: 1px solid var(--border-color);
 }
 
-.typora-github table tr:nth-child(2n) {
+.markdown-body table tr:nth-child(2n) {
   background-color: var(--table-stripe-bg);
 }
 
-.typora-github hr {
+.markdown-body hr {
   height: 0.25em;
   padding: 0;
   margin: 24px 0;
-  background-color: #e1e4e8;
+  background-color: var(--line-color);
   border: 0;
 }
 
-.typora-github img {
-  max-width: 100%;
-  box-sizing: border-box;
-  background-color: #fff;
-}
-
-.typora-github :not(pre)>code {
+.markdown-body :not(pre) > code {
   padding: 0.2em 0.4em;
   margin: 0;
   font-size: 85%;
   font-family: "Fira Code", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-  background-color: var(--code-inline-bg);
+  background-color: var(--inlinecode-bg-color);
   border-radius: 6px;
+  tab-size: 4;
 }
 
-.typora-github pre {
+.markdown-body pre {
   position: relative;
-  padding: 16px;
+  padding: 1.45rem 1rem;
   overflow: auto;
-  font-size: 85%;
+  font-size: 85% !important;
   line-height: 1.45;
-  background-color: var(--code-bg);
+  background-color: var(--highlight-bg-color);
   border-radius: 6px;
   margin-bottom: 16px;
   font-family: "Fira Code", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 }
 
-.typora-github pre code {
+.markdown-body pre code {
   background-color: transparent;
   padding: 0;
   margin: 0;
@@ -733,24 +912,37 @@ article.typora-github a[href^="/"]:not([href^="#"]):hover,
   overflow-x: auto;
 }
 
-.typora-github pre.astro-code {
+.markdown-body pre.astro-code {
   position: relative;
   padding: 16px;
   overflow: auto;
   font-size: 85%;
   line-height: 1.45;
-  background-color: var(--code-bg);
+  background-color: var(--highlight-bg-color);
   border-radius: 6px;
   margin-bottom: 16px;
   font-family: "Fira Code", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 }
 
-.typora-github pre.astro-code code {
+.markdown-body pre.astro-code code {
   background-color: transparent;
   padding: 0;
   margin: 0;
   border: 0;
   font-family: inherit;
+}
+
+.markdown-body p > img,
+.markdown-body p > a > img,
+.markdown-body figure > img,
+.markdown-body figure > a > img {
+  max-width: 90%;
+  margin: 1.5rem auto;
+  display: block;
+  box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  background-color: transparent;
+  box-sizing: border-box;
 }
 
 .code-copy {
@@ -797,35 +989,98 @@ pre.astro-code::before {
 }
 
 /* ======= Fluid 首页：全屏背景图 + fixed 顶栏（结构参考 public/lynx-li.github.io/index.html） ======= */
+/*
+ * Lynx main.css :root --body-bg-color（亮色 #eee / 暗色 #181c27）：页缘与 overscroll 与 #board 白底区分。
+ * Bootstrap reboot 的 body 背景与部分环境下 html 默认白会「盖住」灰底；Fluid 页用 !important 统一压住层叠。
+ */
+html:has(body.home-fluid-index):not(.dark) {
+  background-color: #eee !important;
+}
+html.dark:has(body.home-fluid-index) {
+  background-color: #181c27 !important;
+}
+body.home-fluid-index {
+  background-color: #eee !important;
+}
+html.dark body.home-fluid-index,
+body.home-fluid-index.dark {
+  background-color: #181c27 !important;
+}
+
 body.home-fluid-index header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  margin-bottom: 0;
+  /* 盖住全局 header { margin: 0 0 32px }，避免顶栏占位或叠算产生首屏空隙 */
+  margin: 0;
 }
 
-body.home-fluid-index header .nav {
+/*
+ * 顶栏：参照 Lynx Fluid（main.css .navbar 顶部 transparent + Material 阴影；滚动后 top-nav-collapse 实色）
+ * 本站顶部略加半透明底色 + 轻 blur，避免「全透明」悬空感，仍保留隐约透出背景。
+ * events.js：scroll 时 navbar.offset().top > 50 加 top-nav-collapse；本站用 header.scrolled + scrollY>50
+ */
+body.home-fluid-index header:not(.scrolled) .nav {
+  background: rgba(47, 65, 84, 0.42);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 2px 5px 0 rgba(0, 0, 0, 0.16),
+    0 2px 10px 0 rgba(0, 0, 0, 0.12);
+  transition:
+    background 0.5s ease-in-out,
+    padding 0.5s ease-in-out,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    backdrop-filter 0.35s ease;
+}
+
+.dark body.home-fluid-index header:not(.scrolled) .nav {
+  background: rgba(31, 49, 68, 0.48);
+}
+
+body.home-fluid-index header.scrolled .nav {
   background: rgba(47, 65, 84, 0.88);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--nav-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition:
+    background 0.5s ease-in-out,
+    padding 0.5s ease-in-out,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    backdrop-filter 0.35s ease;
 }
 
 body.home-fluid-index .fluid-index-header-inner {
   width: 100%;
-  height: 100vh;
+  /*
+   * 首屏高度：svh 取「最小」可视高度，比 100vh/部分 dvh 更不容易在滚到底时多出一截空白；
+   * Lynx 为 100vh；本站优先 svh，不支持时退回 vh。
+   */
+  height: 100svh;
   min-height: 360px;
-  max-height: 100vh;
+  max-height: 100svh;
   position: relative;
   box-sizing: border-box;
 }
 
-@media (max-width: 100vh) {
+@supports not (height: 100svh) {
   body.home-fluid-index .fluid-index-header-inner {
-    max-height: 100vw;
+    height: 100vh;
+    max-height: 100vh;
   }
 }
+
+/*
+ * 勿对「首页整屏 Hero」使用 max-height: min(..., 100vw)：
+ * 竖屏时 100vw < 视口高，会把首屏压扁，首屏下方露出大段灰/白（用户误以为 CSS 被覆盖）。
+ * Lynx 的 max-height:100vw 仅应作用在次级顶图/文章 Hero；以下由 .compact / .post 各自媒体查询承担。
+ */
 
 /* Fluid 次级页（如 Categories）：顶图较矮，对齐 lynx-li.github.io/categories/ header-inner 60vh */
 body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-compact {
@@ -840,12 +1095,205 @@ body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-compact {
   }
 }
 
+/*
+ * 文章页顶栏高度：与 Hexo Fluid 导出一致
+ * public/lynx-li.github.io/2025/05/08/master/matrixanalysis/decompose/index.html
+ *   <div class="header-inner" style="height: 70vh;">
+ * public/lynx-li.github.io/css/main.css @media (max-width: 100vh) { .header-inner { max-height: 100vw; } }
+ * 另：不依赖 body 类的规则，防止顶栏高度塌缩。
+ */
+.fluid-index-header-inner.fluid-header-inner-post {
+  width: 100%;
+  height: 70vh;
+  max-height: 70vh;
+  position: relative;
+  box-sizing: border-box;
+}
+
+@media (max-width: 100vh) {
+  .fluid-index-header-inner.fluid-header-inner-post {
+    max-height: 100vw;
+  }
+}
+
+body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-post {
+  height: 70vh;
+  max-height: 70vh;
+}
+
+@media (max-width: 100vh) {
+  body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-post {
+    max-height: 100vw;
+  }
+}
+
+/* 与上同理：文章 Hero 内层不强制依赖 body 类 */
+.fluid-post-page .full-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body.home-fluid-index .fluid-post-page .full-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.fluid-post-page .flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+@keyframes fluid-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+body.home-fluid-index .fluid-post-banner-text.fade-in-up {
+  animation: fluid-fade-in-up 0.55s ease-out both;
+}
+
+/* main.css .banner-text */
+body.home-fluid-index .fluid-post-banner-text.banner-text {
+  color: #fff;
+  max-width: calc(960px - 6rem);
+  width: 80%;
+  overflow-wrap: break-word;
+  text-align: center;
+}
+
+/* Bootstrap 4 .h2 量级，作文章主标题（Typed.js + 下划线光标） */
+body.home-fluid-index .fluid-post-banner-h2.h2 {
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+
+body.home-fluid-index .fluid-post-page .mt-3 {
+  margin-top: 1rem !important;
+}
+
+body.home-fluid-index .fluid-post-page .mt-1 {
+  margin-top: 0.25rem !important;
+}
+
+body.home-fluid-index .fluid-post-page .mr-2 {
+  margin-right: 0.5rem !important;
+}
+
+/* main.css .post-metas / 文首 .post-meta */
+body.home-fluid-index .fluid-post-banner-text .post-meta {
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: inherit;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+}
+
+body.home-fluid-index .fluid-post-banner-text .post-meta .iconfont {
+  margin-right: 0.2rem;
+  font-size: 1em;
+  line-height: 1;
+}
+
+body.home-fluid-index .fluid-post-banner-text .post-meta > *:not(.hover-with-bg) {
+  margin-right: 0.2rem;
+}
+
+body.home-fluid-index .fluid-post-banner-text .typed-cursor {
+  margin: 0 0.2rem;
+  font-weight: 400;
+  color: #fff;
+}
+
+@media (max-width: 767px) {
+  body.home-fluid-index #fluid-post-subtitle,
+  body.home-fluid-index .fluid-post-banner-h2 .typed-cursor {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 575px) {
+  body.home-fluid-index .fluid-post-banner-text.banner-text {
+    font-size: 0.9rem;
+  }
+
+  body.home-fluid-index #fluid-post-subtitle,
+  body.home-fluid-index .fluid-post-banner-h2 .typed-cursor {
+    font-size: 1.35rem;
+  }
+}
+
+body.home-fluid-index .fluid-article-page-main {
+  position: relative;
+  z-index: 3;
+  scroll-margin-top: calc(var(--sticky-top-offset, 64px) + 8px);
+}
+
+body.home-fluid-index .fluid-article-below-hero {
+  margin-top: -2rem;
+  position: relative;
+  z-index: 4;
+}
+
+/*
+ * 禁止使用 background 简写：简写会把 background-image 置回初始值，易覆盖 Astro 内联的 background-image，导致顶栏背景不显示。
+ */
 body.home-fluid-index .fluid-banner {
   height: 100%;
   position: relative;
   overflow: hidden;
   cursor: default;
-  background: no-repeat center center;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
+/* 首页：img + object-fit: cover，与 cover 同为单一缩放因子，长宽等比例放大/缩小，仅裁切不留拉伸隙 */
+body.home-fluid-index .fluid-banner.fluid-banner-photo-mode {
+  background-image: none !important;
+}
+body.home-fluid-index .fluid-banner.fluid-banner-photo-mode .fluid-banner-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+body.home-fluid-index .fluid-banner.fluid-banner-photo-mode .fluid-banner-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+body.home-fluid-index .fluid-banner.fluid-banner-photo-mode .fluid-banner-inner {
+  z-index: 1;
+}
+
+.fluid-index-header-inner.fluid-header-inner-post .fluid-banner {
+  height: 100%;
+  min-height: 100%;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  background-repeat: no-repeat;
+  background-position: center center;
   background-size: cover;
 }
 
@@ -935,6 +1383,12 @@ body.home-fluid-index .fluid-index-main.fluid-board-page {
   position: relative;
   z-index: 3;
   scroll-margin-top: calc(var(--sticky-top-offset, 64px) + 8px);
+  /* main 整宽区域在窄屏上可能露出于 #board 两侧；与 body 同色，避免被继承/UA 刷成白 */
+  background-color: #eee !important;
+}
+html.dark body.home-fluid-index .fluid-index-main.fluid-board-page,
+body.home-fluid-index.dark .fluid-index-main.fluid-board-page {
+  background-color: #181c27 !important;
 }
 
 main.fluid-board-page:not(.fluid-index-main) {
@@ -1008,6 +1462,18 @@ main.fluid-board-page #board.fluid-board-surface {
 
 body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
   margin-top: -2rem;
+}
+
+/* 首页文章列表较短时，收敛卡片底部空白（仍保留 Fluid 顶栏留白） */
+body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-board-home {
+  padding-bottom: 1.75rem;
+}
+body.home-fluid-index
+  main.fluid-board-page
+  #board.fluid-board-home
+  .home-post-list
+  .index-card-mimic:last-child {
+  margin-bottom: 0;
 }
 
 body.home-fluid-index .fluid-row,
@@ -1386,12 +1852,24 @@ main.fluid-board-page .category-list .category-sub .category-subitem {
   align-items: center;
 }
 
-main.fluid-board-page .category-list .category .category-item {
-  font-size: 1.25rem;
+/*
+ * 分类标题三级字号：与 zhenglinblog / 林正 categories 一致 ——
+ * 顶栏大类最大；集合内第一层文件夹次之；再下层子文件夹更小。
+ * 勿再用单一的 .category .category-item 字号，否则顶层与嵌套第一层会糊成同一级。
+ */
+main.fluid-board-page .category-list .fluid-category-section > .category > a.category-item {
+  font-size: 1.45rem;
+  line-height: 1.35;
+}
+
+main.fluid-board-page .category-list .category-collapse .category .category-item {
+  font-size: 1.0625rem;
+  line-height: 1.4;
 }
 
 main.fluid-board-page .category-list .category-sub .category-subitem {
-  font-size: 1.1rem;
+  font-size: 0.9375rem;
+  line-height: 1.4;
 }
 
 main.fluid-board-page .category-list .category .category-collapse,
@@ -1534,7 +2012,15 @@ main.fluid-board-page .category-list .category-post-list .list-group-item {
     margin-right: 0;
   }
 
-  main.fluid-board-page .category-list .category .category-item {
-    font-size: 1.1rem;
+  main.fluid-board-page .category-list .fluid-category-section > .category > a.category-item {
+    font-size: 1.28rem;
+  }
+
+  main.fluid-board-page .category-list .category-collapse .category .category-item {
+    font-size: 1rem;
+  }
+
+  main.fluid-board-page .category-list .category-sub .category-subitem {
+    font-size: 0.9rem;
   }
 }

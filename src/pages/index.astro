@@ -46,13 +46,18 @@ const recentPosts = merged.slice(0, 24);
 <Layout title={`${siteTitle} — Home`} overlayNav>
   <!-- 对齐 Hexo Fluid：header-inner 100vh + #banner 铺满 + fixed navbar 叠在图上 -->
   <div class="fluid-index-header-inner">
-    <div
-      id="banner"
-      class="fluid-banner"
-      style={{
-        backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
-      }}
-    >
+    <div id="banner" class="fluid-banner fluid-banner-photo-mode">
+      <div class="fluid-banner-bg" aria-hidden="true">
+        <img
+          class="fluid-banner-photo"
+          src={heroImageUrl}
+          alt=""
+          width="1440"
+          height="1080"
+          decoding="async"
+          fetchpriority="high"
+        />
+      </div>
       <div class="fluid-banner-inner">
         <div class="fluid-banner-mask">
           <div class="fluid-banner-text">
@@ -88,7 +93,7 @@ const recentPosts = merged.slice(0, 24);
   <!-- 与 public/lynx-li.github.io/index.html 一致：main > .container.nopadding-x-md > #board > .container > .row > .col -->
   <main id="fluid-board" class="fluid-index-main fluid-board-page">
     <div class="fluid-container fluid-nopadding-x-md">
-      <div id="board" class="fluid-board-surface">
+      <div id="board" class="fluid-board-surface fluid-board-home">
         <div class="fluid-container">
           <div class="fluid-row">
             <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">

@@ -1,0 +1,101 @@
+---
+/**
+ * 对齐 Hexo Fluid 文章页顶栏：
+ * public/lynx-li.github.io/2025/05/08/master/matrixanalysis/decompose/index.html
+ */
+interface Props {
+  title: string;
+  author: string;
+  heroImageUrl: string;
+  dateLine: string;
+  /** `<time datetime>`，空则不生成分行日期 */
+  datetimeAttr: string;
+  wordsLabel: string;
+  readMinutes: number;
+}
+
+const { title, author, heroImageUrl, dateLine, datetimeAttr, wordsLabel, readMinutes } =
+  Astro.props;
+const readLabel = readMinutes === 1 ? "1 min" : `${readMinutes} mins`;
+---
+
+<div class="fluid-index-header-inner fluid-header-inner-post fluid-post-page">
+  <div
+    id="banner"
+    class="fluid-banner fluid-post-banner"
+    style={{
+      backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
+    }}
+  >
+    <div class="full-bg-img">
+      <div
+        class="mask flex-center fluid-post-banner-mask"
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
+      >
+        <div class="banner-text text-center fade-in-up fluid-post-banner-text">
+          <div class="h2 fluid-post-banner-h2">
+            <span id="fluid-post-subtitle" data-typed-text={title}></span>
+          </div>
+
+          <div class="mt-3">
+            <span class="post-meta mr-2">
+              <i class="iconfont icon-author" aria-hidden="true"></i>
+              {author}
+            </span>
+            {
+              dateLine ? (
+                <span class="post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  {datetimeAttr ? (
+                    <time datetime={datetimeAttr} pubdate>
+                      {dateLine}
+                    </time>
+                  ) : (
+                    <span>{dateLine}</span>
+                  )}
+                </span>
+              ) : null
+            }
+          </div>
+
+          <div class="mt-1">
+            <span class="post-meta mr-2">
+              <i class="iconfont icon-chart" aria-hidden="true"></i>
+              {wordsLabel}
+            </span>
+            <span class="post-meta mr-2">
+              <i class="iconfont icon-clock-fill" aria-hidden="true"></i>
+              {readLabel}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
+<script is:inline>
+  (function () {
+    function fluidPostTyping() {
+      if (typeof window.Typed === "undefined") return;
+      var el = document.getElementById("fluid-post-subtitle");
+      if (!el) return;
+      var text = el.getAttribute("data-typed-text");
+      if (!text) return;
+      el.textContent = "";
+      new window.Typed("#fluid-post-subtitle", {
+        strings: ["  ", text],
+        typeSpeed: 50,
+        cursorChar: "_",
+        loop: false,
+        showCursor: true,
+      });
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fluidPostTyping);
+    } else {
+      fluidPostTyping();
+    }
+  })();
+</script>

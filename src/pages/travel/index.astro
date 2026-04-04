@@ -130,7 +130,7 @@ const uniqueTags = Array.from(allTags).sort();
     <div class="post-list-main">
       {postsWithContent.map((post) => (
         <article class="post-card">
-          <a href={`/travel/${post.slug}/`} class="post-card-link">
+          <a href={`/travel/${post.id}/`} class="post-card-link">
             <div class="post-card-header">
               <div>
                 {post.formattedDate && <div class="post-date">{post.formattedDate}</div>}

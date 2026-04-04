@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { ColKey, MergedPost } from "./content-posts";
-import { collectionKeys } from "./content-posts";
+import { collectionKeys, contentFolderByColKey } from "./content-posts";
 
 export type CatPathNode = {
   name: string;
-  /** 稳定路径键，如 `research` 或 `research/master/matrix`，用于 collapse 的 DOM id */
+  /** 稳定路径键，如 `ai` 或 `algorithms/比赛/xxx`，用于 collapse 的 DOM id */
   pathKey: string;
   posts: MergedPost[];
   children: CatPathNode[];
@@ -38,7 +38,7 @@ export function buildContentFolderDisplayMap(): Map<string, string> {
   const contentRoot = path.join(process.cwd(), "src", "content");
 
   for (const col of collectionKeys) {
-    const root = path.join(contentRoot, col);
+    const root = path.join(contentRoot, contentFolderByColKey[col]);
     if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) continue;
 
     const walk = (dir: string, rel: string[]) => {

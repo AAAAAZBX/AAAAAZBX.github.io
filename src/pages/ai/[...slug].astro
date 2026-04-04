@@ -16,20 +16,15 @@ import {
 } from "../../lib/post-reading-stats";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("algorithms");
-  const paths = [];
+  const posts = await getCollection("ai");
+  const paths: { params: { slug: string } }[] = [];
 
   posts.forEach((post) => {
-    paths.push({
-      params: { slug: post.id },
-    });
-
+    paths.push({ params: { slug: post.id } });
     const slugParts = post.id.split("/");
     const fileName = slugParts[slugParts.length - 1];
     if (fileName !== post.id) {
-      paths.push({
-        params: { slug: fileName },
-      });
+      paths.push({ params: { slug: fileName } });
     }
   });
 
@@ -40,7 +35,7 @@ const { slug } = Astro.params;
 const slugArray = Array.isArray(slug) ? slug : [slug];
 const slugString = slugArray.join("/");
 
-const allPosts = await getCollection("algorithms");
+const allPosts = await getCollection("ai");
 
 let post = allPosts.find((p) => p.id === slugString);
 
@@ -71,7 +66,7 @@ const dateLine = formatPostMetaDateLine(post.data.date);
 const datetimeAttr = post.data.date ? formatPostDatetimeAttr(post.data.date) : "";
 ---
 
-<Layout title={`${post.data.title} | Competitive Programming`} overlayNav>
+<Layout title={`${post.data.title} | AI`} overlayNav>
   <FluidArticleHero
     title={post.data.title}
     author={author}
@@ -85,11 +80,7 @@ const datetimeAttr = post.data.date ? formatPostDatetimeAttr(post.data.date) : "
     <FluidArticleBoard seoTitle={post.data.title}>
       <FluidToc slot="toc" />
       <Content />
-      <div
-        slot="after"
-        class="fluid-article-comment-wrap"
-        style="margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--line-color);"
-      >
+      <div slot="after" class="comment-section">
         <WalineComment />
       </div>
     </FluidArticleBoard>

@@ -1,0 +1,34 @@
+---
+/**
+ * Hexo Fluid 文章主体：container-fluid → 左空栏 + col-8 (#board + post-content + markdown-body) + 右目录
+ * 参考 public/lynx-li.github.io/2025/05/08/master/matrixanalysis/decompose/index.html
+ */
+interface Props {
+  /** 与 Fluid 一致：用于 SEO 的 h1，屏上隐藏（见 global.css #seo-header） */
+  seoTitle: string;
+}
+
+const { seoTitle } = Astro.props;
+---
+
+<div class="container-fluid nopadding-x fluid-board-outer fluid-article-below-hero">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2 fluid-side-spacer" aria-hidden="true"></div>
+    <div class="col-lg-8 nopadding-x-md fluid-board-center">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">{seoTitle}</h1>
+            <div class="markdown-body">
+              <slot />
+            </div>
+            <slot name="after" />
+          </article>
+        </div>
+      </div>
+    </div>
+    <div class="side-col d-none d-lg-block col-lg-2 fluid-toc-col">
+      <slot name="toc" />
+    </div>
+  </div>
+</div>

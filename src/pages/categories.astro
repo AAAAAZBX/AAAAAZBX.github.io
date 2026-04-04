@@ -10,16 +10,20 @@ import CategoryPathTree from "../components/CategoryPathTree.astro";
 const allPosts = await getMergedPosts();
 const folderDisplayMap = buildContentFolderDisplayMap();
 
-const researchPosts = allPosts.filter((p) => p.collection === "research");
+const aiPosts = allPosts.filter((p) => p.collection === "ai");
+const toolsPosts = allPosts.filter((p) => p.collection === "tools");
 const algorithmPosts = allPosts.filter((p) => p.collection === "algorithms");
 const travelPosts = allPosts.filter((p) => p.collection === "travel");
-const learningPosts = allPosts.filter((p) => p.collection === "learning");
 
 const treeOpts = { folderDisplayMap } as const;
 
-const researchTree = buildCategoryPathTree(researchPosts, {
+const aiTree = buildCategoryPathTree(aiPosts, {
   ...treeOpts,
-  collection: "research",
+  collection: "ai",
+});
+const toolsTree = buildCategoryPathTree(toolsPosts, {
+  ...treeOpts,
+  collection: "tools",
 });
 const algorithmTree = buildCategoryPathTree(algorithmPosts, {
   ...treeOpts,
@@ -28,10 +32,6 @@ const algorithmTree = buildCategoryPathTree(algorithmPosts, {
 const travelTree = buildCategoryPathTree(travelPosts, {
   ...treeOpts,
   collection: "travel",
-});
-const learningTree = buildCategoryPathTree(learningPosts, {
-  ...treeOpts,
-  collection: "learning",
 });
 
 const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
@@ -90,31 +90,31 @@ const bannerTypedText = "Categories";
                   <div class="category row nomargin-x">
                     <a
                       class="category-item list-group-item category-item-action col-10 col-md-11 col-xm-11 collapsed"
-                      id="heading-collapse-section-research"
+                      id="heading-collapse-section-ai"
                       role="tab"
                       data-toggle="collapse"
-                      href="#collapse-section-research"
+                      href="#collapse-section-ai"
                       aria-expanded="false"
-                      aria-controls="collapse-section-research"
+                      aria-controls="collapse-section-ai"
                     >
-                      Research
+                      AI
                       <span class="list-group-count"></span>
                       <i class="iconfont icon-arrowright" aria-hidden="true"></i>
                     </a>
                     <span class="category-count col-2 col-md-1 col-xm-1">
                       <i class="iconfont icon-articles" aria-hidden="true"></i>
-                      <span>{researchPosts.length}</span>
+                      <span>{aiPosts.length}</span>
                     </span>
                     <div
                       class="category-collapse collapse w-100"
-                      id="collapse-section-research"
+                      id="collapse-section-ai"
                       role="tabpanel"
-                      aria-labelledby="heading-collapse-section-research"
+                      aria-labelledby="heading-collapse-section-ai"
                     >
-                      {researchPosts.length === 0 ? (
+                      {aiPosts.length === 0 ? (
                         <p class="cat-panel-empty">暂无文章。</p>
                       ) : (
-                        <CategoryPathTree node={researchTree} />
+                        <CategoryPathTree node={aiTree} />
                       )}
                     </div>
                   </div>
@@ -124,31 +124,31 @@ const bannerTypedText = "Categories";
                   <div class="category row nomargin-x">
                     <a
                       class="category-item list-group-item category-item-action col-10 col-md-11 col-xm-11 collapsed"
-                      id="heading-collapse-section-learning"
+                      id="heading-collapse-section-tools"
                       role="tab"
                       data-toggle="collapse"
-                      href="#collapse-section-learning"
+                      href="#collapse-section-tools"
                       aria-expanded="false"
-                      aria-controls="collapse-section-learning"
+                      aria-controls="collapse-section-tools"
                     >
-                      Technology
+                      Tools
                       <span class="list-group-count"></span>
                       <i class="iconfont icon-arrowright" aria-hidden="true"></i>
                     </a>
                     <span class="category-count col-2 col-md-1 col-xm-1">
                       <i class="iconfont icon-articles" aria-hidden="true"></i>
-                      <span>{learningPosts.length}</span>
+                      <span>{toolsPosts.length}</span>
                     </span>
                     <div
                       class="category-collapse collapse w-100"
-                      id="collapse-section-learning"
+                      id="collapse-section-tools"
                       role="tabpanel"
-                      aria-labelledby="heading-collapse-section-learning"
+                      aria-labelledby="heading-collapse-section-tools"
                     >
-                      {learningPosts.length === 0 ? (
+                      {toolsPosts.length === 0 ? (
                         <p class="cat-panel-empty">暂无文章。</p>
                       ) : (
-                        <CategoryPathTree node={learningTree} />
+                        <CategoryPathTree node={toolsTree} />
                       )}
                     </div>
                   </div>

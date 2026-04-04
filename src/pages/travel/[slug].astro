@@ -1,34 +1,68 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection, getEntry } from "astro:content";
-import TableOfContents from "../../components/TableOfContents.astro";
+import { getCollection, getEntry, render } from "astro:content";
+import FluidArticleBoard from "../../components/FluidArticleBoard.astro";
+import FluidToc from "../../components/FluidToc.astro";
 import WalineComment from "../../components/WalineComment.astro";
+import FluidArticleHero from "../../components/FluidArticleHero.astro";
+import {
+  DEFAULT_SITE_AUTHOR,
+  estimateReadingUnits,
+  formatWordCountLabel,
+  estimateReadMinutes,
+  formatPostMetaDateLine,
+  formatPostDatetimeAttr,
+  resolveHeroImageUrl,
+} from "../../lib/post-reading-stats";
 
 export async function getStaticPaths() {
   const posts = await getCollection("travel");
   return posts.map((post) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
   }));
 }
 
 const { slug } = Astro.params;
 const post = await getEntry("travel", slug);
-const { Content } = await post.render();
+if (!post) {
+  return new Response(null, {
+    status: 404,
+    statusText: "Not found",
+  });
+}
+
+const { Content } = await render(post);
+const base = import.meta.env.BASE_URL;
+const heroImageUrl = resolveHeroImageUrl(post.data.heroImage, base);
+const units = estimateReadingUnits(post.body ?? "");
+const wordsLabel = formatWordCountLabel(units);
+const readMinutes = estimateReadMinutes(units);
+const author = post.data.author?.trim() || DEFAULT_SITE_AUTHOR;
+const dateLine = formatPostMetaDateLine(post.data.date);
+const datetimeAttr = post.data.date ? formatPostDatetimeAttr(post.data.date) : "";
 ---
 
-<Layout title={`${post.data.title} | Daily Life`}>
-  <div class="article-wrapper">
-    <TableOfContents />
-    <div class="article-content">
-      <article class="typora-github">
-    <h1>{post.data.title}</h1>
-    <Content />
-  </article>
-  
-  <!-- 评论区域 -->
-  <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid #d0d7de;">
-    <WalineComment />
-  </div>
-    </div>
-  </div>
+<Layout title={`${post.data.title} | Daily Life`} overlayNav>
+  <FluidArticleHero
+    title={post.data.title}
+    author={author}
+    heroImageUrl={heroImageUrl}
+    dateLine={dateLine}
+    datetimeAttr={datetimeAttr}
+    wordsLabel={wordsLabel}
+    readMinutes={readMinutes}
+  />
+  <main id="article-main" class="fluid-article-page-main">
+    <FluidArticleBoard seoTitle={post.data.title}>
+      <FluidToc slot="toc" />
+      <Content />
+      <div
+        slot="after"
+        class="fluid-article-comment-wrap"
+        style="margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--line-color);"
+      >
+        <WalineComment />
+      </div>
+    </FluidArticleBoard>
+  </main>
 </Layout>

@@ -130,7 +130,7 @@ const uniqueTags = Array.from(allTags).sort();
     <div class="post-list-main">
       {postsWithContent.map((post) => {
         // 去掉子目录，只保留文件名
-        const slugParts = post.slug.split('/');
+        const slugParts = post.id.split('/');
         const fileName = slugParts[slugParts.length - 1];
         return (
         <article class="post-card">

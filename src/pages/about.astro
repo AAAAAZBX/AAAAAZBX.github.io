@@ -17,10 +17,10 @@ const profile = {
 
 // 获取所有文章
 const algorithmsPosts = await getCollection("algorithms");
-const learningPosts = await getCollection("learning");
-const researchPosts = await getCollection("research");
+const aiPosts = await getCollection("ai");
+const toolsPosts = await getCollection("tools");
 const travelPosts = await getCollection("travel");
-const allPosts = [...algorithmsPosts, ...learningPosts, ...researchPosts, ...travelPosts];
+const allPosts = [...algorithmsPosts, ...aiPosts, ...toolsPosts, ...travelPosts];
 
 // 计算总文章数
 const totalPosts = allPosts.length;
@@ -56,9 +56,12 @@ const totalWords = allPosts.reduce((sum, post) => sum + calculateWordCount(post.
 const totalWordsFormatted = totalWords >= 10000 ? `${(totalWords / 10000).toFixed(1)}w` : totalWords.toString();
 
 // 计算最后更新时间（最新文章的日期）
-const lastUpdated = allPosts
-  .map(post => post.data.date ? new Date(post.data.date) : new Date(0))
-  .sort((a, b) => b.getTime() - a.getTime())[0];
+const lastUpdated =
+  allPosts.length > 0
+    ? allPosts
+        .map((post) => (post.data.date ? new Date(post.data.date) : new Date(0)))
+        .sort((a, b) => b.getTime() - a.getTime())[0]
+    : new Date(0);
 
 function formatDate(date: Date): string {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

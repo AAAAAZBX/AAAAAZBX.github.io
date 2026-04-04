@@ -1,0 +1,69 @@
+---
+// Hexo Fluid + tocbot：结构与 lynx Fluid 一致（右侧 .sidebar #toc）
+---
+
+<aside class="sidebar fluid-toc-sidebar" style="margin-left: -1rem">
+  <div id="toc">
+    <p class="toc-header">
+      <i class="iconfont icon-list" aria-hidden="true"></i>
+      <span>Table of Contents</span>
+    </p>
+    <div class="toc-body" id="toc-body"></div>
+  </div>
+</aside>
+
+<script>
+  const TOCBOT_SRC = "https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js";
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const el = document.createElement("script");
+      el.src = src;
+      el.async = true;
+      el.onload = () => resolve();
+      el.onerror = () => reject(new Error(src));
+      document.head.appendChild(el);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const toc = document.getElementById("toc");
+    const body = document.getElementById("toc-body");
+    const boardCtn = document.getElementById("board-ctn");
+    if (!toc || !body || !boardCtn) return;
+
+    try {
+      await loadScript(TOCBOT_SRC);
+    } catch {
+      toc.remove();
+      return;
+    }
+
+    const tocbot = window["tocbot"];
+    if (!tocbot) {
+      toc.remove();
+      return;
+    }
+
+    const boardTop = boardCtn.offsetTop;
+
+    tocbot.init({
+      tocSelector: "#toc-body",
+      contentSelector: "#board .markdown-body",
+      linkClass: "tocbot-link",
+      activeLinkClass: "tocbot-active-link",
+      listClass: "tocbot-list",
+      isCollapsedClass: "tocbot-is-collapsed",
+      collapsibleClass: "tocbot-is-collapsible",
+      scrollSmooth: true,
+      includeTitleTags: true,
+      headingsOffset: -boardTop,
+    });
+
+    if (toc.querySelector(".toc-list-item")) {
+      toc.style.visibility = "visible";
+    } else {
+      toc.remove();
+    }
+  });
+</script>
