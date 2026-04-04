@@ -26,6 +26,7 @@ export type MergedPost = {
   date: string | undefined;
   href: string;
   description: string | undefined;
+  tags: string[];
   body: string;
 };
 
@@ -41,6 +42,7 @@ export async function getMergedPosts(): Promise<MergedPost[]> {
         date: post.data.date,
         href: `/${key}/${post.id}`,
         description: post.data.description,
+        tags: post.data.tags ?? [],
         body: post.body,
       }));
     })

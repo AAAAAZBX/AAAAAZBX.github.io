@@ -26,8 +26,6 @@
   --nav-text: #ffffff;
   --nav-text-secondary: rgba(255, 255, 255, 0.82);
   --nav-border: rgba(255, 255, 255, 0.14);
-  --nav-control-bg: rgba(255, 255, 255, 0.12);
-  --nav-control-border: rgba(255, 255, 255, 0.22);
   --code-bg: #f6f8fa;
   --code-inline-bg: rgba(175, 184, 193, 0.2);
   --table-bg: #fff;
@@ -74,8 +72,6 @@
   --nav-text: #d0d0d0;
   --nav-text-secondary: rgba(208, 208, 208, 0.82);
   --nav-border: rgba(255, 255, 255, 0.1);
-  --nav-control-bg: rgba(255, 255, 255, 0.08);
-  --nav-control-border: rgba(255, 255, 255, 0.16);
   --code-bg: #1a2332;
   --code-inline-bg: rgba(110, 118, 129, 0.4);
   --table-bg: #0d1117;
@@ -255,50 +251,53 @@ header.scrolled .nav-links {
   color: var(--nav-text);
 }
 
-/* 主题切换按钮样式 - 与语言切换按钮保持一致 */
+/*
+ * 主题切换：与顶栏搜索图标一致（Fluid / 林正式）——仅图标 + 字色，无胶囊底与描边。
+ */
 .theme-toggle {
-  padding: 0;
+  padding: 8px 10px;
+  margin: 0;
   text-decoration: none;
-  color: var(--nav-text);
-  font-size: 12px;
+  color: var(--nav-text-secondary);
+  font-size: 14px;
   font-weight: 500;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: color 0.2s ease;
   white-space: nowrap;
-  background: var(--nav-control-bg);
-  border: 1px solid var(--nav-control-border);
-  border-radius: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   cursor: pointer;
   font-family: inherit;
-  margin-left: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  min-width: 36px;
-  height: 28px;
   box-sizing: border-box;
   flex-shrink: 0;
   vertical-align: middle;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: var(--nav-control-border);
   color: var(--nav-text);
-}
-
-.dark .theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: transparent;
 }
 
 .theme-toggle:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--nav-text-secondary);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 .theme-icon {
   transition: opacity 0.2s ease;
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
 }
 
 /* 移除当前页面链接的背景高亮，只保留悬停效果 */
@@ -343,7 +342,10 @@ header.scrolled .nav-links {
   margin-right: 0 !important;
 }
 
-#board {
+/*
+ * 文章页 #board（无 .fluid-board-surface）。列表/首页卡片用 main...#board.fluid-board-surface，避免与裸 #board 双轨覆盖。
+ */
+#board:not(.fluid-board-surface) {
   position: relative;
   margin-top: -2rem;
   padding: 3rem 0;
@@ -1059,11 +1061,10 @@ body.home-fluid-index header.scrolled .nav {
 body.home-fluid-index .fluid-index-header-inner {
   width: 100%;
   /*
-   * 首屏高度：svh 取「最小」可视高度，比 100vh/部分 dvh 更不容易在滚到底时多出一截空白；
-   * Lynx 为 100vh；本站优先 svh，不支持时退回 vh。
+   * 首页回到“整屏 Hero”：滚动到最上方时，背景图应占满整个视口。
    */
   height: 100svh;
-  min-height: 360px;
+  min-height: 100svh;
   max-height: 100svh;
   position: relative;
   box-sizing: border-box;
@@ -1072,6 +1073,7 @@ body.home-fluid-index .fluid-index-header-inner {
 @supports not (height: 100svh) {
   body.home-fluid-index .fluid-index-header-inner {
     height: 100vh;
+    min-height: 100vh;
     max-height: 100vh;
   }
 }
@@ -1385,6 +1387,15 @@ body.home-fluid-index .fluid-index-main.fluid-board-page {
   scroll-margin-top: calc(var(--sticky-top-offset, 64px) + 8px);
   /* main 整宽区域在窄屏上可能露出于 #board 两侧；与 body 同色，避免被继承/UA 刷成白 */
   background-color: #eee !important;
+  /* 避免 Bootstrap/UA 在 main 上产生额外外边距，在 Hero 与 #board 之间拉出灰/白条 */
+  margin: 0;
+  padding: 0;
+  /*
+   * 覆盖其它样式表中误用的 `main { min-height: 100vh }`（如原 index.css 裸 main），
+   * 否则首页正文区被撑满一屏，Recent Posts 下方大块空白、像列表被「盖住」。
+   */
+  min-height: 0 !important;
+  height: auto !important;
 }
 html.dark body.home-fluid-index .fluid-index-main.fluid-board-page,
 body.home-fluid-index.dark .fluid-index-main.fluid-board-page {
@@ -1460,13 +1471,28 @@ main.fluid-board-page #board.fluid-board-surface {
     0 17px 50px 0 rgba(0, 0, 0, 0.19);
 }
 
+/*
+ * 首页 #board：略向上叠进 Hero，并显著减小上内边距。
+ * 原先仅覆盖 padding-bottom，top 仍继承全局 padding:3rem，Recent Posts 上方会空一大块（像被覆盖失效）。
+ */
 body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
-  margin-top: -2rem;
+  margin-top: 0;
 }
 
-/* 首页文章列表较短时，收敛卡片底部空白（仍保留 Fluid 顶栏留白） */
 body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-board-home {
+  margin-top: 0;
+  padding-top: 3rem;
   padding-bottom: 1.75rem;
+}
+
+@media (max-width: 767px) {
+  body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
+    margin-top: -2rem;
+  }
+
+  body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-board-home {
+    padding-top: 1rem;
+  }
 }
 body.home-fluid-index
   main.fluid-board-page
@@ -1530,6 +1556,10 @@ main.fluid-board-page .fluid-category-list {
   color: var(--fluid-text-color);
 }
 
+body.home-fluid-index #board.fluid-board-home .home-feed-desc {
+  margin-bottom: 1rem;
+}
+
 body.home-fluid-index .home-feed,
 main.fluid-board-page .home-feed {
   width: 100%;
@@ -1566,6 +1596,7 @@ main.fluid-board-page .home-post-list {
 
 main.fluid-board-page .index-card-mimic {
   margin-bottom: 2.5rem;
+  min-height: 0;
 }
 
 main.fluid-board-page .home-post-link {
@@ -1590,10 +1621,11 @@ main.fluid-board-page .home-post-excerpt {
   margin: 0.5rem 0;
   color: var(--fluid-sec-text-color);
   font-size: 1rem;
-  line-height: 1.4rem;
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   overflow: hidden;
   word-break: break-word;
 }
@@ -1607,9 +1639,26 @@ main.fluid-board-page .home-post-meta {
   gap: 0.2rem 0.75rem;
 }
 
+main.fluid-board-page .home-post-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+main.fluid-board-page .home-post-meta-item .iconfont {
+  font-size: 0.9em;
+  line-height: 1;
+  opacity: 0.9;
+}
+
 main.fluid-board-page .home-post-meta a,
 main.fluid-board-page .home-post-cat {
   color: inherit;
+}
+
+main.fluid-board-page .home-post-tags {
+  color: inherit;
+  opacity: 0.95;
 }
 
 main.fluid-board-page .home-post-sep {

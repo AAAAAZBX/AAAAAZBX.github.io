@@ -1,9 +1,10 @@
-/* 确保 main 标签不阻止 sticky 定位 */
-main {
+/*
+ * 仅 About 页（含 .page-container）：需要 min-height 方便侧栏 sticky。
+ * 勿写裸 `main { min-height: 100vh }`，否则会作用到首页 #fluid-board，短内容时标题下出现一整屏「假空白」。
+ */
+body:has(.page-container) > main {
   overflow: visible !important;
-  /* 确保 main 不阻止 sticky 定位 */
   min-height: 100vh;
-  /* 确保 main 有足够的高度 */
 }
 
 /* 全屏拉伸和保持左右分列 */

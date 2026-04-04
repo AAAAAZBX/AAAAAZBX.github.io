@@ -44,7 +44,6 @@ const recentPosts = merged.slice(0, 24);
 ---
 
 <Layout title={`${siteTitle} — Home`} overlayNav>
-  <!-- 对齐 Hexo Fluid：header-inner 100vh + #banner 铺满 + fixed navbar 叠在图上 -->
   <div class="fluid-index-header-inner">
     <div id="banner" class="fluid-banner fluid-banner-photo-mode">
       <div class="fluid-banner-bg" aria-hidden="true">
@@ -84,13 +83,12 @@ const recentPosts = merged.slice(0, 24);
             >
               <path d="M6 9l6 6 6-6"></path>
             </svg>
-            </a>
-          </div>
-              </div>
-            </div>
-          </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <!-- 与 public/lynx-li.github.io/index.html 一致：main > .container.nopadding-x-md > #board > .container > .row > .col -->
   <main id="fluid-board" class="fluid-index-main fluid-board-page">
     <div class="fluid-container fluid-nopadding-x-md">
       <div id="board" class="fluid-board-surface fluid-board-home">
@@ -109,10 +107,25 @@ const recentPosts = merged.slice(0, 24);
                       </a>
                       <p class="home-post-excerpt">{excerptFromPost(item.description, item.body)}</p>
                       <div class="home-post-meta">
-                        <time class="home-post-date" datetime={item.date ?? ""}>{formatDateIso(item.date)}</time>
-                        <span class="home-post-sep" aria-hidden="true">·</span>
-                        <span class="home-post-cat">{collectionLabels[item.collection].en}</span>
-            </div>
+                        <span class="home-post-meta-item">
+                          <i class="iconfont icon-date" aria-hidden="true"></i>
+                          <time class="home-post-date" datetime={item.date ?? ""}>
+                            {formatDateIso(item.date)}
+                          </time>
+                        </span>
+                        <span class="home-post-meta-item">
+                          <i class="iconfont icon-archive-fill" aria-hidden="true"></i>
+                          <span class="home-post-cat">{collectionLabels[item.collection].en}</span>
+                        </span>
+                        {item.tags.length > 0 && (
+                          <span class="home-post-meta-item">
+                            <i class="iconfont icon-tags-fill" aria-hidden="true"></i>
+                            <span class="home-post-tags">
+                              {item.tags.map((tag) => `#${tag}`).join("  ")}
+                            </span>
+                          </span>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -122,9 +135,9 @@ const recentPosts = merged.slice(0, 24);
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </main>
+      </div>
+    </div>
+  </main>
 
   <script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
   <script is:inline>

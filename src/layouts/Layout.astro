@@ -282,7 +282,7 @@ const year = new Date().getFullYear();
 
           const btn = document.createElement("button");
           btn.className = "code-copy";
-          btn.textContent = "复制";
+          btn.textContent = "Copy";
 
           btn.addEventListener("click", async () => {
             const code = pre.querySelector("code");
@@ -292,7 +292,7 @@ const year = new Date().getFullYear();
             try {
               await navigator.clipboard.writeText(text);
               const old = btn.textContent;
-              btn.textContent = "已复制";
+              btn.textContent = "Copied";
               setTimeout(() => (btn.textContent = old), 1500);
             } catch (e) {
               console.error(e);
