@@ -931,10 +931,7 @@ article.post-content b {
   font-family: inherit;
 }
 
-.markdown-body p > img,
-.markdown-body p > a > img,
-.markdown-body figure > img,
-.markdown-body figure > a > img {
+.markdown-body img {
   max-width: 90%;
   margin: 1.5rem auto;
   display: block;
