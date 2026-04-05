@@ -3,28 +3,12 @@ import { collections } from "../content/config";
 
 export type ColKey = string;
 
-export const collectionKeys: ColKey[] = Object.keys(collections);
-
-const collectionLabelsPreset: Record<string, { en: string; zh: string }> = {
-  algorithms: { en: "Competitive Programming", zh: "算法竞赛" },
-  ai: { en: "AI", zh: "人工智能" },
-  PyTorch: { en: "PyTorch", zh: "PyTorch" },
-  tools: { en: "Tools", zh: "工具与环境" },
-  Tools: { en: "Tools", zh: "工具与环境" },
-  travel: { en: "Daily Life", zh: "日常" },
-};
-
-function humanizeCollectionName(key: string): string {
-  return key.replace(/[_-]+/g, " ").trim() || key;
+export function getCollectionKeys(): ColKey[] {
+  return Object.keys(collections).sort((a, b) => a.localeCompare(b, "zh-CN"));
 }
 
 export function getCollectionLabel(key: ColKey): { en: string; zh: string } {
-  return (
-    collectionLabelsPreset[key] ?? {
-      en: humanizeCollectionName(key),
-      zh: humanizeCollectionName(key),
-    }
-  );
+  return { en: key, zh: key };
 }
 
 export type MergedPost = {
@@ -39,6 +23,7 @@ export type MergedPost = {
 };
 
 export async function getMergedPosts(): Promise<MergedPost[]> {
+  const collectionKeys = getCollectionKeys();
   const buckets = await Promise.all(
     collectionKeys.map(async (key) => {
       const posts = await getCollection(key as never);

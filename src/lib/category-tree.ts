@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { MergedPost } from "./content-posts";
-import { collectionKeys } from "./content-posts";
+import { getCollectionKeys } from "./content-posts";
 
 export type CatPathNode = {
   name: string;
@@ -36,6 +36,7 @@ function normSeg(seg: string): string {
 export function buildContentFolderDisplayMap(): Map<string, string> {
   const map = new Map<string, string>();
   const contentRoot = path.join(process.cwd(), "src", "content");
+  const collectionKeys = getCollectionKeys();
 
   for (const col of collectionKeys) {
     const root = path.join(contentRoot, col);

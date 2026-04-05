@@ -1620,8 +1620,22 @@ main.fluid-board-page .home-post-excerpt {
   line-height: 1.5;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+main.fluid-board-page .home-post-subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--fluid-post-heading-color);
+  opacity: 0.82;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   overflow: hidden;
   word-break: break-word;
 }

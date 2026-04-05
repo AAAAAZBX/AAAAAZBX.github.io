@@ -3,8 +3,8 @@ import Layout from "../layouts/Layout.astro";
 import {
   getMergedPosts,
   formatDateIso,
-  getCollectionLabel,
 } from "../lib/content-posts";
+import { buildContentFolderDisplayMap } from "../lib/category-tree";
 
 const siteTitle = "Boxuan Zhang";
 
@@ -13,6 +13,7 @@ const heroTypedText = "等博主做完毕业设计，一定猛猛更新！";
 
 /** public/ 下资源；带 BASE_URL 以支持 GitHub Pages 子路径部署 */
 const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
+const folderDisplayMap = buildContentFolderDisplayMap();
 
 function stripMd(text: string): string {
   return text
@@ -32,11 +33,24 @@ function stripMd(text: string): string {
     .trim();
 }
 
-function excerptFromPost(description: string | undefined, body: string, maxLen = 220): string {
-  if (description?.trim()) return description.trim();
-  const plain = stripMd(body);
-  if (plain.length <= maxLen) return plain;
-  return `${plain.slice(0, maxLen)}…`;
+function excerptFromPost(body: string, maxLen = 260): string {
+  const noCode = body.replace(/```[\s\S]*?```/g, " ");
+  const singleLine = stripMd(noCode.replace(/\r?\n+/g, " "));
+  if (singleLine.length <= maxLen) return singleLine;
+  return `${singleLine.slice(0, maxLen)}…`;
+}
+
+function normSeg(seg: string): string {
+  return seg.replace(/[A-Z]/g, (c) => c.toLowerCase());
+}
+
+function archiveHierarchyLabel(collection: string, slug: string): string {
+  const dirs = slug.split("/").filter(Boolean).slice(0, -1);
+  const displayDirs = dirs.map((seg, idx) => {
+    const pathKey = `${collection}/${dirs.slice(0, idx + 1).map(normSeg).join("/")}`;
+    return folderDisplayMap.get(pathKey) ?? seg;
+  });
+  return [collection, ...displayDirs].join(" > ");
 }
 
 const merged = await getMergedPosts();
@@ -102,7 +116,10 @@ const recentPosts = merged.slice(0, 24);
                       <a class="home-post-link" href={item.href}>
                         <span class="home-post-title">{item.title}</span>
                       </a>
-                      <p class="home-post-excerpt">{excerptFromPost(item.description, item.body)}</p>
+                      {item.description?.trim() && (
+                        <p class="home-post-subtitle">{item.description.trim()}</p>
+                      )}
+                      <p class="home-post-excerpt">{excerptFromPost(item.body)}</p>
                       <div class="home-post-meta">
                         <span class="home-post-meta-item">
                           <i class="iconfont icon-date" aria-hidden="true"></i>
@@ -112,7 +129,9 @@ const recentPosts = merged.slice(0, 24);
                         </span>
                         <span class="home-post-meta-item">
                           <i class="iconfont icon-archive-fill" aria-hidden="true"></i>
-                          <span class="home-post-cat">{getCollectionLabel(item.collection).en}</span>
+                          <span class="home-post-cat">
+                            {archiveHierarchyLabel(item.collection, item.slug)}
+                          </span>
                         </span>
                         {item.tags.length > 0 && (
                           <span class="home-post-meta-item">

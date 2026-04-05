@@ -15,7 +15,7 @@ import {
   resolveHeroImageUrl,
 } from "../../lib/post-reading-stats";
 import {
-  collectionKeys,
+  getCollectionKeys,
   getCollectionLabel,
   type ColKey,
 } from "../../lib/content-posts";
@@ -26,6 +26,7 @@ type RouteProps = {
 };
 
 export async function getStaticPaths() {
+  const collectionKeys = getCollectionKeys();
   const buckets = await Promise.all(
     collectionKeys.map(async (collection) => {
       const posts = await getCollection(collection as never);

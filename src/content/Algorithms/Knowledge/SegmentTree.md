@@ -1,4 +1,4 @@
-﻿---
+---
 title: "Codeforces Edu学习 (ITMO Academy: pilot course) SegmentTree part 1-2 全"
 id: "2025-6-30"
 date: "2025-6-30"

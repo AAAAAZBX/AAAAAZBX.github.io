@@ -1,6 +1,6 @@
 ﻿---
 import Layout from "../layouts/Layout.astro";
-import { collectionKeys, getCollectionLabel, getMergedPosts } from "../lib/content-posts";
+import { getCollectionKeys, getCollectionLabel, getMergedPosts } from "../lib/content-posts";
 import {
   buildCategoryPathTree,
   buildContentFolderDisplayMap,
@@ -9,6 +9,7 @@ import CategoryPathTree from "../components/CategoryPathTree.astro";
 
 const allPosts = await getMergedPosts();
 const folderDisplayMap = buildContentFolderDisplayMap();
+const collectionKeys = getCollectionKeys();
 
 function normalizeDomIdToken(input: string): string {
   return input.replace(/[^a-zA-Z0-9\u4e00-\u9fff_-]/g, "-");
