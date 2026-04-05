@@ -6,9 +6,9 @@ import rehypeKatex from 'rehype-katex';
 
 // https://astro.build/config
 export default defineConfig({
-  /** 旧栏目路径（已拆为 /ai、/tools，Research 已下线） */
+  /** 旧栏目路径收敛到 /categories */
   redirects: {
-    "/learning": "/ai",
+    "/learning": "/categories",
     "/research": "/categories",
   },
   markdown: {

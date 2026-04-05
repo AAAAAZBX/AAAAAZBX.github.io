@@ -1,6 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection, render } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 import FluidArticleBoard from "../../components/FluidArticleBoard.astro";
 import FluidToc from "../../components/FluidToc.astro";
 import WalineComment from "../../components/WalineComment.astro";
@@ -14,45 +14,32 @@ import {
   formatPostDatetimeAttr,
   resolveHeroImageUrl,
 } from "../../lib/post-reading-stats";
+import {
+  collectionKeys,
+  collectionLabels,
+  type ColKey,
+} from "../../lib/content-posts";
+
+type RouteProps = {
+  collection: ColKey;
+  id: string;
+};
 
 export async function getStaticPaths() {
-  const posts = await getCollection("algorithms");
-  const paths = [];
-
-  posts.forEach((post) => {
-    paths.push({
-      params: { slug: post.id },
-    });
-
-    const slugParts = post.id.split("/");
-    const fileName = slugParts[slugParts.length - 1];
-    if (fileName !== post.id) {
-      paths.push({
-        params: { slug: fileName },
-      });
-    }
-  });
-
-  return paths;
+  const buckets = await Promise.all(
+    collectionKeys.map(async (collection) => {
+      const posts = await getCollection(collection);
+      return posts.map((post) => ({
+        params: { slug: `${collection}/${post.id}` },
+        props: { collection, id: post.id } satisfies RouteProps,
+      }));
+    })
+  );
+  return buckets.flat();
 }
 
-const { slug } = Astro.params;
-const slugArray = Array.isArray(slug) ? slug : [slug];
-const slugString = slugArray.join("/");
-
-const allPosts = await getCollection("algorithms");
-
-let post = allPosts.find((p) => p.id === slugString);
-
-if (!post) {
-  const fileName = slugArray[slugArray.length - 1];
-  post = allPosts.find((p) => {
-    const postSlugParts = p.id.split("/");
-    const postFileName = postSlugParts[postSlugParts.length - 1];
-    return postFileName === fileName;
-  });
-}
-
+const { collection, id } = Astro.props as RouteProps;
+const post = await getEntry(collection, id);
 if (!post) {
   return new Response(null, {
     status: 404,
@@ -69,9 +56,10 @@ const readMinutes = estimateReadMinutes(units);
 const author = post.data.author?.trim() || DEFAULT_SITE_AUTHOR;
 const dateLine = formatPostMetaDateLine(post.data.date);
 const datetimeAttr = post.data.date ? formatPostDatetimeAttr(post.data.date) : "";
+const sectionTitle = collectionLabels[collection].en;
 ---
 
-<Layout title={`${post.data.title} | Competitive Programming`} overlayNav>
+<Layout title={`${post.data.title} | ${sectionTitle}`} overlayNav>
   <FluidArticleHero
     title={post.data.title}
     author={author}
@@ -95,3 +83,4 @@ const datetimeAttr = post.data.date ? formatPostDatetimeAttr(post.data.date) : "
     </FluidArticleBoard>
   </main>
 </Layout>
+

@@ -40,7 +40,7 @@ export async function getMergedPosts(): Promise<MergedPost[]> {
         slug: post.id,
         title: post.data.title,
         date: post.data.date,
-        href: `/${key}/${post.id}`,
+        href: `/categories/${key}/${post.id}`,
         description: post.data.description,
         tags: post.data.tags ?? [],
         body: post.body,

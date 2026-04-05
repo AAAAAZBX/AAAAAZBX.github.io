@@ -19,7 +19,7 @@ function mdCollection(base: string) {
   });
 }
 
-/** glob 的 base 为磁盘实际目录；集合名仍为 ai/tools，URL 为 /ai/、/tools/（与文件夹 AI、Tools 可不一致） */
+/** glob 的 base 为磁盘实际目录；文章路由统一由 pages/categories/[...slug].astro 生成 */
 export const collections = {
   algorithms: mdCollection("./src/content/algorithms"),
   ai: mdCollection("./src/content/AI"),
