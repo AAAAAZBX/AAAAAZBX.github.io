@@ -1061,7 +1061,7 @@ body.home-fluid-index header.scrolled .nav {
 body.home-fluid-index .fluid-index-header-inner {
   width: 100%;
   /*
-   * 首页回到“整屏 Hero”：滚动到最上方时，背景图应占满整个视口。
+   * 回到顶部时必须完整露出背景图：首页 Hero 固定整屏高度。
    */
   height: 100svh;
   min-height: 100svh;
@@ -1479,23 +1479,23 @@ main.fluid-board-page #board.fluid-board-surface {
  * 原先仅覆盖 padding-bottom，top 仍继承全局 padding:3rem，Recent Posts 上方会空一大块（像被覆盖失效）。
  */
 body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
-  margin-top: -2rem;
+  margin-top: 0;
 }
 
 body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-board-home {
-  margin-top: -2rem;
-  padding-top: 2.25rem;
+  margin-top: 0;
+  padding-top: 3rem;
   padding-bottom: 1.75rem;
   will-change: transform;
 }
 
 @media (max-width: 767px) {
   body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
-    margin-top: -2rem;
+    margin-top: 0;
   }
 
   body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-board-home {
-    padding-top: 1rem;
+    padding-top: 2.25rem;
   }
 }
 body.home-fluid-index
