@@ -8,7 +8,7 @@ tags: ["线段树", "懒标记", "线段树上二分"]
 
 博主比较菜，从23年9月份开始学习Codeforces edu上的线段树专题，中间做的断断续续，到25年6月份才翻出来最后一题并AK掉了，主要为个人复习回顾用，所以一些地方不会讲的特别详细，建议再参考一下网上其他人的题解，后面博主有时间的话会把一些题目的题解补全。
 
-
+<img src="/algorithms/codeforces-edu.png" alt="image-20260314211128851" />
 
 ## [Segment Tree, part 1](https://codeforces.com/edu/course/2/lesson/4)
 
