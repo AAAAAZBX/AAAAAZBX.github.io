@@ -1,8 +1,7 @@
-/* ======= 0. CSS 变量定义 (亮色/暗色模式) ======= */
+﻿/* ======= 0. CSS 鍙橀噺瀹氫箟 (浜壊/鏆楄壊妯″紡) ======= */
 :root {
   /*
-   * 正文字体栈：与 lynx-li.github.io 一致（先加载 Bootstrap 4.6.1，再加载 Fluid main.css）。
-   * 摘自 https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.css 根变量 --font-family-sans-serif
+   * 姝ｆ枃瀛椾綋鏍堬細涓?lynx-li.github.io 涓€鑷达紙鍏堝姞杞?Bootstrap 4.6.1锛屽啀鍔犺浇 Fluid main.css锛夈€?   * 鎽樿嚜 https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.css 鏍瑰彉閲?--font-family-sans-serif
    */
   --font-family-sans-serif:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
@@ -10,9 +9,9 @@
     "Noto Color Emoji";
   --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  /* 全宽顶栏占位：侧栏 sticky / 标题 scroll-margin 与 Fluid 顶栏高度对齐 */
+  /* 鍏ㄥ椤舵爮鍗犱綅锛氫晶鏍?sticky / 鏍囬 scroll-margin 涓?Fluid 椤舵爮楂樺害瀵归綈 */
   --sticky-top-offset: 64px;
-  /* 亮色模式变量（参照 zhenglinblog.top / Hexo Fluid：白底 + 深蓝灰导航栏） */
+  /* 浜壊妯″紡鍙橀噺锛堝弬鐓?zhenglinblog.top / Hexo Fluid锛氱櫧搴?+ 娣辫摑鐏板鑸爮锛?*/
   --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f0f2f5;
@@ -35,7 +34,7 @@
   --blockquote-text: #6a737d;
   --dropdown-bg: #fff;
   --dropdown-hover-bg: #f6f8fa;
-  /* Hexo Fluid 列表/正文色（public/lynx-li.github.io/css/main.css :root） */
+  /* Hexo Fluid 鍒楄〃/姝ｆ枃鑹诧紙public/lynx-li.github.io/css/main.css :root锛?*/
   --fluid-text-color: #3c4858;
   --fluid-sec-text-color: #718096;
   --fluid-post-text-color: #2c3e50;
@@ -43,7 +42,7 @@
   --fluid-link-hover-color: #30a9de;
   --fluid-link-hover-bg-color: #f8f9fa;
   --fluid-line-color: #eaecef;
-  /* Hexo Fluid main.css 正文区变量（与 post-content / markdown-body 对齐） */
+  /* Hexo Fluid main.css 姝ｆ枃鍖哄彉閲忥紙涓?post-content / markdown-body 瀵归綈锛?*/
   --board-bg-color: var(--bg-secondary);
   --post-text-color: var(--fluid-post-text-color);
   --post-heading-color: var(--fluid-post-heading-color);
@@ -58,7 +57,7 @@
 }
 
 .dark {
-  /* 暗色模式变量（与参考站 Fluid 暗色 board / navbar 一致） */
+  /* 鏆楄壊妯″紡鍙橀噺锛堜笌鍙傝€冪珯 Fluid 鏆楄壊 board / navbar 涓€鑷达級 */
   --bg-primary: #252d38;
   --bg-secondary: #2c3544;
   --bg-tertiary: #1f3144;
@@ -101,7 +100,7 @@
   --link-hover-bg-color: var(--fluid-link-hover-bg-color);
 }
 
-/* ======= 1. 全局基础重置 (部分修改) ======= */
+/* ======= 1. 鍏ㄥ眬鍩虹閲嶇疆 (閮ㄥ垎淇敼) ======= */
 /* Fluid public/lynx-li.github.io/css/main.css html, body */
 html {
   min-height: 100%;
@@ -124,13 +123,13 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Fluid main.css i.iconfont — 与主题 icon 尺寸一致 */
+/* Fluid main.css i.iconfont 鈥?涓庝富棰?icon 灏哄涓€鑷?*/
 i.iconfont {
   font-size: 1em;
   line-height: 1;
 }
 
-/* ======= 2. 导航栏样式（形状对齐 Hexo Fluid：viewport 全宽顶栏 + 内层 container） ======= */
+/* ======= 2. 瀵艰埅鏍忔牱寮忥紙褰㈢姸瀵归綈 Hexo Fluid锛歷iewport 鍏ㄥ椤舵爮 + 鍐呭眰 container锛?======= */
 header {
   position: sticky;
   top: 0;
@@ -158,7 +157,7 @@ header {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* Fluid：滚动后顶栏纵向压缩 */
+/* Fluid锛氭粴鍔ㄥ悗椤舵爮绾靛悜鍘嬬缉 */
 header.scrolled .nav {
   padding-top: 5px;
   padding-bottom: 5px;
@@ -195,19 +194,19 @@ header.scrolled .nav {
   display: flex;
   align-items: center;
   gap: 24px;
-  /* 增加间距让导航更分散 */
+  /* 澧炲姞闂磋窛璁╁鑸洿鍒嗘暎 */
   transition: gap 0.3s ease;
 }
 
-/* 滚动时 gap 稍小但仍保持舒适 */
+/* 婊氬姩鏃?gap 绋嶅皬浣嗕粛淇濇寔鑸掗€?*/
 header.scrolled .nav-links {
   gap: 16px;
-  /* 保持合适的间距 */
+  /* 淇濇寔鍚堥€傜殑闂磋窛 */
 }
 
 .nav-links a {
   padding: 8px 4px;
-  /* 减少水平padding，让gap来控制间距 */
+  /* 鍑忓皯姘村钩padding锛岃gap鏉ユ帶鍒堕棿璺?*/
   text-decoration: none;
   color: var(--nav-text-secondary);
   font-size: 14px;
@@ -252,8 +251,7 @@ header.scrolled .nav-links {
 }
 
 /*
- * 主题切换：与顶栏搜索图标一致（Fluid / 林正式）——仅图标 + 字色，无胶囊底与描边。
- */
+ * 涓婚鍒囨崲锛氫笌椤舵爮鎼滅储鍥炬爣涓€鑷达紙Fluid / 鏋楁寮忥級鈥斺€斾粎鍥炬爣 + 瀛楄壊锛屾棤鑳跺泭搴曚笌鎻忚竟銆? */
 .theme-toggle {
   padding: 8px 10px;
   margin: 0;
@@ -300,21 +298,21 @@ header.scrolled .nav-links {
   height: 16px;
 }
 
-/* 移除当前页面链接的背景高亮，只保留悬停效果 */
-/* 用户要求：点击其他标签页时不应该有蓝色背景，只有鼠标悬停时才显示蓝色 */
+/* 绉婚櫎褰撳墠椤甸潰閾炬帴鐨勮儗鏅珮浜紝鍙繚鐣欐偓鍋滄晥鏋?*/
+/* 鐢ㄦ埛瑕佹眰锛氱偣鍑诲叾浠栨爣绛鹃〉鏃朵笉搴旇鏈夎摑鑹茶儗鏅紝鍙湁榧犳爣鎮仠鏃舵墠鏄剧ず钃濊壊 */
 
-/* ======= 3. 内容容器样式 (用于列表页和文章页的居中) ======= */
-/* 这里的 main 只包裹列表和文章，不包裹首页的左右分栏 */
+/* ======= 3. 鍐呭瀹瑰櫒鏍峰紡 (鐢ㄤ簬鍒楄〃椤靛拰鏂囩珷椤电殑灞呬腑) ======= */
+/* 杩欓噷鐨?main 鍙寘瑁瑰垪琛ㄥ拰鏂囩珷锛屼笉鍖呰９棣栭〉鐨勫乏鍙冲垎鏍?*/
 .content-wrapper {
   max-width: 900px;
-  /* 限制内容宽度 */
+  /* 闄愬埗鍐呭瀹藉害 */
   margin: 32px auto 48px;
-  /* 居中 */
+  /* 灞呬腑 */
   padding: 0 16px;
-  /* 侧边留白 */
+  /* 渚ц竟鐣欑櫧 */
 }
 
-/* Fluid 文章外壳：栅格用 Bootstrap 4.6.1（与 public/lynx-li.github.io 一致），此处只保留 lynx main 的补充类 */
+/* Fluid 鏂囩珷澶栧３锛氭爡鏍肩敤 Bootstrap 4.6.1锛堜笌 public/lynx-li.github.io 涓€鑷达級锛屾澶勫彧淇濈暀 lynx main 鐨勮ˉ鍏呯被 */
 .fluid-board-outer.container-fluid.nopadding-x {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -343,8 +341,7 @@ header.scrolled .nav-links {
 }
 
 /*
- * 文章页 #board（无 .fluid-board-surface）。列表/首页卡片用 main...#board.fluid-board-surface，避免与裸 #board 双轨覆盖。
- */
+ * 鏂囩珷椤?#board锛堟棤 .fluid-board-surface锛夈€傚垪琛?棣栭〉鍗＄墖鐢?main...#board.fluid-board-surface锛岄伩鍏嶄笌瑁?#board 鍙岃建瑕嗙洊銆? */
 #board:not(.fluid-board-surface) {
   position: relative;
   margin-top: -2rem;
@@ -400,14 +397,14 @@ post-custom {
   max-width: 100%;
 }
 
-/* Fluid：屏上隐藏 SEO 标题，打印时显示 */
+/* Fluid锛氬睆涓婇殣钘?SEO 鏍囬锛屾墦鍗版椂鏄剧ず */
 @media not print {
   #seo-header {
     display: none;
   }
 }
 
-/* tocbot 目录（lynx main.css） */
+/* tocbot 鐩綍锛坙ynx main.css锛?*/
 #toc {
   visibility: hidden;
 }
@@ -456,7 +453,7 @@ post-custom {
   color: var(--text-color);
 }
 
-/* 右侧目录：悬停不要下划线（Bootstrap reboot / 主题链接样式会画蓝underline，很丑） */
+/* 鍙充晶鐩綍锛氭偓鍋滀笉瑕佷笅鍒掔嚎锛圔ootstrap reboot / 涓婚閾炬帴鏍峰紡浼氱敾钃漸nderline锛屽緢涓戯級 */
 #toc a,
 #toc a:link,
 #toc a:visited,
@@ -518,26 +515,26 @@ post-custom {
   padding: 3rem 0;
 }
 
-/* ... (上方的 body, header, nav 等样式保持不变) ... */
+/* ... (涓婃柟鐨?body, header, nav 绛夋牱寮忎繚鎸佷笉鍙? ... */
 
-/* 2. 确保 Footer 具备定位上下文 */
+/* 2. 纭繚 Footer 鍏峰瀹氫綅涓婁笅鏂?*/
 footer {
   position: relative;
-  /* 🌟 关键：提供定位上下文 */
+  /* 馃専 鍏抽敭锛氭彁渚涘畾浣嶄笂涓嬫枃 */
   text-align: center;
   padding: 80px 0 24px;
-  /* 顶部留出空间 */
+  /* 椤堕儴鐣欏嚭绌洪棿 */
   font-size: 12px;
   color: var(--text-secondary);
   margin-top: 20px;
-  /* 减少顶部边距，让视觉上更融合 */
+  /* 鍑忓皯椤堕儴杈硅窛锛岃瑙嗚涓婃洿铻嶅悎 */
   background-color: transparent;
-  /* 透明背景，和上面的内容区域保持一致 */
+  /* 閫忔槑鑳屾櫙锛屽拰涓婇潰鐨勫唴瀹瑰尯鍩熶繚鎸佷竴鑷?*/
   z-index: 10;
-  /* 移除顶部边框，消除颜色隔离感 */
+  /* 绉婚櫎椤堕儴杈规锛屾秷闄ら鑹查殧绂绘劅 */
 }
 
-/* Fluid 顶栏布局页：页脚疏密对齐 lynx main.css .footer-inner；实底与页面基色一致，避免透明页脚叠在默认白/继承色上 */
+/* Fluid 椤舵爮甯冨眬椤碉細椤佃剼鐤忓瘑瀵归綈 lynx main.css .footer-inner锛涘疄搴曚笌椤甸潰鍩鸿壊涓€鑷达紝閬垮厤閫忔槑椤佃剼鍙犲湪榛樿鐧?缁ф壙鑹蹭笂 */
 body.home-fluid-index footer {
   padding: 3rem 0 1rem;
   margin-top: 0;
@@ -548,23 +545,23 @@ body.home-fluid-index.dark footer {
   background-color: #181c27 !important;
 }
 
-/* 3. 定义新的 Canvas 容器样式 - 覆盖底部横线区域 */
+/* 3. 瀹氫箟鏂扮殑 Canvas 瀹瑰櫒鏍峰紡 - 瑕嗙洊搴曢儴妯嚎鍖哄煙 */
 #dino-canvas-container {
   position: absolute;
   top: 0;
-  /* 紧贴 footer 顶部边缘 */
+  /* 绱ц创 footer 椤堕儴杈圭紭 */
   left: 0;
   width: 100%;
   height: 60px;
-  /* 动画区域高度，可根据您的需求调整 */
+  /* 鍔ㄧ敾鍖哄煙楂樺害锛屽彲鏍规嵁鎮ㄧ殑闇€姹傝皟鏁?*/
   pointer-events: none;
-  /* 🌟 关键：不阻挡鼠标点击 footer 中的其他内容 */
+  /* 馃専 鍏抽敭锛氫笉闃绘尅榧犳爣鐐瑰嚮 footer 涓殑鍏朵粬鍐呭 */
   z-index: 1;
-  /* 确保它在 footer 的文本内容之下 */
+  /* 纭繚瀹冨湪 footer 鐨勬枃鏈唴瀹逛箣涓?*/
   overflow: hidden;
 }
 
-/* 列表页的基础样式 */
+/* 鍒楄〃椤电殑鍩虹鏍峰紡 */
 .list-title {
   font-size: 2em;
   font-weight: 600;
@@ -599,9 +596,9 @@ body.home-fluid-index.dark footer {
 }
 
 
-/* 移动端适配 */
+/* 绉诲姩绔€傞厤 */
 @media (max-width: 1024px) {
-  /* 导航栏移动端优化 */
+  /* 瀵艰埅鏍忕Щ鍔ㄧ浼樺寲 */
   .nav {
     padding: 12px 0;
   }
@@ -630,7 +627,7 @@ body.home-fluid-index.dark footer {
     margin: 20px auto 30px;
   }
 
-  /* 导航栏小屏幕优化 */
+  /* 瀵艰埅鏍忓皬灞忓箷浼樺寲 */
   .nav {
     padding: 10px 0;
   }
@@ -662,7 +659,7 @@ body.home-fluid-index.dark footer {
   }
 }
 
-/* ======= 5. Hexo Fluid post-content / markdown-body（替代原 Typora 容器） ======= */
+/* ======= 5. Hexo Fluid post-content / markdown-body锛堟浛浠ｅ師 Typora 瀹瑰櫒锛?======= */
 
 .markdown-body {
   font-size: 1rem;
@@ -756,7 +753,7 @@ article.post-content b {
   color: inherit;
 }
 
-/* 锚点：正文内与 Fluid/tocbot 协调 */
+/* 閿氱偣锛氭鏂囧唴涓?Fluid/tocbot 鍗忚皟 */
 #board .markdown-body a[href^="#"] {
   color: #8590a6 !important;
   text-decoration: none !important;
@@ -971,7 +968,7 @@ pre.astro-code:hover .code-copy {
   color: var(--text-link);
 }
 
-/* 评论区域 */
+/* 璇勮鍖哄煙 */
 .comment-section {
   margin-top: 60px;
   padding-top: 40px;
@@ -990,11 +987,9 @@ pre.astro-code::before {
   display: none;
 }
 
-/* ======= Fluid 首页：全屏背景图 + fixed 顶栏（结构参考 public/lynx-li.github.io/index.html） ======= */
+/* ======= Fluid 棣栭〉锛氬叏灞忚儗鏅浘 + fixed 椤舵爮锛堢粨鏋勫弬鑰?public/lynx-li.github.io/index.html锛?======= */
 /*
- * Lynx main.css :root --body-bg-color（亮色 #eee / 暗色 #181c27）：页缘与 overscroll 与 #board 白底区分。
- * Bootstrap reboot 的 body 背景与部分环境下 html 默认白会「盖住」灰底；Fluid 页用 !important 统一压住层叠。
- */
+ * Lynx main.css :root --body-bg-color锛堜寒鑹?#eee / 鏆楄壊 #181c27锛夛細椤电紭涓?overscroll 涓?#board 鐧藉簳鍖哄垎銆? * Bootstrap reboot 鐨?body 鑳屾櫙涓庨儴鍒嗙幆澧冧笅 html 榛樿鐧戒細銆岀洊浣忋€嶇伆搴曪紱Fluid 椤电敤 !important 缁熶竴鍘嬩綇灞傚彔銆? */
 html:has(body.home-fluid-index):not(.dark) {
   background-color: #eee !important;
 }
@@ -1015,14 +1010,12 @@ body.home-fluid-index header {
   left: 0;
   right: 0;
   z-index: 1000;
-  /* 盖住全局 header { margin: 0 0 32px }，避免顶栏占位或叠算产生首屏空隙 */
+  /* 鐩栦綇鍏ㄥ眬 header { margin: 0 0 32px }锛岄伩鍏嶉《鏍忓崰浣嶆垨鍙犵畻浜х敓棣栧睆绌洪殭 */
   margin: 0;
 }
 
 /*
- * 顶栏：参照 Lynx Fluid（main.css .navbar 顶部 transparent + Material 阴影；滚动后 top-nav-collapse 实色）
- * 本站顶部略加半透明底色 + 轻 blur，避免「全透明」悬空感，仍保留隐约透出背景。
- * events.js：scroll 时 navbar.offset().top > 50 加 top-nav-collapse；本站用 header.scrolled + scrollY>50
+ * 椤舵爮锛氬弬鐓?Lynx Fluid锛坢ain.css .navbar 椤堕儴 transparent + Material 闃村奖锛涙粴鍔ㄥ悗 top-nav-collapse 瀹炶壊锛? * 鏈珯椤堕儴鐣ュ姞鍗婇€忔槑搴曡壊 + 杞?blur锛岄伩鍏嶃€屽叏閫忔槑銆嶆偓绌烘劅锛屼粛淇濈暀闅愮害閫忓嚭鑳屾櫙銆? * events.js锛歴croll 鏃?navbar.offset().top > 50 鍔?top-nav-collapse锛涙湰绔欑敤 header.scrolled + scrollY>50
  */
 body.home-fluid-index header:not(.scrolled) .nav {
   background: rgba(47, 65, 84, 0.42);
@@ -1061,8 +1054,7 @@ body.home-fluid-index header.scrolled .nav {
 body.home-fluid-index .fluid-index-header-inner {
   width: 100%;
   /*
-   * 回到顶部时必须完整露出背景图：首页 Hero 固定整屏高度。
-   */
+   * 鍥炲埌椤堕儴鏃跺繀椤诲畬鏁撮湶鍑鸿儗鏅浘锛氶椤?Hero 鍥哄畾鏁村睆楂樺害銆?   */
   height: 100svh;
   min-height: 100svh;
   max-height: 100svh;
@@ -1079,12 +1071,9 @@ body.home-fluid-index .fluid-index-header-inner {
 }
 
 /*
- * 勿对「首页整屏 Hero」使用 max-height: min(..., 100vw)：
- * 竖屏时 100vw < 视口高，会把首屏压扁，首屏下方露出大段灰/白（用户误以为 CSS 被覆盖）。
- * Lynx 的 max-height:100vw 仅应作用在次级顶图/文章 Hero；以下由 .compact / .post 各自媒体查询承担。
- */
+ * 鍕垮銆岄椤垫暣灞?Hero銆嶄娇鐢?max-height: min(..., 100vw)锛? * 绔栧睆鏃?100vw < 瑙嗗彛楂橈紝浼氭妸棣栧睆鍘嬫墎锛岄灞忎笅鏂归湶鍑哄ぇ娈电伆/鐧斤紙鐢ㄦ埛璇互涓?CSS 琚鐩栵級銆? * Lynx 鐨?max-height:100vw 浠呭簲浣滅敤鍦ㄦ绾ч《鍥?鏂囩珷 Hero锛涗互涓嬬敱 .compact / .post 鍚勮嚜濯掍綋鏌ヨ鎵挎媴銆? */
 
-/* Fluid 次级页（如 Categories）：顶图较矮，对齐 lynx-li.github.io/categories/ header-inner 60vh */
+/* Fluid 娆＄骇椤碉紙濡?Categories锛夛細椤跺浘杈冪煯锛屽榻?lynx-li.github.io/categories/ header-inner 60vh */
 body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-compact {
   height: 60vh;
   max-height: 60vh;
@@ -1098,12 +1087,10 @@ body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-compact {
 }
 
 /*
- * 文章页顶栏高度：与 Hexo Fluid 导出一致
- * public/lynx-li.github.io/2025/05/08/master/matrixanalysis/decompose/index.html
+ * 鏂囩珷椤甸《鏍忛珮搴︼細涓?Hexo Fluid 瀵煎嚭涓€鑷? * public/lynx-li.github.io/2025/05/08/master/matrixanalysis/decompose/index.html
  *   <div class="header-inner" style="height: 70vh;">
  * public/lynx-li.github.io/css/main.css @media (max-width: 100vh) { .header-inner { max-height: 100vw; } }
- * 另：不依赖 body 类的规则，防止顶栏高度塌缩。
- */
+ * 鍙︼細涓嶄緷璧?body 绫荤殑瑙勫垯锛岄槻姝㈤《鏍忛珮搴﹀缂┿€? */
 .fluid-index-header-inner.fluid-header-inner-post {
   width: 100%;
   height: 70vh;
@@ -1129,7 +1116,7 @@ body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-post {
   }
 }
 
-/* 与上同理：文章 Hero 内层不强制依赖 body 类 */
+/* 涓庝笂鍚岀悊锛氭枃绔?Hero 鍐呭眰涓嶅己鍒朵緷璧?body 绫?*/
 .fluid-post-page .full-bg-img {
   position: absolute;
   inset: 0;
@@ -1175,7 +1162,7 @@ body.home-fluid-index .fluid-post-banner-text.banner-text {
   text-align: center;
 }
 
-/* Bootstrap 4 .h2 量级，作文章主标题（Typed.js + 下划线光标） */
+/* Bootstrap 4 .h2 閲忕骇锛屼綔鏂囩珷涓绘爣棰橈紙Typed.js + 涓嬪垝绾垮厜鏍囷級 */
 body.home-fluid-index .fluid-post-banner-h2.h2 {
   font-size: 2rem;
   font-weight: 500;
@@ -1197,7 +1184,7 @@ body.home-fluid-index .fluid-post-page .mr-2 {
   margin-right: 0.5rem !important;
 }
 
-/* main.css .post-metas / 文首 .post-meta */
+/* main.css .post-metas / 鏂囬 .post-meta */
 body.home-fluid-index .fluid-post-banner-text .post-meta {
   display: inline-block;
   font-size: 0.9rem;
@@ -1254,8 +1241,7 @@ body.home-fluid-index .fluid-article-below-hero {
 }
 
 /*
- * 禁止使用 background 简写：简写会把 background-image 置回初始值，易覆盖 Astro 内联的 background-image，导致顶栏背景不显示。
- */
+ * 绂佹浣跨敤 background 绠€鍐欙細绠€鍐欎細鎶?background-image 缃洖鍒濆鍊硷紝鏄撹鐩?Astro 鍐呰仈鐨?background-image锛屽鑷撮《鏍忚儗鏅笉鏄剧ず銆? */
 body.home-fluid-index .fluid-banner {
   height: 100%;
   position: relative;
@@ -1266,7 +1252,7 @@ body.home-fluid-index .fluid-banner {
   background-size: cover;
 }
 
-/* 首页：img + object-fit: cover，与 cover 同为单一缩放因子，长宽等比例放大/缩小，仅裁切不留拉伸隙 */
+/* 棣栭〉锛歩mg + object-fit: cover锛屼笌 cover 鍚屼负鍗曚竴缂╂斁鍥犲瓙锛岄暱瀹界瓑姣斾緥鏀惧ぇ/缂╁皬锛屼粎瑁佸垏涓嶇暀鎷変几闅?*/
 body.home-fluid-index .fluid-banner.fluid-banner-photo-mode {
   background-image: none !important;
 }
@@ -1335,7 +1321,7 @@ body.home-fluid-index .fluid-banner-title {
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
 }
 
-/* Typed.js 光标（对齐 Fluid .banner-text .typed-cursor） */
+/* Typed.js 鍏夋爣锛堝榻?Fluid .banner-text .typed-cursor锛?*/
 body.home-fluid-index .fluid-banner-title .typed-cursor {
   margin: 0 0.15em;
   font-weight: 400;
@@ -1383,20 +1369,19 @@ body.home-fluid-index .fluid-scroll-down:hover {
   }
 }
 
-/* ---------- Fluid 正文区：Home / Archives / Categories（lynx-li.github.io 布局 + 配色 + 字重） ---------- */
+/* ---------- Fluid 姝ｆ枃鍖猴細Home / Archives / Categories锛坙ynx-li.github.io 甯冨眬 + 閰嶈壊 + 瀛楅噸锛?---------- */
 body.home-fluid-index .fluid-index-main.fluid-board-page {
   position: relative;
   z-index: 3;
   scroll-margin-top: calc(var(--sticky-top-offset, 64px) + 8px);
-  /* main 整宽区域在窄屏上可能露出于 #board 两侧；与 body 同色，避免被继承/UA 刷成白 */
+  /* main 鏁村鍖哄煙鍦ㄧ獎灞忎笂鍙兘闇插嚭浜?#board 涓や晶锛涗笌 body 鍚岃壊锛岄伩鍏嶈缁ф壙/UA 鍒锋垚鐧?*/
   background-color: #eee !important;
-  /* 避免 Bootstrap/UA 在 main 上产生额外外边距，在 Hero 与 #board 之间拉出灰/白条 */
+  /* 閬垮厤 Bootstrap/UA 鍦?main 涓婁骇鐢熼澶栧杈硅窛锛屽湪 Hero 涓?#board 涔嬮棿鎷夊嚭鐏?鐧芥潯 */
   margin: 0;
   padding: 0;
   /*
-   * 覆盖其它样式表中误用的 `main { min-height: 100vh }`（如原 index.css 裸 main），
-   * 否则首页正文区被撑满一屏，Recent Posts 下方大块空白、像列表被「盖住」。
-   */
+   * 瑕嗙洊鍏跺畠鏍峰紡琛ㄤ腑璇敤鐨?`main { min-height: 100vh }`锛堝鍘?index.css 瑁?main锛夛紝
+   * 鍚﹀垯棣栭〉姝ｆ枃鍖鸿鎾戞弧涓€灞忥紝Recent Posts 涓嬫柟澶у潡绌虹櫧銆佸儚鍒楄〃琚€岀洊浣忋€嶃€?   */
   min-height: 0 !important;
   height: auto !important;
 }
@@ -1410,7 +1395,7 @@ main.fluid-board-page:not(.fluid-index-main) {
   padding-bottom: 2rem;
 }
 
-/* .container（Bootstrap 4.6.1 断点） */
+/* .container锛圔ootstrap 4.6.1 鏂偣锛?*/
 body.home-fluid-index .fluid-container,
 main.fluid-board-page .fluid-container {
   width: 100%;
@@ -1457,7 +1442,7 @@ main.fluid-board-page .fluid-container {
   }
 }
 
-/* #board（Fluid main.css #board） */
+/* #board锛團luid main.css #board锛?*/
 main.fluid-board-page #board.fluid-board-surface {
   position: relative;
   margin-top: 0;
@@ -1475,11 +1460,16 @@ main.fluid-board-page #board.fluid-board-surface {
 }
 
 /*
- * 首页 #board：略向上叠进 Hero，并显著减小上内边距。
- * 原先仅覆盖 padding-bottom，top 仍继承全局 padding:3rem，Recent Posts 上方会空一大块（像被覆盖失效）。
- */
+ * 棣栭〉 #board锛氱暐鍚戜笂鍙犺繘 Hero锛屽苟鏄捐憲鍑忓皬涓婂唴杈硅窛銆? * 鍘熷厛浠呰鐩?padding-bottom锛宼op 浠嶇户鎵垮叏灞€ padding:3rem锛孯ecent Posts 涓婃柟浼氱┖涓€澶у潡锛堝儚琚鐩栧け鏁堬級銆? */
 body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
   margin-top: 0;
+}
+
+/* 娆＄骇鍒楄〃椤碉紙archives/categories锛夛細鍗＄墖鍒濆涓婃诞鍒伴《鍥句笅缂橈紝鎺ヨ繎 Lynx 瑙嗚 */
+body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
+body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface {
+  margin-top: -3.5rem;
+  will-change: transform;
 }
 
 body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-board-home {
@@ -1492,6 +1482,11 @@ body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-boa
 @media (max-width: 767px) {
   body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
     margin-top: 0;
+  }
+
+  body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
+  body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface {
+    margin-top: -2.25rem;
   }
 
   body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-board-home {
@@ -1525,7 +1520,7 @@ main.fluid-board-page .fluid-col-12 {
   max-width: 100%;
 }
 
-/* .col-md-10.m-auto（archives / categories / 首页内栏） */
+/* .col-md-10.m-auto锛坅rchives / categories / 棣栭〉鍐呮爮锛?*/
 main.fluid-board-page .fluid-col-md-10 {
   position: relative;
   width: 100%;
@@ -1548,7 +1543,7 @@ main.fluid-board-page .fluid-m-auto {
   margin-right: auto !important;
 }
 
-/* Board 内：Fluid html/body 字间距与正文字号（main.css 768-781, 1393-1398） */
+/* Board 鍐咃細Fluid html/body 瀛楅棿璺濅笌姝ｆ枃瀛楀彿锛坢ain.css 768-781, 1393-1398锛?*/
 main.fluid-board-page .home-feed,
 main.fluid-board-page .fluid-list-group,
 main.fluid-board-page .fluid-category-list {
@@ -1576,7 +1571,7 @@ main.fluid-board-page .home-feed {
   border-radius: 0;
 }
 
-/* —— 首页 Recent Posts：index-header / index-excerpt / index-btm（main.css 1213-1271） —— */
+/* 鈥斺€?棣栭〉 Recent Posts锛歩ndex-header / index-excerpt / index-btm锛坢ain.css 1213-1271锛?鈥斺€?*/
 main.fluid-board-page .home-feed-title {
   font-size: 1.5rem;
   font-weight: bold;
@@ -1682,7 +1677,7 @@ main.fluid-board-page .home-empty {
   }
 }
 
-/* —— Archives：.list-group（main.css 1969-2001） —— */
+/* 鈥斺€?Archives锛?list-group锛坢ain.css 1969-2001锛?鈥斺€?*/
 main.fluid-board-page .fluid-list-group a ~ .fluid-archives-year {
   margin-top: 1rem;
 }
@@ -1760,7 +1755,7 @@ main.fluid-board-page .fluid-archives-empty {
   margin: 0;
 }
 
-/* —— Categories：Bootstrap 4 collapse + Fluid main.css 2095-2147（与 zhenglinblog 一致） —— */
+/* 鈥斺€?Categories锛欱ootstrap 4 collapse + Fluid main.css 2095-2147锛堜笌 zhenglinblog 涓€鑷达級 鈥斺€?*/
 main.fluid-board-page .category-list .collapse:not(.show) {
   display: none;
 }
@@ -1815,7 +1810,7 @@ main.fluid-board-page .category-list .col-2 {
     max-width: 8.333333%;
   }
 
-  /* Fluid 模板中的 col-xm-*（与 md 同色阶） */
+  /* Fluid 妯℃澘涓殑 col-xm-*锛堜笌 md 鍚岃壊闃讹級 */
   main.fluid-board-page .category-list .col-xm-11 {
     flex: 0 0 91.666667%;
     max-width: 91.666667%;
@@ -1840,10 +1835,8 @@ main.fluid-board-page .category-list .col-2 {
 }
 
 /*
- * 标题与篇数同一行：必须写在所有 col-* 之后。
- * col 的 flex:0 0 X% + shrink:0 会在内容略宽时把 .category-count 整列 flex-wrap 到下一行；
- * 改用「标题吃剩余空间 + 篇数 auto 宽」对齐 Fluid 的视觉效果。
- */
+ * 鏍囬涓庣瘒鏁板悓涓€琛岋細蹇呴』鍐欏湪鎵€鏈?col-* 涔嬪悗銆? * col 鐨?flex:0 0 X% + shrink:0 浼氬湪鍐呭鐣ュ鏃舵妸 .category-count 鏁村垪 flex-wrap 鍒颁笅涓€琛岋紱
+ * 鏀圭敤銆屾爣棰樺悆鍓╀綑绌洪棿 + 绡囨暟 auto 瀹姐€嶅榻?Fluid 鐨勮瑙夋晥鏋溿€? */
 main.fluid-board-page .category-list .category.row > a.category-item-action,
 main.fluid-board-page .category-list .category-sub.row > a.category-item-action {
   flex: 1 1 0%;
@@ -1891,13 +1884,13 @@ main.fluid-board-page .fluid-category-section:last-child {
   margin-bottom: 0;
 }
 
-/* Fluid main.css .category:not(:last-child) —— 由 .cat-section li 承担分区间距 */
+/* Fluid main.css .category:not(:last-child) 鈥斺€?鐢?.cat-section li 鎵挎媴鍒嗗尯闂磋窛 */
 main.fluid-board-page .category-list .category:not(:last-child),
 main.fluid-board-page .category-list .category-sub:not(:last-child) {
   margin-bottom: 0;
 }
 
-/* Fluid main.css .category .category-item、.category-subitem */
+/* Fluid main.css .category .category-item銆?category-subitem */
 main.fluid-board-page .category-list .category .category-item,
 main.fluid-board-page .category-list .category-sub .category-subitem {
   font-weight: bold;
@@ -1906,10 +1899,7 @@ main.fluid-board-page .category-list .category-sub .category-subitem {
 }
 
 /*
- * 分类标题三级字号：与 zhenglinblog / 林正 categories 一致 ——
- * 顶栏大类最大；集合内第一层文件夹次之；再下层子文件夹更小。
- * 勿再用单一的 .category .category-item 字号，否则顶层与嵌套第一层会糊成同一级。
- */
+ * 鍒嗙被鏍囬涓夌骇瀛楀彿锛氫笌 zhenglinblog / 鏋楁 categories 涓€鑷?鈥斺€? * 椤舵爮澶х被鏈€澶э紱闆嗗悎鍐呯涓€灞傛枃浠跺す娆′箣锛涘啀涓嬪眰瀛愭枃浠跺す鏇村皬銆? * 鍕垮啀鐢ㄥ崟涓€鐨?.category .category-item 瀛楀彿锛屽惁鍒欓《灞備笌宓屽绗竴灞備細绯婃垚鍚屼竴绾с€? */
 main.fluid-board-page .category-list .fluid-category-section > .category > a.category-item {
   font-size: 1.45rem;
   line-height: 1.35;
@@ -2035,13 +2025,9 @@ main.fluid-board-page .category-list .category-post {
 }
 
 /*
- * 分类页文章标题：与 zhenglinblog.top/categories 一致。
- * HTML: a.list-group-item.list-group-item-action > span.category-post
- * 字号/行高继承 Bootstrap 4.6 body（1rem / 1.5），非侧栏 .category-bar .category-post 的 0.9rem。
- * padding 对齐 Bootstrap .list-group-item；main.css 1972-1976 仅覆盖 border/background。
- * @575px：main.css 1985-1988 与 Bootstrap 一致。
- */
-/* 分类下列表文章：a.list-group-item > span.category-post，对齐 Bootstrap 4.6 body */
+ * 鍒嗙被椤垫枃绔犳爣棰橈細涓?zhenglinblog.top/categories 涓€鑷淬€? * HTML: a.list-group-item.list-group-item-action > span.category-post
+ * 瀛楀彿/琛岄珮缁ф壙 Bootstrap 4.6 body锛?rem / 1.5锛夛紝闈炰晶鏍?.category-bar .category-post 鐨?0.9rem銆? * padding 瀵归綈 Bootstrap .list-group-item锛沵ain.css 1972-1976 浠呰鐩?border/background銆? * @575px锛歮ain.css 1985-1988 涓?Bootstrap 涓€鑷淬€? */
+/* 鍒嗙被涓嬪垪琛ㄦ枃绔狅細a.list-group-item > span.category-post锛屽榻?Bootstrap 4.6 body */
 main.fluid-board-page .category-list .category-post-list .list-group-item {
   font-size: 1rem;
   line-height: 1.5;
@@ -2077,3 +2063,4 @@ main.fluid-board-page .category-list .category-post-list .list-group-item {
     font-size: 0.9rem;
   }
 }
+

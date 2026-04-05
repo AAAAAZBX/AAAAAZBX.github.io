@@ -1,5 +1,7 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
+import fs from "node:fs";
+import path from "node:path";
 
 const postSchema = z.object({
   title: z.string(),
@@ -19,10 +21,24 @@ function mdCollection(base: string) {
   });
 }
 
-/** glob 的 base 为磁盘实际目录；文章路由统一由 pages/categories/[...slug].astro 生成 */
-export const collections = {
-  algorithms: mdCollection("./src/content/algorithms"),
-  ai: mdCollection("./src/content/AI"),
-  tools: mdCollection("./src/content/Tools"),
-  travel: mdCollection("./src/content/travel"),
-};
+function discoverContentDirectories(): string[] {
+  const contentRoot = path.join(process.cwd(), "src", "content");
+  let dirents: fs.Dirent[] = [];
+  try {
+    dirents = fs.readdirSync(contentRoot, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  return dirents
+    .filter((d) => d.isDirectory() && !d.name.startsWith("."))
+    .map((d) => d.name)
+    .sort((a, b) => a.localeCompare(b, "zh-CN"));
+}
+
+/** 按 src/content 下真实目录自动建集合；路由统一由 pages/categories/[...slug].astro 生成 */
+export const collections: Record<string, ReturnType<typeof mdCollection>> = Object.fromEntries(
+  discoverContentDirectories().map((dirname) => [
+    dirname,
+    mdCollection(`./src/content/${dirname}`),
+  ])
+);

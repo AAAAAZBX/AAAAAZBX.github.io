@@ -3,7 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import {
   getMergedPosts,
   formatDateIso,
-  collectionLabels,
+  getCollectionLabel,
 } from "../lib/content-posts";
 
 const siteTitle = "Boxuan Zhang";
@@ -112,7 +112,7 @@ const recentPosts = merged.slice(0, 24);
                         </span>
                         <span class="home-post-meta-item">
                           <i class="iconfont icon-archive-fill" aria-hidden="true"></i>
-                          <span class="home-post-cat">{collectionLabels[item.collection].en}</span>
+                          <span class="home-post-cat">{getCollectionLabel(item.collection).en}</span>
                         </span>
                         {item.tags.length > 0 && (
                           <span class="home-post-meta-item">

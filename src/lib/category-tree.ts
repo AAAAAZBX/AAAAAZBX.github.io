@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { ColKey, MergedPost } from "./content-posts";
-import { collectionKeys, contentFolderByColKey } from "./content-posts";
+import type { MergedPost } from "./content-posts";
+import { collectionKeys } from "./content-posts";
 
 export type CatPathNode = {
   name: string;
@@ -38,7 +38,7 @@ export function buildContentFolderDisplayMap(): Map<string, string> {
   const contentRoot = path.join(process.cwd(), "src", "content");
 
   for (const col of collectionKeys) {
-    const root = path.join(contentRoot, contentFolderByColKey[col]);
+    const root = path.join(contentRoot, col);
     if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) continue;
 
     const walk = (dir: string, rel: string[]) => {
@@ -76,7 +76,7 @@ function finalize(m: MutableNode): CatPathNode {
 }
 
 export type BuildCategoryPathTreeOptions = {
-  collection: ColKey;
+  collection: string;
   folderDisplayMap: Map<string, string>;
 };
 

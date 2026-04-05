@@ -1,6 +1,6 @@
----
+﻿---
 import Layout from "../layouts/Layout.astro";
-import { getMergedPosts } from "../lib/content-posts";
+import { collectionKeys, getCollectionLabel, getMergedPosts } from "../lib/content-posts";
 import {
   buildCategoryPathTree,
   buildContentFolderDisplayMap,
@@ -10,35 +10,29 @@ import CategoryPathTree from "../components/CategoryPathTree.astro";
 const allPosts = await getMergedPosts();
 const folderDisplayMap = buildContentFolderDisplayMap();
 
-const aiPosts = allPosts.filter((p) => p.collection === "ai");
-const toolsPosts = allPosts.filter((p) => p.collection === "tools");
-const algorithmPosts = allPosts.filter((p) => p.collection === "algorithms");
-const travelPosts = allPosts.filter((p) => p.collection === "travel");
+function normalizeDomIdToken(input: string): string {
+  return input.replace(/[^a-zA-Z0-9\u4e00-\u9fff_-]/g, "-");
+}
 
-const treeOpts = { folderDisplayMap } as const;
-
-const aiTree = buildCategoryPathTree(aiPosts, {
-  ...treeOpts,
-  collection: "ai",
-});
-const toolsTree = buildCategoryPathTree(toolsPosts, {
-  ...treeOpts,
-  collection: "tools",
-});
-const algorithmTree = buildCategoryPathTree(algorithmPosts, {
-  ...treeOpts,
-  collection: "algorithms",
-});
-const travelTree = buildCategoryPathTree(travelPosts, {
-  ...treeOpts,
-  collection: "travel",
+const sections = collectionKeys.map((collection) => {
+  const posts = allPosts.filter((p) => p.collection === collection);
+  const tree = buildCategoryPathTree(posts, { folderDisplayMap, collection });
+  const domIdToken = normalizeDomIdToken(collection);
+  return {
+    collection,
+    heading: getCollectionLabel(collection).en,
+    posts,
+    tree,
+    headingId: `heading-collapse-section-${domIdToken}`,
+    panelId: `collapse-section-${domIdToken}`,
+  };
 });
 
 const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
 const bannerTypedText = "Categories";
 ---
 
-<Layout title="Categories — Boxuan Zhang" overlayNav>
+<Layout title="Categories - Boxuan Zhang" overlayNav>
   <div class="fluid-index-header-inner fluid-header-inner-compact">
     <div
       id="banner"
@@ -54,25 +48,8 @@ const bannerTypedText = "Categories";
               <span id="fluid-hero-typed" data-typed-text={bannerTypedText}></span>
             </h1>
           </div>
-          <a
-            href="#fluid-board"
-            class="fluid-scroll-down"
-            aria-label="Scroll to categories"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M6 9l6 6 6-6"></path>
-            </svg>
+          <a href="#fluid-board" class="fluid-scroll-down" aria-label="Scroll to categories">
+            <i class="iconfont icon-arrowdown" aria-hidden="true"></i>
           </a>
         </div>
       </div>
@@ -86,141 +63,41 @@ const bannerTypedText = "Categories";
           <div class="fluid-row">
             <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
               <ul class="fluid-category-list category-list">
-                <li class="fluid-category-section cat-section">
-                  <div class="category row nomargin-x">
-                    <a
-                      class="category-item list-group-item category-item-action col-10 col-md-11 col-xm-11 collapsed"
-                      id="heading-collapse-section-ai"
-                      role="tab"
-                      data-toggle="collapse"
-                      href="#collapse-section-ai"
-                      aria-expanded="false"
-                      aria-controls="collapse-section-ai"
-                    >
-                      AI
-                      <span class="list-group-count"></span>
-                      <i class="iconfont icon-arrowright" aria-hidden="true"></i>
-                    </a>
-                    <span class="category-count col-2 col-md-1 col-xm-1">
-                      <i class="iconfont icon-articles" aria-hidden="true"></i>
-                      <span>{aiPosts.length}</span>
-                    </span>
-                    <div
-                      class="category-collapse collapse w-100"
-                      id="collapse-section-ai"
-                      role="tabpanel"
-                      aria-labelledby="heading-collapse-section-ai"
-                    >
-                      {aiPosts.length === 0 ? (
-                        <p class="cat-panel-empty">暂无文章。</p>
-                      ) : (
-                        <CategoryPathTree node={aiTree} />
-                      )}
+                {sections.map((section) => (
+                  <li class="fluid-category-section cat-section">
+                    <div class="category row nomargin-x">
+                      <a
+                        class="category-item list-group-item category-item-action col-10 col-md-11 col-xm-11 collapsed"
+                        id={section.headingId}
+                        role="tab"
+                        data-toggle="collapse"
+                        href={`#${section.panelId}`}
+                        aria-expanded="false"
+                        aria-controls={section.panelId}
+                      >
+                        {section.heading}
+                        <span class="list-group-count"></span>
+                        <i class="iconfont icon-arrowright" aria-hidden="true"></i>
+                      </a>
+                      <span class="category-count col-2 col-md-1 col-xm-1">
+                        <i class="iconfont icon-articles" aria-hidden="true"></i>
+                        <span>{section.posts.length}</span>
+                      </span>
+                      <div
+                        class="category-collapse collapse w-100"
+                        id={section.panelId}
+                        role="tabpanel"
+                        aria-labelledby={section.headingId}
+                      >
+                        {section.posts.length === 0 ? (
+                          <p class="cat-panel-empty">暂无文章。</p>
+                        ) : (
+                          <CategoryPathTree node={section.tree} />
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </li>
-
-                <li class="fluid-category-section cat-section">
-                  <div class="category row nomargin-x">
-                    <a
-                      class="category-item list-group-item category-item-action col-10 col-md-11 col-xm-11 collapsed"
-                      id="heading-collapse-section-tools"
-                      role="tab"
-                      data-toggle="collapse"
-                      href="#collapse-section-tools"
-                      aria-expanded="false"
-                      aria-controls="collapse-section-tools"
-                    >
-                      Tools
-                      <span class="list-group-count"></span>
-                      <i class="iconfont icon-arrowright" aria-hidden="true"></i>
-                    </a>
-                    <span class="category-count col-2 col-md-1 col-xm-1">
-                      <i class="iconfont icon-articles" aria-hidden="true"></i>
-                      <span>{toolsPosts.length}</span>
-                    </span>
-                    <div
-                      class="category-collapse collapse w-100"
-                      id="collapse-section-tools"
-                      role="tabpanel"
-                      aria-labelledby="heading-collapse-section-tools"
-                    >
-                      {toolsPosts.length === 0 ? (
-                        <p class="cat-panel-empty">暂无文章。</p>
-                      ) : (
-                        <CategoryPathTree node={toolsTree} />
-                      )}
-                    </div>
-                  </div>
-                </li>
-
-                <li class="fluid-category-section cat-section">
-                  <div class="category row nomargin-x">
-                    <a
-                      class="category-item list-group-item category-item-action col-10 col-md-11 col-xm-11 collapsed"
-                      id="heading-collapse-section-algorithms"
-                      role="tab"
-                      data-toggle="collapse"
-                      href="#collapse-section-algorithms"
-                      aria-expanded="false"
-                      aria-controls="collapse-section-algorithms"
-                    >
-                      Competitive Programming
-                      <span class="list-group-count"></span>
-                      <i class="iconfont icon-arrowright" aria-hidden="true"></i>
-                    </a>
-                    <span class="category-count col-2 col-md-1 col-xm-1">
-                      <i class="iconfont icon-articles" aria-hidden="true"></i>
-                      <span>{algorithmPosts.length}</span>
-                    </span>
-                    <div
-                      class="category-collapse collapse w-100"
-                      id="collapse-section-algorithms"
-                      role="tabpanel"
-                      aria-labelledby="heading-collapse-section-algorithms"
-                    >
-                      {algorithmPosts.length === 0 ? (
-                        <p class="cat-panel-empty">暂无文章。</p>
-                      ) : (
-                        <CategoryPathTree node={algorithmTree} />
-                      )}
-                    </div>
-                  </div>
-                </li>
-
-                <li class="fluid-category-section cat-section">
-                  <div class="category row nomargin-x">
-                    <a
-                      class="category-item list-group-item category-item-action col-10 col-md-11 col-xm-11 collapsed"
-                      id="heading-collapse-section-travel"
-                      role="tab"
-                      data-toggle="collapse"
-                      href="#collapse-section-travel"
-                      aria-expanded="false"
-                      aria-controls="collapse-section-travel"
-                    >
-                      Daily Life
-                      <span class="list-group-count"></span>
-                      <i class="iconfont icon-arrowright" aria-hidden="true"></i>
-                    </a>
-                    <span class="category-count col-2 col-md-1 col-xm-1">
-                      <i class="iconfont icon-articles" aria-hidden="true"></i>
-                      <span>{travelPosts.length}</span>
-                    </span>
-                    <div
-                      class="category-collapse collapse w-100"
-                      id="collapse-section-travel"
-                      role="tabpanel"
-                      aria-labelledby="heading-collapse-section-travel"
-                    >
-                      {travelPosts.length === 0 ? (
-                        <p class="cat-panel-empty">暂无文章。</p>
-                      ) : (
-                        <CategoryPathTree node={travelTree} />
-                      )}
-                    </div>
-                  </div>
-                </li>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -247,19 +124,31 @@ const bannerTypedText = "Categories";
           showCursor: true,
         });
       }
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", fluidHeroTyping);
-      } else {
-        fluidHeroTyping();
-      }
-    })();
-  </script>
 
-  <!-- Bootstrap 4 风格 collapse：height 过渡，与 Fluid categories 一致 -->
-  <script is:inline>
-    (function () {
-      var board = document.getElementById("fluid-board");
-      if (!board) return;
+      function fluidBoardLiftCategories() {
+        var hero = document.querySelector(".fluid-index-header-inner.fluid-header-inner-compact");
+        var board = document.querySelector("main.fluid-categories-main #board.fluid-board-surface");
+        if (!hero || !board) return;
+
+        var ticking = false;
+        function update() {
+          var top = window.pageYOffset || document.documentElement.scrollTop || 0;
+          var heroH = hero.clientHeight || 1;
+          var progress = Math.min(Math.max(top / (heroH * 0.85), 0), 1);
+          var lift = Math.round(progress * 72);
+          board.style.transform = "translate3d(0," + -lift + "px,0)";
+          ticking = false;
+        }
+        function requestUpdate() {
+          if (!ticking) {
+            window.requestAnimationFrame(update);
+            ticking = true;
+          }
+        }
+        window.addEventListener("scroll", requestUpdate, { passive: true });
+        window.addEventListener("resize", requestUpdate);
+        update();
+      }
 
       function transitionComplete(el, done) {
         var ms = 400;
@@ -272,7 +161,7 @@ const bannerTypedText = "Categories";
             el.removeEventListener("transitionend", te);
             done();
           },
-          false,
+          false
         );
       }
 
@@ -281,8 +170,7 @@ const bannerTypedText = "Categories";
         el.classList.add("collapsing");
         el.style.height = "0px";
         el.offsetHeight;
-        var h = el.scrollHeight;
-        el.style.height = h + "px";
+        el.style.height = el.scrollHeight + "px";
         transitionComplete(el, function () {
           el.classList.remove("collapsing");
           el.classList.add("collapse", "show");
@@ -304,29 +192,45 @@ const bannerTypedText = "Categories";
         });
       }
 
-      board.addEventListener(
-        "click",
-        function (e) {
-          var t = e.target && e.target.closest("[data-toggle='collapse']");
-          if (!t || !board.contains(t)) return;
-          var href = t.getAttribute("href");
-          if (!href || href.charAt(0) !== "#") return;
-          e.preventDefault();
-          var target = document.querySelector(href);
-          if (!target || !board.contains(target)) return;
-          var open = target.classList.contains("show");
-          if (open) {
-            hideCollapse(target);
-            t.classList.add("collapsed");
-            t.setAttribute("aria-expanded", "false");
-          } else {
-            showCollapse(target);
-            t.classList.remove("collapsed");
-            t.setAttribute("aria-expanded", "true");
-          }
-        },
-        false,
-      );
+      function bindCategoryCollapse() {
+        var board = document.getElementById("fluid-board");
+        if (!board) return;
+        board.addEventListener(
+          "click",
+          function (e) {
+            var t = e.target && e.target.closest("[data-toggle='collapse']");
+            if (!t || !board.contains(t)) return;
+            var href = t.getAttribute("href");
+            if (!href || href.charAt(0) !== "#") return;
+            e.preventDefault();
+            var target = document.querySelector(href);
+            if (!target || !board.contains(target)) return;
+            var open = target.classList.contains("show");
+            if (open) {
+              hideCollapse(target);
+              t.classList.add("collapsed");
+              t.setAttribute("aria-expanded", "false");
+            } else {
+              showCollapse(target);
+              t.classList.remove("collapsed");
+              t.setAttribute("aria-expanded", "true");
+            }
+          },
+          false
+        );
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () {
+          fluidHeroTyping();
+          fluidBoardLiftCategories();
+          bindCategoryCollapse();
+        });
+      } else {
+        fluidHeroTyping();
+        fluidBoardLiftCategories();
+        bindCategoryCollapse();
+      }
     })();
   </script>
 
@@ -334,11 +238,9 @@ const bannerTypedText = "Categories";
     .cat-section {
       border-bottom: 1px solid var(--fluid-line-color);
     }
-
     .cat-section:first-child .category.row {
       border-top: 1px solid var(--fluid-line-color);
     }
-
     .cat-panel-empty {
       margin: 0;
       padding: 0.75rem 1.25rem;
@@ -349,3 +251,4 @@ const bannerTypedText = "Categories";
     }
   </style>
 </Layout>
+

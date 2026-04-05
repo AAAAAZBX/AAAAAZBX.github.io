@@ -16,7 +16,7 @@ import {
 } from "../../lib/post-reading-stats";
 import {
   collectionKeys,
-  collectionLabels,
+  getCollectionLabel,
   type ColKey,
 } from "../../lib/content-posts";
 
@@ -28,7 +28,7 @@ type RouteProps = {
 export async function getStaticPaths() {
   const buckets = await Promise.all(
     collectionKeys.map(async (collection) => {
-      const posts = await getCollection(collection);
+      const posts = await getCollection(collection as never);
       return posts.map((post) => ({
         params: { slug: `${collection}/${post.id}` },
         props: { collection, id: post.id } satisfies RouteProps,
@@ -56,7 +56,7 @@ const readMinutes = estimateReadMinutes(units);
 const author = post.data.author?.trim() || DEFAULT_SITE_AUTHOR;
 const dateLine = formatPostMetaDateLine(post.data.date);
 const datetimeAttr = post.data.date ? formatPostDatetimeAttr(post.data.date) : "";
-const sectionTitle = collectionLabels[collection].en;
+const sectionTitle = getCollectionLabel(collection).en;
 ---
 
 <Layout title={`${post.data.title} | ${sectionTitle}`} overlayNav>

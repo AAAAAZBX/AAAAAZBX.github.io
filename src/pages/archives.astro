@@ -1,4 +1,4 @@
----
+﻿---
 import Layout from "../layouts/Layout.astro";
 import { getMergedPosts } from "../lib/content-posts";
 
@@ -13,7 +13,7 @@ function formatDateMd(dateString: string | undefined): string {
   return `${m}-${day}`;
 }
 
-/** 按年份分组（新在前）；无日期的归入单独一组 */
+/** 鎸夊勾浠藉垎缁勶紙鏂板湪鍓嶏級锛涙棤鏃ユ湡鐨勫綊鍏ュ崟鐙竴缁?*/
 const undated: typeof merged = [];
 const byYear = new Map<number, typeof merged>();
 for (const p of merged) {
@@ -37,7 +37,7 @@ const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
 const bannerTypedText = "Archives";
 ---
 
-<Layout title="Archives — Boxuan Zhang" overlayNav>
+<Layout title="Archives - Boxuan Zhang" overlayNav>
   <div class="fluid-index-header-inner fluid-header-inner-compact">
     <div
       id="banner"
@@ -107,7 +107,7 @@ const bannerTypedText = "Archives";
                     <p class="fluid-archives-year fluid-archives-year-heading" id="y-undated">Undated</p>
                     {undated.map((p) => (
                       <a class="fluid-list-group-item list-group-item-action" href={p.href}>
-                        <time datetime={p.date ?? ""}>—</time>
+                        <time datetime={p.date ?? ""}>-</time>
                         <div class="list-group-item-title">{p.title}</div>
                       </a>
                     ))}
@@ -146,6 +146,36 @@ const bannerTypedText = "Archives";
       } else {
         fluidHeroTyping();
       }
+
+      function fluidBoardLiftArchives() {
+        var hero = document.querySelector(".fluid-index-header-inner.fluid-header-inner-compact");
+        var board = document.querySelector("main.fluid-archives-main #board.fluid-board-surface");
+        if (!hero || !board) return;
+
+        var ticking = false;
+        function update() {
+          var top = window.pageYOffset || document.documentElement.scrollTop || 0;
+          var heroH = hero.clientHeight || 1;
+          var progress = Math.min(Math.max(top / (heroH * 0.85), 0), 1);
+          var lift = Math.round(progress * 72);
+          board.style.transform = "translate3d(0," + (-lift) + "px,0)";
+          ticking = false;
+        }
+
+        function requestUpdate() {
+          if (!ticking) {
+            window.requestAnimationFrame(update);
+            ticking = true;
+          }
+        }
+
+        window.addEventListener("scroll", requestUpdate, { passive: true });
+        window.addEventListener("resize", requestUpdate);
+        update();
+      }
+
+      fluidBoardLiftArchives();
     })();
   </script>
 </Layout>
+
