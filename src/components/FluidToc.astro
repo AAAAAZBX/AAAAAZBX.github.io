@@ -29,8 +29,7 @@
   document.addEventListener("DOMContentLoaded", async () => {
     const toc = document.getElementById("toc");
     const body = document.getElementById("toc-body");
-    const boardCtn = document.getElementById("board-ctn");
-    if (!toc || !body || !boardCtn) return;
+    if (!toc || !body) return;
 
     try {
       await loadScript(TOCBOT_SRC);
@@ -45,7 +44,8 @@
       return;
     }
 
-    const boardTop = boardCtn.offsetTop;
+    const headerEl = document.querySelector("header");
+    const headerOffset = Math.round((headerEl?.getBoundingClientRect().height ?? 64) + 16);
 
     tocbot.init({
       tocSelector: "#toc-body",
@@ -57,7 +57,9 @@
       collapsibleClass: "tocbot-is-collapsible",
       scrollSmooth: true,
       includeTitleTags: true,
-      headingsOffset: -boardTop,
+      // Keep anchor target below fixed header and prevent active-item drift.
+      headingsOffset: -headerOffset,
+      scrollSmoothOffset: -headerOffset,
     });
 
     if (toc.querySelector(".toc-list-item")) {
