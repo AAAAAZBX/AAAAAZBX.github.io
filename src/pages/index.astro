@@ -41,7 +41,7 @@ function excerptFromPost(body: string, maxLen = 260): string {
 }
 
 function normSeg(seg: string): string {
-  return seg.replace(/[A-Z]/g, (c) => c.toLowerCase());
+  return seg.trim().replace(/\s/g, "-").replace(/[A-Z]/g, (c) => c.toLowerCase());
 }
 
 function archiveHierarchyLabel(collection: string, slug: string): string {

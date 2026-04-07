@@ -32,9 +32,13 @@ function byDateDesc(a: MergedPost, b: MergedPost): number {
   return tb - ta;
 }
 
-/** 仅将拉丁大写字母转为小写，便于 slug 段与磁盘路径对齐；中文等原样保留 */
+/**
+ * 统一路径段：大小写不敏感，并把空白按 Astro slug 习惯转成 `-`。
+ * 例如：`Neural Networks Zero to Hero - Andrej Karpathy`
+ * -> `neural-networks-zero-to-hero---andrej-karpathy`
+ */
 function normSeg(seg: string): string {
-  return seg.replace(/[A-Z]/g, (c) => c.toLowerCase());
+  return seg.trim().replace(/\s/g, "-").replace(/[A-Z]/g, (c) => c.toLowerCase());
 }
 
 /**
