@@ -914,7 +914,8 @@ article.post-content b {
 .markdown-body pre.astro-code {
   position: relative;
   padding: 16px;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden !important;
   font-size: 85%;
   line-height: 1.45;
   background-color: var(--highlight-bg-color);
@@ -929,6 +930,50 @@ article.post-content b {
   margin: 0;
   border: 0;
   font-family: inherit;
+  white-space: normal;
+  overflow-y: hidden !important;
+}
+
+/* 代码块行号（视觉显示，不进入复制内容） */
+.markdown-body pre.astro-code code {
+  counter-reset: line-number;
+}
+
+.markdown-body pre.astro-code code .line {
+  display: block;
+  position: relative;
+  padding-left: 3.25rem;
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.45;
+  white-space: pre;
+}
+
+.markdown-body pre.astro-code code .line::before {
+  counter-increment: line-number;
+  content: counter(line-number);
+  position: absolute;
+  left: 0;
+  width: 2.5rem;
+  text-align: right;
+  color: #8b949e;
+  opacity: 0.75;
+  user-select: none;
+  pointer-events: none;
+  border-right: 1px solid rgba(139, 148, 158, 0.25);
+  padding-right: 0.5rem;
+  box-sizing: border-box;
+}
+
+.markdown-body pre.astro-code code .line > span {
+  line-height: inherit;
+}
+
+.markdown-body pre.astro-code::-webkit-scrollbar:vertical,
+.markdown-body pre.astro-code code::-webkit-scrollbar:vertical {
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .markdown-body img {
@@ -961,6 +1006,69 @@ pre.astro-code:hover .code-copy {
 }
 
 .code-copy:hover {
+  background-color: var(--dropdown-hover-bg);
+  color: var(--text-link);
+}
+
+.code-collapse-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.code-collapse-wrap > pre.astro-code {
+  margin-bottom: 0;
+}
+
+pre.astro-code.code-collapsible {
+  transition: max-height 0.24s ease;
+}
+
+pre.astro-code.code-collapsible.is-collapsed {
+  overflow: hidden;
+}
+
+pre.astro-code.code-collapsible.is-collapsed::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 56px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--highlight-bg-color));
+}
+
+.code-toggle {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 5px 12px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--text-secondary);
+  background-color: color-mix(in srgb, var(--bg-tertiary) 88%, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.code-collapse-wrap:not(.is-expanded) .code-toggle {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.code-collapse-wrap.is-expanded .code-toggle {
+  position: static;
+  display: block;
+  width: fit-content;
+  margin: 8px auto 0;
+}
+
+.code-toggle:hover {
   background-color: var(--dropdown-hover-bg);
   color: var(--text-link);
 }

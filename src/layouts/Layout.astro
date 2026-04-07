@@ -276,7 +276,8 @@ const year = new Date().getFullYear();
         // 移除当前页面链接的高亮（用户要求：只有悬停时才显示蓝色）
         // 不再添加 active 类和 aria-current 属性
 
-        // 代码块复制按钮
+        // 代码块复制按钮 + 超长代码折叠
+        const COLLAPSE_LINES = 20;
         document.querySelectorAll("pre.astro-code").forEach((pre) => {
           if (pre.querySelector("button.code-copy")) return;
 
@@ -300,6 +301,48 @@ const year = new Date().getFullYear();
           });
 
           pre.appendChild(btn);
+
+          const code = pre.querySelector("code");
+          if (!code || pre.dataset.foldInit === "1") return;
+          pre.dataset.foldInit = "1";
+
+          const raw = (code.textContent || "").replace(/\n$/, "");
+          const lineCount = raw ? raw.split("\n").length : 0;
+          if (lineCount <= COLLAPSE_LINES) return;
+
+          const codeStyle = window.getComputedStyle(code);
+          const preStyle = window.getComputedStyle(pre);
+          const lineHeight = parseFloat(codeStyle.lineHeight) || 20;
+          const padTop = parseFloat(preStyle.paddingTop) || 0;
+          const padBottom = parseFloat(preStyle.paddingBottom) || 0;
+          const collapsedHeight = Math.ceil(lineHeight * COLLAPSE_LINES + padTop + padBottom + 2);
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "code-collapse-wrap";
+          pre.parentNode?.insertBefore(wrapper, pre);
+          wrapper.appendChild(pre);
+
+          const toggle = document.createElement("button");
+          toggle.className = "code-toggle";
+          toggle.type = "button";
+          toggle.textContent = "Expand";
+
+          const setCollapsed = (collapsed) => {
+            pre.classList.toggle("is-collapsed", collapsed);
+            pre.style.maxHeight = collapsed ? `${collapsedHeight}px` : "none";
+            wrapper.classList.toggle("is-expanded", !collapsed);
+            toggle.textContent = collapsed ? "Expand" : "Collapse";
+            toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+          };
+
+          toggle.addEventListener("click", () => {
+            const collapsed = pre.classList.contains("is-collapsed");
+            setCollapsed(!collapsed);
+          });
+
+          pre.classList.add("code-collapsible");
+          wrapper.appendChild(toggle);
+          setCollapsed(true);
         });
 
         // Markdown 内部目录链接的高亮功能
