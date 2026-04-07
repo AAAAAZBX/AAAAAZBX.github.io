@@ -19,14 +19,23 @@ const sections = collectionKeys.map((collection) => {
   const posts = allPosts.filter((p) => p.collection === collection);
   const tree = buildCategoryPathTree(posts, { folderDisplayMap, collection });
   const domIdToken = normalizeDomIdToken(collection);
+  const sortKey = posts.reduce((maxKey, p) => {
+    const cur = p.sortId;
+    return cur.localeCompare(maxKey, "zh-CN") > 0 ? cur : maxKey;
+  }, "");
   return {
     collection,
     heading: getCollectionLabel(collection).en,
     posts,
     tree,
+    sortKey,
     headingId: `heading-collapse-section-${domIdToken}`,
     panelId: `collapse-section-${domIdToken}`,
   };
+}).sort((a, b) => {
+  const byKey = b.sortKey.localeCompare(a.sortKey, "zh-CN");
+  if (byKey !== 0) return byKey;
+  return a.heading.localeCompare(b.heading, "zh-CN");
 });
 
 const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;

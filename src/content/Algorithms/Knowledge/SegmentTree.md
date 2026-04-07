@@ -1,7 +1,7 @@
 ---
 title: "Codeforces Edu学习 (ITMO Academy: pilot course) SegmentTree part 1-2 全"
-id: "2025-6-30"
-date: "2025-6-30"
+id: "2025-06-30"
+date: "2025-06-30"
 description: "线段树"
 tags: ["线段树", "懒标记", "线段树上二分"]
 ---

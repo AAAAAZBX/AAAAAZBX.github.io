@@ -14,6 +14,7 @@ export function getCollectionLabel(key: ColKey): { en: string; zh: string } {
 export type MergedPost = {
   collection: ColKey;
   slug: string;
+  sortId: string;
   title: string;
   date: string | undefined;
   href: string;
@@ -31,6 +32,10 @@ export async function getMergedPosts(): Promise<MergedPost[]> {
         collection: key,
         /* glob loader 集合无 slug，路径键与 getEntry(collection, id) 一致 */
         slug: post.id,
+        sortId:
+          post.data.id?.trim() ||
+          post.id.split("/").filter(Boolean).slice(-1)[0] ||
+          post.id,
         title: post.data.title,
         date: post.data.date,
         href: `/categories/${key}/${post.id}`,

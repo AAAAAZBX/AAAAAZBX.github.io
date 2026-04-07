@@ -18,6 +18,14 @@ type MutableNode = {
   childMap: Map<string, MutableNode>;
 };
 
+function postIdLexKey(post: MergedPost): string {
+  return post.sortId;
+}
+
+function byIdLexDesc(a: MergedPost, b: MergedPost): number {
+  return postIdLexKey(b).localeCompare(postIdLexKey(a), "zh-CN");
+}
+
 function byDateDesc(a: MergedPost, b: MergedPost): number {
   const ta = a.date ? new Date(a.date).getTime() : 0;
   const tb = b.date ? new Date(b.date).getTime() : 0;
@@ -64,14 +72,36 @@ export function buildContentFolderDisplayMap(): Map<string, string> {
   return map;
 }
 
+function maxIdLexInNode(node: CatPathNode): string {
+  let maxKey = "";
+  for (const p of node.posts) {
+    const k = postIdLexKey(p);
+    if (k.localeCompare(maxKey, "zh-CN") > 0) maxKey = k;
+  }
+  for (const c of node.children) {
+    const k = maxIdLexInNode(c);
+    if (k.localeCompare(maxKey, "zh-CN") > 0) maxKey = k;
+  }
+  return maxKey;
+}
+
 function finalize(m: MutableNode): CatPathNode {
-  const children = [...m.childMap.values()]
-    .map(finalize)
-    .sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
+  const children = [...m.childMap.values()].map(finalize);
+  children.sort((a, b) => {
+    const ka = maxIdLexInNode(a);
+    const kb = maxIdLexInNode(b);
+    const cmp = kb.localeCompare(ka, "zh-CN");
+    if (cmp !== 0) return cmp;
+    return a.name.localeCompare(b.name, "zh-CN");
+  });
   return {
     name: m.name,
     pathKey: m.pathKey,
-    posts: [...m.posts].sort(byDateDesc),
+    posts: [...m.posts].sort((a, b) => {
+      const byId = byIdLexDesc(a, b);
+      if (byId !== 0) return byId;
+      return byDateDesc(a, b);
+    }),
     children,
   };
 }
