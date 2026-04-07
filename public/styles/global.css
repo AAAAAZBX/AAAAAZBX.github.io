@@ -947,6 +947,7 @@ article.post-content b {
   padding-top: 0;
   padding-bottom: 0;
   line-height: 1.45;
+  min-height: 1.45em;
   white-space: pre;
 }
 
@@ -968,6 +969,11 @@ article.post-content b {
 
 .markdown-body pre.astro-code code .line > span {
   line-height: inherit;
+}
+
+/* Keep visual blank lines in code blocks */
+.markdown-body pre.astro-code code .line:empty::after {
+  content: " ";
 }
 
 .markdown-body pre.astro-code::-webkit-scrollbar:vertical,
