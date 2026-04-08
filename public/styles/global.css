@@ -942,7 +942,7 @@ article.post-content b {
 .markdown-body pre.astro-code code .line {
   display: block;
   position: relative;
-  padding-left: 3.25rem;
+  padding-left: 2.45rem !important;
   margin: 0;
   padding-top: 0;
   padding-bottom: 0;
@@ -956,14 +956,14 @@ article.post-content b {
   content: counter(line-number);
   position: absolute;
   left: 0;
-  width: 2.5rem;
+  width: 1.75rem !important;
   text-align: right;
   color: #8b949e;
   opacity: 0.75;
   user-select: none;
   pointer-events: none;
   border-right: 1px solid rgba(139, 148, 158, 0.25);
-  padding-right: 0.5rem;
+  padding-right: 0.25rem !important;
   box-sizing: border-box;
 }
 
