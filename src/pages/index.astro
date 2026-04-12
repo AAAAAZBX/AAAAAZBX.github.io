@@ -33,8 +33,9 @@ function stripMd(text: string): string {
     .trim();
 }
 
-function excerptFromPost(body: string, maxLen = 260): string {
-  const noCode = body.replace(/```[\s\S]*?```/g, " ");
+function excerptFromPost(body: string | undefined, maxLen = 260): string {
+  const safeBody = typeof body === "string" ? body : "";
+  const noCode = safeBody.replace(/```[\s\S]*?```/g, " ");
   const singleLine = stripMd(noCode.replace(/\r?\n+/g, " "));
   if (singleLine.length <= maxLen) return singleLine;
   return `${singleLine.slice(0, maxLen)}…`;

@@ -1,55 +1,55 @@
 {
   "commits": [
     {
-      "hash": "5f0bdbb33744405538d150cb6f1b73a28e0de1f4",
-      "date": "2026-03-27 17:00:25 +0800",
-      "message": "Update Lab eebsite link"
+      "hash": "3959b6d0f2eef9e3dd22977fbe5c78736135a2ae",
+      "date": "2026-04-08 13:26:18 +0800",
+      "message": "building makemore"
     },
     {
-      "hash": "95a1e5d28b03919de1fcc9da22c2d61ea86d0add",
-      "date": "2026-03-17 06:25:03 +0800",
-      "message": "修复博客语法错误"
+      "hash": "b976d12ccc2f36b16ec91798ac2468f58032ffb1",
+      "date": "2026-04-08 11:58:14 +0800",
+      "message": "update myTorch assets and tighten code line number gutter"
     },
     {
-      "hash": "96ddbbc3dd7345ff6d4124c2f125289d7a57124d",
-      "date": "2026-03-15 19:51:31 +0800",
-      "message": "热身赛1006"
+      "hash": "a7c645987bb693dda9af8bf83f8b587264069aba",
+      "date": "2026-04-07 13:15:55 +0800",
+      "message": "fix: preserve category display for renamed folders"
     },
     {
-      "hash": "41536c76b516299dd1fe19d86c9b169dad387921",
-      "date": "2026-03-15 15:05:18 +0800",
-      "message": "热身赛1008"
+      "hash": "7355aac3abbb6bfa93ad5b137c230e11a522c237",
+      "date": "2026-04-07 13:07:18 +0800",
+      "message": "fix: preserve blank lines in code blocks with line numbers"
     },
     {
-      "hash": "1b7b66d45e47d6204d36e592054a41b5a1f1322e",
-      "date": "2026-03-15 13:06:39 +0800",
-      "message": "热身赛1010"
+      "hash": "e60585b0445e3bae4ab03778e6d9c0ab59261313",
+      "date": "2026-04-07 13:02:28 +0800",
+      "message": "Update myTorch.md"
     },
     {
-      "hash": "69bca6c32b32acf61b673121c68e70cad672fd01",
-      "date": "2026-03-14 21:42:06 +0800",
-      "message": "2026杭电春季联赛-热身赛"
+      "hash": "3c32a715936be3e1c84ce5b66db25856152a9b70",
+      "date": "2026-04-07 12:49:57 +0800",
+      "message": "feat: add foldable code blocks with centered controls and line numbers"
     },
     {
-      "hash": "8ac336d578852e873dcaa463277c21b66b55d0e4",
-      "date": "2026-03-08 13:31:11 +0800",
-      "message": "调整中文按钮的大小"
+      "hash": "c8244cb37f89078652016d845c81353319a8dc78",
+      "date": "2026-04-07 10:13:27 +0800",
+      "message": "refactor: normalize content metadata sorting and category ordering"
     },
     {
-      "hash": "b731f119cb2a1aa8d286ebea66150c3f57d4d779",
-      "date": "2026-03-08 13:24:28 +0800",
-      "message": "更改自我介绍"
+      "hash": "5943661f3757c83f197cc771b344c9a055e40194",
+      "date": "2026-04-06 18:51:05 +0800",
+      "message": "fix: stabilize toc highlighting and refine article formatting"
     },
     {
-      "hash": "d8e6df55fd3f7f091d449705dd108575844f09df",
-      "date": "2026-03-07 20:25:16 +0800",
-      "message": "主页微调"
+      "hash": "4bc48a62b6aa163b0ba78eed92fb7288b6324595",
+      "date": "2026-04-05 18:12:27 +0800",
+      "message": "refactor: align category structure with content folders and homepage metadata"
     },
     {
-      "hash": "888745706c2905502e4cf076dfe1ca01952a797c",
-      "date": "2026-03-07 20:06:50 +0800",
-      "message": "修改网站字体"
+      "hash": "1c57e54a90d438df73a1c27325956025a29fd92f",
+      "date": "2026-04-05 17:32:46 +0800",
+      "message": "feat: align segment tree intro images side by side"
     }
   ],
-  "timestamp": "2026-04-04T11:59:59.360Z"
+  "timestamp": "2026-04-12T16:11:07.284Z"
 }
