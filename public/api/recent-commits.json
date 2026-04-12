@@ -1,6 +1,21 @@
 {
   "commits": [
     {
+      "hash": "bf57afb35a178ccffb325e826d78aa5ffbe50d5a",
+      "date": "2026-04-13 00:39:55 +0800",
+      "message": "2026ICPC CUHK SZ"
+    },
+    {
+      "hash": "0dd05d9774cf3fef270432c2c5757a6785331c21",
+      "date": "2026-04-13 00:38:26 +0800",
+      "message": "2026ICPC CUHK SZ"
+    },
+    {
+      "hash": "6e76eb29659a935fccb621ea91a270bd7f6c58f6",
+      "date": "2026-04-13 00:31:40 +0800",
+      "message": "2026ICPC深圳游记"
+    },
+    {
       "hash": "3959b6d0f2eef9e3dd22977fbe5c78736135a2ae",
       "date": "2026-04-08 13:26:18 +0800",
       "message": "building makemore"
@@ -34,22 +49,7 @@
       "hash": "c8244cb37f89078652016d845c81353319a8dc78",
       "date": "2026-04-07 10:13:27 +0800",
       "message": "refactor: normalize content metadata sorting and category ordering"
-    },
-    {
-      "hash": "5943661f3757c83f197cc771b344c9a055e40194",
-      "date": "2026-04-06 18:51:05 +0800",
-      "message": "fix: stabilize toc highlighting and refine article formatting"
-    },
-    {
-      "hash": "4bc48a62b6aa163b0ba78eed92fb7288b6324595",
-      "date": "2026-04-05 18:12:27 +0800",
-      "message": "refactor: align category structure with content folders and homepage metadata"
-    },
-    {
-      "hash": "1c57e54a90d438df73a1c27325956025a29fd92f",
-      "date": "2026-04-05 17:32:46 +0800",
-      "message": "feat: align segment tree intro images side by side"
     }
   ],
-  "timestamp": "2026-04-12T16:11:07.284Z"
+  "timestamp": "2026-04-12T16:48:39.490Z"
 }
