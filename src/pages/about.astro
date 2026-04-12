@@ -22,8 +22,9 @@ const allPosts = await getMergedPosts();
 const totalPosts = allPosts.length;
 
 // 计算总字数
-function calculateWordCount(body: string): number {
-  let text = body
+function calculateWordCount(body: string | undefined): number {
+  const safeBody = typeof body === "string" ? body : "";
+  let text = safeBody
     .replace(/```[\s\S]*?```/g, '')
     .replace(/`[^`]+`/g, '')
     .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
