@@ -47,4 +47,44 @@ tags: ["ICPC", "算法", "游记"]
 
 ## 4-13
 
-香港之旅
+去香港只需要身份证+港澳通行证就可以了
+
+![card](/life_moments/2026ICPCSZ/card.png)
+
+### 香港西九龙车站
+
+![xijiulong](/life_moments/2026ICPCSZ/xijiulong.png)
+
+中午吃了很像麦当劳的奇奇怪怪的印度小吃，店里的员工是印度人，开始点餐的时候用了一些蹩脚的英文描述要点的套餐，后面餐发现印度电源也会用一些简单的中文进行交流
+
+![food](/life_moments/2026ICPCSZ/food.png)
+
+### 香港大学
+
+![HKU](/life_moments/2026ICPCSZ/HKU.png)
+
+![HKU2](/life_moments/2026ICPCSZ/HKU2.png)
+
+### 坚尼地城海旁公园
+
+![jiannidicheng](/life_moments/2026ICPCSZ/jiannidicheng.png)
+
+![jiannidicheng2](/life_moments/2026ICPCSZ/jiannidicheng2.png)
+
+![jiannidicheng3](/life_moments/2026ICPCSZ/jiannidicheng3.png)
+
+### 尖沙咀
+
+![jsj](/life_moments/2026ICPCSZ/jsj.png)
+
+![jsj](/life_moments/2026ICPCSZ/jsj1.png)
+
+![jsj](/life_moments/2026ICPCSZ/jsj2.png)
+
+### 中环
+
+![zh](/life_moments/2026ICPCSZ/zh.png)
+
+![zh](/life_moments/2026ICPCSZ/zh2.png)
+![zh](/life_moments/2026ICPCSZ/zh3.png)
+![zh](/life_moments/2026ICPCSZ/zh4.png)
