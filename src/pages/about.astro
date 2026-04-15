@@ -136,7 +136,7 @@ const clientSiteStartDate = profile.siteStartDate;
 
       <div class="main-content-wrapper about-lynx">
         <section class="content-section about-block">
-          <h2 class="about-h2">👋 Introduction</h2>
+          <h2 class="about-h2">Introduction</h2>
           <ul class="about-prose-list">
             <li>Senior undergraduate at <a href="http://www.njau.edu.cn/" target="_blank" rel="noopener noreferrer">Nanjing Agricultural University</a> (NJAU).</li>
             <li>Research visitor at the <a href="https://nju-ise.github.io/" target="_blank" rel="noopener noreferrer">Intelligent Software Engineering Laboratory (ISElab)</a>, School of Software, Nanjing University.</li>
@@ -146,54 +146,29 @@ const clientSiteStartDate = profile.siteStartDate;
         </section>
 
         <section class="content-section about-block">
-          <h2 class="about-h2">🔉 News</h2>
-          <ul class="about-prose-list">
-            <li>Blog migrated to this layout; new posts will appear on Home and in Archives.</li>
-          </ul>
-        </section>
-
-        <section class="content-section about-block">
-          <h2 class="about-h2">📞 Contact</h2>
-          <ul class="about-prose-list">
-            <li>Email: <a href={`mailto:${profile.email}`}>{profile.email}</a></li>
-            <li>GitHub: <a href={profile.github} target="_blank" rel="noopener noreferrer">{profile.github.replace("https://", "")}</a></li>
-            <li>Website: <a href="https://aaaaazbx.github.io/" target="_blank" rel="noopener noreferrer">aaaaazbx.github.io</a></li>
-            <li>QQ: <a href={`http://wpa.qq.com/msgrd?v=3&uin=${profile.qq}&site=qq&menu=yes`} target="_blank" rel="noopener noreferrer">{profile.qq}</a></li>
-            <li>Location: {profile.location}</li>
-          </ul>
-        </section>
-
-        <section class="content-section about-block">
-          <h2 class="about-h2">💼 Experience</h2>
-          <p class="about-role-line"><strong>Research visitor</strong></p>
-          <h3 class="about-org-title"><a href="https://nju-ise.github.io/" target="_blank" rel="noopener noreferrer">ISElab</a>, Nanjing University</h3>
-          <p class="about-org-sub">School of Software · Intelligent Software Engineering</p>
-          <ul class="about-prose-list">
-            <li>Ongoing</li>
-          </ul>
-        </section>
-
-        <section class="content-section about-block">
-          <h2 class="about-h2">📖 Educations</h2>
-          <p class="about-edu-kind"><strong>Master's student</strong> in</p>
-          <h3 class="about-org-title"><a href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer">Nanjing University</a></h3>
-          <p class="about-degree">Software Engineering, Master's degree</p>
-          <ul class="about-prose-list">
-            <li>Sep 2026 – Present</li>
-          </ul>
-
-          <p class="about-edu-kind about-edu-kind-next"><strong>Bachelor's student</strong> in</p>
-          <h3 class="about-org-title"><a href="https://ai.njau.edu.cn/" target="_blank" rel="noopener noreferrer">Nanjing Agricultural University</a></h3>
-          <p class="about-degree">Data Science and Big Data Technology, Bachelor's degree</p>
-          <ul class="about-prose-list">
-            <li>Sep 2022 – Jun 2026</li>
-          </ul>
+          <h2 class="about-h2">Education</h2>
+          <div class="about-edu-cards">
+            <a class="about-edu-card" href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer">
+              <div class="about-edu-card-head">
+                <span class="about-edu-card-title">Nanjing University</span>
+                <span class="about-edu-card-time">Sep 2026 – Present</span>
+              </div>
+              <div class="about-edu-card-meta">Software Engineering, Master's degree</div>
+            </a>
+            <a class="about-edu-card" href="https://ai.njau.edu.cn/" target="_blank" rel="noopener noreferrer">
+              <div class="about-edu-card-head">
+                <span class="about-edu-card-title">Nanjing Agricultural University</span>
+                <span class="about-edu-card-time">Sep 2022 – Jun 2026</span>
+              </div>
+              <div class="about-edu-card-meta">Data Science and Big Data Technology, Bachelor's degree</div>
+            </a>
+          </div>
         </section>
 
         <hr class="divider" />
 
         <section class="content-section">
-          <h2 class="about-h2">📊 Statistics</h2>
+          <h2 class="about-h2">Statistics</h2>
           <div class="statistics-cards">
             <div class="stat-card">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
@@ -245,7 +220,7 @@ const clientSiteStartDate = profile.siteStartDate;
         <hr class="divider" />
 
         <section class="content-section">
-          <h2 class="about-h2">🐙 Contributions</h2>
+          <h2 class="about-h2">Contributions</h2>
           <div class="contributions-container">
             <div class="contributions-graph" id="contributions-graph">
               <!-- 贡献图将通过 JavaScript 生成 -->
@@ -345,6 +320,68 @@ const clientSiteStartDate = profile.siteStartDate;
     margin: 0 0 8px;
     color: var(--text-secondary);
     font-size: 0.95rem;
+  }
+
+  .about-lynx .about-edu-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  @media (min-width: 640px) {
+    .about-lynx .about-edu-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .about-lynx .about-edu-card {
+    display: block;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-decoration: none;
+    background: var(--bg-tertiary);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .about-lynx .about-edu-card:hover {
+    border-color: var(--text-link);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  .about-lynx .about-edu-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 12px;
+  }
+
+  .about-lynx .about-edu-card-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.35;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .about-lynx .about-edu-card:hover .about-edu-card-title {
+    color: var(--text-link);
+  }
+
+  .about-lynx .about-edu-card-meta {
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .about-lynx .about-edu-card-time {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 </style>
 
