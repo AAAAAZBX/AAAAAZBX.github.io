@@ -138,9 +138,9 @@ const clientSiteStartDate = profile.siteStartDate;
         <section class="content-section about-block">
           <h2 class="about-h2">Introduction</h2>
           <ul class="about-prose-list">
-            <li>Senior undergraduate at <a href="http://www.njau.edu.cn/" target="_blank" rel="noopener noreferrer">Nanjing Agricultural University</a> (NJAU).</li>
             <li>Research visitor at the <a href="https://nju-ise.github.io/" target="_blank" rel="noopener noreferrer">Intelligent Software Engineering Laboratory (ISElab)</a>, School of Software, Nanjing University.</li>
-            <li>Primary programming languages: Python and C/C++. Interests include deep learning, intelligent agents, C++ engineering, large language models, and fintech.</li>
+            <li>Senior undergraduate at <a href="http://www.njau.edu.cn/" target="_blank" rel="noopener noreferrer">Nanjing Agricultural University</a> (NJAU).</li>
+            <li>Primary programming languages: Python and C/C++. Interests include Deep Learning, Intelligent Agents, C++ Engineering, Large Language Models, and Fintech.</li>
             <li>This site shares technical notes, research sketches, and daily updates—I’m glad you’re here.</li>
           </ul>
         </section>
@@ -323,15 +323,9 @@ const clientSiteStartDate = profile.siteStartDate;
   }
 
   .about-lynx .about-edu-cards {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
-  }
-
-  @media (min-width: 640px) {
-    .about-lynx .about-edu-cards {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
   }
 
   .about-lynx .about-edu-card {
