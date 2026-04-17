@@ -14,9 +14,14 @@ interface Props {
   node: CatPathNode;
   /** 0 = 集合虚拟根（无名称）；≥1 时为具名文件夹，渲染为 Fluid collapse 行 */
   depth?: number;
+  /**
+   * Categories 页：为 true 时，仅当本节点下还有子文件夹（node.children.length > 0）时默认展开；
+   * 若下一层只有文章、没有子文件夹，则不展开，避免一打开就列出全部文章。
+   */
+  autoExpandFolderBranches?: boolean;
 }
 
-const { node, depth = 0 } = Astro.props;
+const { node, depth = 0, autoExpandFolderBranches = false } = Astro.props;
 
 const isVirtualRoot = depth === 0 && !node.name;
 const nestCollapseId = !isVirtualRoot ? collapseIdFromPath(node.pathKey) : "";
@@ -30,6 +35,12 @@ const nestItemClass = !isVirtualRoot
     ? "category-item"
     : "category-subitem"
   : "";
+
+const nestedPanelExpanded = Boolean(
+  autoExpandFolderBranches &&
+    !isVirtualRoot &&
+    node.children.length > 0
+);
 ---
 
 {
@@ -50,7 +61,11 @@ const nestItemClass = !isVirtualRoot
       ) : null}
       <div class="cat-nested-roots">
         {node.children.map((c) => (
-          <CategoryPathTree node={c} depth={1} />
+          <CategoryPathTree
+            node={c}
+            depth={1}
+            autoExpandFolderBranches={autoExpandFolderBranches}
+          />
         ))}
       </div>
     </>
@@ -64,13 +79,13 @@ const nestItemClass = !isVirtualRoot
           "col-10",
           "col-md-11",
           "col-xm-11",
-          "collapsed",
+          nestedPanelExpanded ? null : "collapsed",
         ]}
         id={`heading-${nestCollapseId}`}
         role="tab"
         data-toggle="collapse"
         href={`#${nestCollapseId}`}
-        aria-expanded="false"
+        aria-expanded={nestedPanelExpanded ? "true" : "false"}
         aria-controls={nestCollapseId}
       >
         {node.name}
@@ -82,7 +97,12 @@ const nestItemClass = !isVirtualRoot
         <span>{totalInSubtree(node)}</span>
       </span>
       <div
-        class="category-collapse collapse w-100"
+        class:list={[
+          "category-collapse",
+          "collapse",
+          "w-100",
+          nestedPanelExpanded && "show",
+        ]}
         id={nestCollapseId}
         role="tabpanel"
         aria-labelledby={`heading-${nestCollapseId}`}
@@ -101,7 +121,11 @@ const nestItemClass = !isVirtualRoot
           </div>
         ) : null}
         {node.children.map((c) => (
-          <CategoryPathTree node={c} depth={depth + 1} />
+          <CategoryPathTree
+            node={c}
+            depth={depth + 1}
+            autoExpandFolderBranches={autoExpandFolderBranches}
+          />
         ))}
       </div>
     </div>

@@ -73,16 +73,26 @@ const bannerTypedText = "Categories";
           <div class="fluid-row">
             <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
               <ul class="fluid-category-list category-list">
-                {sections.map((section) => (
+                {sections.map((section) => {
+                  const collectionHasSubfolders = section.tree.children.length > 0;
+                  return (
                   <li class="fluid-category-section cat-section">
                     <div class="category row nomargin-x">
                       <a
-                        class="category-item list-group-item category-item-action col-10 col-md-11 col-xm-11 collapsed"
+                        class:list={[
+                          "category-item",
+                          "list-group-item",
+                          "category-item-action",
+                          "col-10",
+                          "col-md-11",
+                          "col-xm-11",
+                          collectionHasSubfolders ? null : "collapsed",
+                        ]}
                         id={section.headingId}
                         role="tab"
                         data-toggle="collapse"
                         href={`#${section.panelId}`}
-                        aria-expanded="false"
+                        aria-expanded={collectionHasSubfolders ? "true" : "false"}
                         aria-controls={section.panelId}
                       >
                         {section.heading}
@@ -94,7 +104,12 @@ const bannerTypedText = "Categories";
                         <span>{section.posts.length}</span>
                       </span>
                       <div
-                        class="category-collapse collapse w-100"
+                        class:list={[
+                          "category-collapse",
+                          "collapse",
+                          "w-100",
+                          collectionHasSubfolders && "show",
+                        ]}
                         id={section.panelId}
                         role="tabpanel"
                         aria-labelledby={section.headingId}
@@ -102,12 +117,16 @@ const bannerTypedText = "Categories";
                         {section.posts.length === 0 ? (
                           <p class="cat-panel-empty">暂无文章。</p>
                         ) : (
-                          <CategoryPathTree node={section.tree} />
+                          <CategoryPathTree
+                            node={section.tree}
+                            autoExpandFolderBranches
+                          />
                         )}
                       </div>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </div>
           </div>
