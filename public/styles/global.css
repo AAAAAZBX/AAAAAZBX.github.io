@@ -1198,32 +1198,34 @@ body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-compact {
 }
 
 /*
- * 鏂囩珷椤甸《鏍忛珮搴︼細涓?Hexo Fluid 瀵煎嚭涓€鑷? * public/lynx-li.github.io/2025/05/08/master/matrixanalysis/decompose/index.html
- *   <div class="header-inner" style="height: 70vh;">
- * public/lynx-li.github.io/css/main.css @media (max-width: 100vh) { .header-inner { max-height: 100vw; } }
- * 鍙︼細涓嶄緷璧?body 绫荤殑瑙勫垯锛岄槻姝㈤《鏍忛珮搴﹀缂┿€? */
+ * 文章页顶栏：上半封面区偏大、下半正文（对齐 Fluid / 林正博客，约 68vh，非 50/50；亦非整屏）。
+ * 须覆盖 body.home-fluid-index .fluid-index-header-inner 的 min-height:100svh。
+ */
 .fluid-index-header-inner.fluid-header-inner-post {
   width: 100%;
-  height: 70vh;
-  max-height: 70vh;
+  height: 68vh;
+  max-height: 68vh;
+  /* 覆盖首页 header-inner 的 min-height:100svh，避免文章页「整页都是背景图」 */
+  min-height: 240px;
   position: relative;
   box-sizing: border-box;
 }
 
 @media (max-width: 100vh) {
   .fluid-index-header-inner.fluid-header-inner-post {
-    max-height: 100vw;
+    max-height: min(68vh, 100vw);
   }
 }
 
 body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-post {
-  height: 70vh;
-  max-height: 70vh;
+  height: 68vh;
+  max-height: 68vh;
+  min-height: 240px;
 }
 
 @media (max-width: 100vh) {
   body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-post {
-    max-height: 100vw;
+    max-height: min(68vh, 100vw);
   }
 }
 
