@@ -1,0 +1,42 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import HomePageShell from "../../components/HomePageShell.astro";
+import { getMergedPosts } from "../../lib/content-posts";
+import {
+  getHomeTotalPages,
+  sliceHomePostsPage,
+} from "../../lib/home-pagination";
+
+const siteTitle = "Boxuan Zhang";
+
+export async function getStaticPaths() {
+  const merged = await getMergedPosts();
+  const total = getHomeTotalPages(merged.length);
+  if (total <= 1) return [];
+  const paths: { params: { page: string } }[] = [];
+  for (let p = 2; p <= total; p++) {
+    paths.push({ params: { page: String(p) } });
+  }
+  return paths;
+}
+
+const pageParam = Astro.params.page;
+const currentPage = Math.max(2, Number.parseInt(pageParam ?? "2", 10) || 2);
+
+const merged = await getMergedPosts();
+const totalPages = getHomeTotalPages(merged.length);
+
+if (currentPage < 2 || currentPage > totalPages || Number.isNaN(currentPage)) {
+  return new Response(null, { status: 404, statusText: "Not found" });
+}
+
+const recentPosts = sliceHomePostsPage(merged, currentPage);
+---
+
+<Layout title={`${siteTitle} — Home (Page ${currentPage})`} overlayNav>
+  <HomePageShell
+    recentPosts={recentPosts}
+    currentPage={currentPage}
+    totalPages={totalPages}
+  />
+</Layout>
