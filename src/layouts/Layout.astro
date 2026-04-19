@@ -5,6 +5,8 @@ const {
   overlayNav = false,
 } = Astro.props;
 const year = new Date().getFullYear();
+/** 与 public 资源、Service Worker 注册一致（支持子路径部署） */
+const baseUrl = import.meta.env.BASE_URL;
 ---
 
 <html lang="en">
@@ -37,6 +39,10 @@ const year = new Date().getFullYear();
       href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css"
     />
     <link rel="stylesheet" href="/styles/global.css" />
+
+    <!-- 顶图 / 头像：预连接 + 预加载，首屏略快；后续页由 Service Worker 复用缓存 -->
+    <link rel="preload" as="image" href={`${baseUrl}site-profile.png`} fetchpriority="high" />
+    <link rel="preload" as="image" href={`${baseUrl}logo.png`} />
 
     <!-- Fluid 顶栏图标（与 Lynx Li Hexo Fluid iconfont 一致） -->
     <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css" />
@@ -430,6 +436,15 @@ const year = new Date().getFullYear();
           }
         });
       });
+    </script>
+
+    <script is:inline define:vars={{ baseUrl }}>
+      (function () {
+        if (!("serviceWorker" in navigator)) return;
+        var scope = baseUrl || "/";
+        if (scope.slice(-1) !== "/") scope += "/";
+        navigator.serviceWorker.register(scope + "sw.js", { scope: scope }).catch(function () {});
+      })();
     </script>
   </body>
 </html>
