@@ -1503,6 +1503,15 @@ body.home-fluid-index.dark .fluid-index-main.fluid-board-page {
   background-color: #181c27 !important;
 }
 
+/*
+ * Archives / Categories：main 建立独立 BFC（flow-root），避免 #board 的负 margin 与外层 margin 折叠，
+ * 否则会出现「顶图下沿与正文一起被整体上提」、叠层失效的问题。
+ */
+body.home-fluid-index main.fluid-archives-main,
+body.home-fluid-index main.fluid-categories-main {
+  display: flow-root;
+}
+
 main.fluid-board-page:not(.fluid-index-main) {
   padding-top: 1.25rem;
   padding-bottom: 2rem;
@@ -1578,11 +1587,31 @@ body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
   margin-top: 0;
 }
 
-/* 娆＄骇鍒楄〃椤碉紙archives/categories锛夛細鍗＄墖鍒濆涓婃诞鍒伴《鍥句笅缂橈紝鎺ヨ繎 Lynx 瑙嗚 */
+/*
+ * Archives / Categories：基准叠层较小（页面顶部）；额外叠层由 JS 按滚动量动态加上 transform。
+ */
 body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
 body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface {
-  margin-top: -3.5rem;
+  margin-top: -2.25rem;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+  border-radius: 0.85rem;
+  border-top-color: rgba(208, 215, 222, 0.65);
+  z-index: 4;
   will-change: transform;
+  box-shadow:
+    0 -8px 32px rgba(0, 0, 0, 0.06),
+    0 12px 15px 0 rgba(0, 0, 0, 0.18),
+    0 17px 50px 0 rgba(0, 0, 0, 0.12);
+}
+
+html.dark body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
+html.dark body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface {
+  border-top-color: rgba(61, 71, 88, 0.85);
+  box-shadow:
+    0 -8px 36px rgba(0, 0, 0, 0.35),
+    0 12px 15px 0 rgba(0, 0, 0, 0.28),
+    0 17px 50px 0 rgba(0, 0, 0, 0.22);
 }
 
 body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-board-home {
@@ -1599,7 +1628,10 @@ body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-boa
 
   body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
   body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface {
-    margin-top: -2.25rem;
+    margin-top: -1.75rem;
+    padding-top: 1.5rem;
+    padding-bottom: 2.5rem;
+    border-radius: 0.75rem;
   }
 
   body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-board-home {

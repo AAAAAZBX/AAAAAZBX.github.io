@@ -1,55 +1,55 @@
 {
   "commits": [
     {
-      "hash": "bf57afb35a178ccffb325e826d78aa5ffbe50d5a",
-      "date": "2026-04-13 00:39:55 +0800",
-      "message": "2026ICPC CUHK SZ"
+      "hash": "f85346c01af829ecb1b27c99ab7370bf17ef17bd",
+      "date": "2026-04-19 17:22:23 +0800",
+      "message": "Add service worker and preload for cached hero images"
     },
     {
-      "hash": "0dd05d9774cf3fef270432c2c5757a6785331c21",
-      "date": "2026-04-13 00:38:26 +0800",
-      "message": "2026ICPC CUHK SZ"
+      "hash": "1c26d6991e2f4ef522fb7e94973a987ce4bfa1a2",
+      "date": "2026-04-18 14:06:06 +0800",
+      "message": "Add home feed pagination (10 posts per page) and pagination styles"
     },
     {
-      "hash": "6e76eb29659a935fccb621ea91a270bd7f6c58f6",
-      "date": "2026-04-13 00:31:40 +0800",
-      "message": "2026ICPC深圳游记"
+      "hash": "8a3a3e1570b5c90e452e53658f663c86ae592fb3",
+      "date": "2026-04-18 12:51:07 +0800",
+      "message": "Adjust post page hero height and fix min-height override for article layout"
     },
     {
-      "hash": "3959b6d0f2eef9e3dd22977fbe5c78736135a2ae",
-      "date": "2026-04-08 13:26:18 +0800",
-      "message": "building makemore"
+      "hash": "c1cd4492f689a69a6784f4eb71b19b84c2bce46c",
+      "date": "2026-04-17 10:28:03 +0800",
+      "message": "Refine categories tree expand rules; fix home meta icon; update stochastic processes chapter 2"
     },
     {
-      "hash": "b976d12ccc2f36b16ec91798ac2468f58032ffb1",
-      "date": "2026-04-08 11:58:14 +0800",
-      "message": "update myTorch assets and tighten code line number gutter"
+      "hash": "3f0130b9a51945525b0a5ea8f17f399bdc8882ed",
+      "date": "2026-04-16 13:54:25 +0800",
+      "message": "Update About page: education layout, intro order, and interest labels"
     },
     {
-      "hash": "a7c645987bb693dda9af8bf83f8b587264069aba",
-      "date": "2026-04-07 13:15:55 +0800",
-      "message": "fix: preserve category display for renamed folders"
+      "hash": "64a2b5addb6f67c4e8811cc42492feb28bfad3a4",
+      "date": "2026-04-16 13:48:24 +0800",
+      "message": "Add stochastic processes notes and co-located Markov chain figure assets"
     },
     {
-      "hash": "7355aac3abbb6bfa93ad5b137c230e11a522c237",
-      "date": "2026-04-07 13:07:18 +0800",
-      "message": "fix: preserve blank lines in code blocks with line numbers"
+      "hash": "2bbca6c44c5c70a5f0399fb6d7724209db1adcf5",
+      "date": "2026-04-15 21:18:35 +0800",
+      "message": "Refine About page: streamline sections and education card layout"
     },
     {
-      "hash": "e60585b0445e3bae4ab03778e6d9c0ab59261313",
-      "date": "2026-04-07 13:02:28 +0800",
-      "message": "Update myTorch.md"
+      "hash": "2572380879232c3ffe81e356c0ddf0b8ddc2e3a8",
+      "date": "2026-04-15 05:55:04 +0800",
+      "message": "hong kong"
     },
     {
-      "hash": "3c32a715936be3e1c84ce5b66db25856152a9b70",
-      "date": "2026-04-07 12:49:57 +0800",
-      "message": "feat: add foldable code blocks with centered controls and line numbers"
+      "hash": "bb4a63cfb398a70a066271a42b304a38fd92158e",
+      "date": "2026-04-15 05:32:52 +0800",
+      "message": "hong kong"
     },
     {
-      "hash": "c8244cb37f89078652016d845c81353319a8dc78",
-      "date": "2026-04-07 10:13:27 +0800",
-      "message": "refactor: normalize content metadata sorting and category ordering"
+      "hash": "9e320368468ed9632dca0e9fb2acdf99dd02bd8a",
+      "date": "2026-04-13 01:05:27 +0800",
+      "message": "fine-tuning"
     }
   ],
-  "timestamp": "2026-04-12T16:48:39.490Z"
+  "timestamp": "2026-04-20T00:39:31.135Z"
 }
