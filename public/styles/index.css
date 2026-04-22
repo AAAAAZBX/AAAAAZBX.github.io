@@ -251,10 +251,10 @@ strong {
   font-weight: 700 !important;
 }
 
-/* Statistics 样式 */
+/* Statistics 样式（含全站访问 / 文章阅读等，自动换行） */
 .statistics-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 20px;
   margin-bottom: 20px;
 }

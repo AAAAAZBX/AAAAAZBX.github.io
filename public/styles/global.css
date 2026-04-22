@@ -153,15 +153,8 @@ header {
   border: none;
   border-bottom: 1px solid var(--nav-border);
   border-radius: 0;
-  transition: box-shadow 0.35s ease, padding 0.35s ease;
+  transition: box-shadow 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-/* Fluid锛氭粴鍔ㄥ悗椤舵爮绾靛悜鍘嬬缉 */
-header.scrolled .nav {
-  padding-top: 5px;
-  padding-bottom: 5px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .nav-inner {
@@ -194,14 +187,6 @@ header.scrolled .nav {
   display: flex;
   align-items: center;
   gap: 24px;
-  /* 澧炲姞闂磋窛璁╁鑸洿鍒嗘暎 */
-  transition: gap 0.3s ease;
-}
-
-/* 婊氬姩鏃?gap 绋嶅皬浣嗕粛淇濇寔鑸掗€?*/
-header.scrolled .nav-links {
-  gap: 16px;
-  /* 淇濇寔鍚堥€傜殑闂磋窛 */
 }
 
 .nav-links a {
@@ -210,7 +195,7 @@ header.scrolled .nav-links {
   text-decoration: none;
   color: var(--nav-text-secondary);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   transition: color 0.2s ease;
   white-space: nowrap;
 }
@@ -243,6 +228,7 @@ header.scrolled .nav-links {
   padding: 8px 10px;
   text-decoration: none;
   color: var(--nav-text-secondary);
+  font-weight: 400;
   transition: color 0.2s ease;
 }
 
@@ -258,7 +244,7 @@ header.scrolled .nav-links {
   text-decoration: none;
   color: var(--nav-text-secondary);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   transition: color 0.2s ease;
   white-space: nowrap;
   background: transparent;
@@ -603,11 +589,6 @@ body.home-fluid-index.dark footer {
     padding: 12px 0;
   }
 
-  header.scrolled .nav {
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
-
   .nav-inner {
     padding: 0 16px;
   }
@@ -630,11 +611,6 @@ body.home-fluid-index.dark footer {
   /* 瀵艰埅鏍忓皬灞忓箷浼樺寲 */
   .nav {
     padding: 10px 0;
-  }
-
-  header.scrolled .nav {
-    padding-top: 6px;
-    padding-bottom: 6px;
   }
 
   .nav-inner {
@@ -1126,40 +1102,84 @@ body.home-fluid-index header {
 }
 
 /*
- * 椤舵爮锛氬弬鐓?Lynx Fluid锛坢ain.css .navbar 椤堕儴 transparent + Material 闃村奖锛涙粴鍔ㄥ悗 top-nav-collapse 瀹炶壊锛? * 鏈珯椤堕儴鐣ュ姞鍗婇€忔槑搴曡壊 + 杞?blur锛岄伩鍏嶃€屽叏閫忔槑銆嶆偓绌烘劅锛屼粛淇濈暀闅愮害閫忓嚭鑳屾櫙銆? * events.js锛歴croll 鏃?navbar.offset().top > 50 鍔?top-nav-collapse锛涙湰绔欑敤 header.scrolled + scrollY>50
+ * 首页 = Fluid / 林正式顶栏：在首屏最上时「神展开 + 半透盖在 hero 上」；下滚后「压条高 + 实色」
+ * 横向 .nav-links gap 保持 24px 不动，只改条上下 padding 与站名字号，避免链接左右乱晃
  */
 body.home-fluid-index header:not(.scrolled) .nav {
-  background: rgba(47, 65, 84, 0.42);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 18px;
+  padding-bottom: 18px;
+  background: rgba(47, 65, 84, 0.38);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
-    0 2px 5px 0 rgba(0, 0, 0, 0.16),
-    0 2px 10px 0 rgba(0, 0, 0, 0.12);
+    0 2px 5px 0 rgba(0, 0, 0, 0.12),
+    0 2px 10px 0 rgba(0, 0, 0, 0.1);
   transition:
-    background 0.5s ease-in-out,
-    padding 0.5s ease-in-out,
-    border-color 0.35s ease,
-    box-shadow 0.35s ease,
-    backdrop-filter 0.35s ease;
+    padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.5s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease,
+    backdrop-filter 0.45s ease;
 }
 
 .dark body.home-fluid-index header:not(.scrolled) .nav {
-  background: rgba(31, 49, 68, 0.48);
+  background: rgba(31, 49, 68, 0.45);
 }
 
+/* 下滚后：条压窄 + 实底（对位 Lynx top-nav-collapse） */
 body.home-fluid-index header.scrolled .nav {
-  background: rgba(47, 65, 84, 0.88);
+  padding-top: 6px;
+  padding-bottom: 6px;
+  background: rgba(47, 65, 84, 0.94);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--nav-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
   transition:
-    background 0.5s ease-in-out,
-    padding 0.5s ease-in-out,
-    border-color 0.35s ease,
-    box-shadow 0.35s ease,
-    backdrop-filter 0.35s ease;
+    padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.5s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease,
+    backdrop-filter 0.45s ease;
+}
+
+.dark body.home-fluid-index header.scrolled .nav {
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* 首页站名：顶栏在首屏时略大，滚落压缩后收一号 */
+body.home-fluid-index header:not(.scrolled) .nav-left a {
+  font-size: 1.3em;
+  transition: font-size 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, color 0.2s ease;
+}
+
+body.home-fluid-index header.scrolled .nav-left a {
+  font-size: 1.12em;
+  transition: font-size 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, color 0.2s ease;
+}
+
+/* 小屏：仍保留「上展开 / 下压缩」的反差，略减绝对高度 */
+@media (max-width: 768px) {
+  body.home-fluid-index header:not(.scrolled) .nav {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  body.home-fluid-index header.scrolled .nav {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  body.home-fluid-index header:not(.scrolled) .nav-left a {
+    font-size: 1.15em;
+  }
+
+  body.home-fluid-index header.scrolled .nav-left a {
+    font-size: 1em;
+  }
 }
 
 body.home-fluid-index .fluid-index-header-inner {
@@ -1183,6 +1203,12 @@ body.home-fluid-index .fluid-index-header-inner {
 
 /*
  * 鍕垮銆岄椤垫暣灞?Hero銆嶄娇鐢?max-height: min(..., 100vw)锛? * 绔栧睆鏃?100vw < 瑙嗗彛楂橈紝浼氭妸棣栧睆鍘嬫墎锛岄灞忎笅鏂归湶鍑哄ぇ娈电伆/鐧斤紙鐢ㄦ埛璇互涓?CSS 琚鐩栵級銆? * Lynx 鐨?max-height:100vw 浠呭簲浣滅敤鍦ㄦ绾ч《鍥?鏂囩珷 Hero锛涗互涓嬬敱 .compact / .post 鍚勮嚜濯掍綋鏌ヨ鎵挎媴銆? */
+
+/* 首页首屏：避免长标题等撑出整页横向滚动 */
+body.home-fluid-index .fluid-index-header-home {
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
 /* Fluid 娆＄骇椤碉紙濡?Categories锛夛細椤跺浘杈冪煯锛屽榻?lynx-li.github.io/categories/ header-inner 60vh */
 body.home-fluid-index .fluid-index-header-inner.fluid-header-inner-compact {
@@ -1434,6 +1460,57 @@ body.home-fluid-index .fluid-banner-title {
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
 }
 
+/* 仅首页全屏 Hero：长英文主标题单行（子项勿用整段 max-content，避免与副标题宽度“抢行”） */
+body.home-fluid-index .fluid-index-header-home .fluid-banner-text {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: min(96vw, 72rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* 不覆盖全站主标题字号；单行且不撑出整页横向滚动，超出视口部分在 h1 内裁切 */
+body.home-fluid-index .fluid-index-header-home .fluid-banner-title {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+/* Typed 容器与光标与标题一致为单行 */
+body.home-fluid-index .fluid-index-header-home .fluid-banner-title #fluid-hero-typed,
+body.home-fluid-index .fluid-index-header-home .fluid-banner-title .typed-cursor {
+  white-space: nowrap;
+}
+
+/* 首页 Hero：主标题下静态开头语 */
+body.home-fluid-index .fluid-banner-subtitle {
+  margin: 0.9rem 0 0;
+  max-width: 32rem;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: clamp(0.8rem, 2.1vw, 0.95rem);
+  font-weight: 400;
+  line-height: 1.65;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
+}
+
 /* Typed.js 鍏夋爣锛堝榻?Fluid .banner-text .typed-cursor锛?*/
 body.home-fluid-index .fluid-banner-title .typed-cursor {
   margin: 0 0.15em;
@@ -1504,11 +1581,12 @@ body.home-fluid-index.dark .fluid-index-main.fluid-board-page {
 }
 
 /*
- * Archives / Categories：main 建立独立 BFC（flow-root），避免 #board 的负 margin 与外层 margin 折叠，
+ * Archives / Categories / Tags：main 建立独立 BFC（flow-root），避免 #board 的负 margin 与外层 margin 折叠，
  * 否则会出现「顶图下沿与正文一起被整体上提」、叠层失效的问题。
  */
 body.home-fluid-index main.fluid-archives-main,
-body.home-fluid-index main.fluid-categories-main {
+body.home-fluid-index main.fluid-categories-main,
+body.home-fluid-index main.fluid-board-page.fluid-tags-main {
   display: flow-root;
 }
 
@@ -1588,10 +1666,11 @@ body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
 }
 
 /*
- * Archives / Categories：基准叠层较小（页面顶部）；额外叠层由 JS 按滚动量动态加上 transform。
+ * Archives / Categories / Tags：白卡片向上叠入顶图（与 lynx 次级页一致）；Tags 同页的额外上推仍由 tags.astro 里 JS 的 transform 叠加。
  */
 body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
-body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface {
+body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface,
+body.home-fluid-index main.fluid-board-page.fluid-tags-main #board.fluid-board-surface {
   margin-top: -2.25rem;
   padding-top: 2rem;
   padding-bottom: 3rem;
@@ -1606,7 +1685,8 @@ body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface {
 }
 
 html.dark body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
-html.dark body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface {
+html.dark body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface,
+html.dark body.home-fluid-index main.fluid-board-page.fluid-tags-main #board.fluid-board-surface {
   border-top-color: rgba(61, 71, 88, 0.85);
   box-shadow:
     0 -8px 36px rgba(0, 0, 0, 0.35),
@@ -1627,7 +1707,8 @@ body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-boa
   }
 
   body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
-  body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface {
+  body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface,
+  body.home-fluid-index main.fluid-board-page.fluid-tags-main #board.fluid-board-surface {
     margin-top: -1.75rem;
     padding-top: 1.5rem;
     padding-bottom: 2.5rem;

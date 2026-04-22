@@ -1,4 +1,6 @@
 ---
+import { countapiHitUrl, getCountapiNamespace, COUNTAPI_KEYS } from "../lib/site-stats";
+
 const {
   title = "Boxuan Zhang",
   isArticle = false,
@@ -7,6 +9,11 @@ const {
 const year = new Date().getFullYear();
 /** 与 public 资源、Service Worker 注册一致（支持子路径部署） */
 const baseUrl = import.meta.env.BASE_URL;
+
+const countSitePageHitUrl = countapiHitUrl(
+  getCountapiNamespace(),
+  COUNTAPI_KEYS.sitePageViews
+);
 ---
 
 <html lang="en">
@@ -142,7 +149,7 @@ const baseUrl = import.meta.env.BASE_URL;
       <div class="nav">
         <div class="nav-inner">
         <div class="nav-left">
-          <a href="/">Boxuan Zhang</a>
+          <a href="/">B.X.Zhang Blog</a>
         </div>
         <nav class="nav-links">
           <a href="/" class="nav-link-iconed">
@@ -246,36 +253,28 @@ const baseUrl = import.meta.env.BASE_URL;
             });
           }
         })();
-        
-        // 导航栏滚动效果
-        const header = document.querySelector('header');
-        let lastScrollTop = 0;
-        let ticking = false;
 
-        const updateHeader = () => {
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          
-          // 与 Lynx Fluid events.js 一致：约 50px 后顶栏由透明变为实色（top-nav-collapse）
-          if (scrollTop > 50) {
-            header?.classList.add('scrolled');
-          } else {
-            header?.classList.remove('scrolled');
+        // 仅首页首屏：滑到最上时顶栏更透明，下滚后渐变为实色（不改动条高与链接间距）
+        (function homeNavTransparency() {
+          if (!document.body.classList.contains("home-fluid-index")) return;
+          const header = document.querySelector("header");
+          if (!header) return;
+          let ticking = false;
+          function update() {
+            const st = window.pageYOffset || document.documentElement.scrollTop;
+            if (st > 50) header.classList.add("scrolled");
+            else header.classList.remove("scrolled");
+            ticking = false;
           }
-          
-          lastScrollTop = scrollTop;
-          ticking = false;
-        };
-
-        const requestTick = () => {
-          if (!ticking) {
-            window.requestAnimationFrame(updateHeader);
+          function onScroll() {
+            if (ticking) return;
             ticking = true;
+            requestAnimationFrame(update);
           }
-        };
-
-        window.addEventListener('scroll', requestTick, { passive: true });
-        updateHeader(); // 初始检查
-
+          window.addEventListener("scroll", onScroll, { passive: true });
+          update();
+        })();
+        
         // 平滑滚动
         document.documentElement.style.scrollBehavior = 'smooth';
 
@@ -438,12 +437,18 @@ const baseUrl = import.meta.env.BASE_URL;
       });
     </script>
 
-    <script is:inline define:vars={{ baseUrl }}>
+    <script is:inline define:vars={{ baseUrl, countSitePageHitUrl }}>
       (function () {
         if (!("serviceWorker" in navigator)) return;
         var scope = baseUrl || "/";
         if (scope.slice(-1) !== "/") scope += "/";
         navigator.serviceWorker.register(scope + "sw.js", { scope: scope }).catch(function () {});
+      })();
+    </script>
+    <script is:inline define:vars={{ countSitePageHitUrl }}>
+      (function () {
+        if (!countSitePageHitUrl) return;
+        fetch(countSitePageHitUrl, { mode: "cors", cache: "no-store" }).catch(function () {});
       })();
     </script>
   </body>

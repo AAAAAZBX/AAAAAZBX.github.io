@@ -1,91 +1,24 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { getMergedPosts } from "../lib/content-posts";
 
 const profile = {
-  name: "Boxuan Zhang",
+  name: "Boxuan Zhang",
   title: "Senior Undergraduate, Nanjing Agricultural University | ISElab, School of Software, Nanjing University",
-  university: "NJAU", 
-  location: "Nanjing, China", 
-  email: "zbx@stu.njau.edu.cn", 
-  github: "https://github.com/AAAAAZBX",
-  googleScholar: "", 
-  njauUrl: "http://www.njau.edu.cn/", // 新增学校链接
+  university: "NJAU",
+  location: "Nanjing, China",
+  email: "zbx@stu.njau.edu.cn",
+  github: "https://github.com/AAAAAZBX",
+  googleScholar: "",
+  njauUrl: "http://www.njau.edu.cn/", // 新增学校链接
   qq: "1604815119", // 请替换为您真实的QQ号码
-  siteStartDate: "2025-12-03", // 网站开始日期，用于计算在线天数
+  siteStartDate: "2025-12-03", // 网站开始日期
 };
-
-// 获取所有文章（按 src/content 实际目录自动发现）
-const allPosts = await getMergedPosts();
-
-// 计算总文章数
-const totalPosts = allPosts.length;
-
-// 计算总字数
-function calculateWordCount(body: string | undefined): number {
-  const safeBody = typeof body === "string" ? body : "";
-  let text = safeBody
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/`[^`]+`/g, '')
-    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-    .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
-    .replace(/^#+\s+/gm, '')
-    .replace(/\*\*([^\*]+)\*\*/g, '$1')
-    .replace(/\*([^\*]+)\*/g, '$1')
-    .replace(/~~([^~]+)~~/g, '$1')
-    .replace(/^>\s+/gm, '')
-    .replace(/^[\*\-\+]\s+/gm, '')
-    .replace(/^\d+\.\s+/gm, '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  
-  const chineseChars = (text.match(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g) || []).length;
-  const englishWords = text
-    .replace(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g, ' ')
-    .split(/\s+/)
-    .filter(word => word.length > 0).length;
-  
-  return chineseChars + englishWords;
-}
-
-const totalWords = allPosts.reduce((sum, post) => sum + calculateWordCount(post.body), 0);
-const totalWordsFormatted = totalWords >= 10000 ? `${(totalWords / 10000).toFixed(1)}w` : totalWords.toString();
-
-// 计算最后更新时间（最新文章的日期）
-const lastUpdated =
-  allPosts.length > 0
-    ? allPosts
-        .map((post) => (post.date ? new Date(post.date) : new Date(0)))
-        .sort((a, b) => b.getTime() - a.getTime())[0]
-    : new Date(0);
-
-function formatDate(date: Date): string {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-}
-
-const lastUpdatedFormatted = formatDate(lastUpdated);
-
-// 计算在线天数
-const startDate = new Date(profile.siteStartDate);
-const today = new Date();
-const daysOnline = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-
-// 准备传递给客户端的数据
-const postsData = allPosts.map(post => ({
-  date: post.date || null,
-  body: post.body || ''
-}));
-
-// 准备传递给客户端的 siteStartDate
-const clientSiteStartDate = profile.siteStartDate;
 
 ---
 
 <Layout title={`About — ${profile.name}`}>
   <main>
-    <div class="page-container">
+    <div class="page-container about-lynx">
       
       <aside class="sidebar" style="position: sticky !important; top: var(--sticky-top-offset) !important; align-self: flex-start !important;">
         <div class="avatar-container">
@@ -97,6 +30,26 @@ const clientSiteStartDate = profile.siteStartDate;
           <p class="role">{profile.title}</p>
 
         </div>
+
+        <div class="about-sidebar-edu">
+          <h2 class="about-h2 about-h2--sidebar">Education</h2>
+          <div class="about-edu-cards">
+            <a class="about-edu-card" href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer">
+              <div class="about-edu-card-head">
+                <span class="about-edu-card-title">Nanjing University</span>
+                <span class="about-edu-card-time">Sep 2026 – Present</span>
+              </div>
+              <div class="about-edu-card-meta">Software Engineering, Master's degree</div>
+            </a>
+            <a class="about-edu-card" href="https://ai.njau.edu.cn/" target="_blank" rel="noopener noreferrer">
+              <div class="about-edu-card-head">
+                <span class="about-edu-card-title">Nanjing Agricultural University</span>
+                <span class="about-edu-card-time">Sep 2022 – Jun 2026</span>
+              </div>
+              <div class="about-edu-card-meta">Data Science and Big Data Technology, Bachelor's degree</div>
+            </a>
+          </div>
+        </div>
 
 <div class="spacer"></div>
 <div class="spacer"></div>
@@ -134,7 +87,7 @@ const clientSiteStartDate = profile.siteStartDate;
           </div>
       </aside>
 
-      <div class="main-content-wrapper about-lynx">
+      <div class="main-content-wrapper">
         <section class="content-section about-block">
           <h2 class="about-h2">Introduction</h2>
           <ul class="about-prose-list">
@@ -145,79 +98,7 @@ const clientSiteStartDate = profile.siteStartDate;
           </ul>
         </section>
 
-        <section class="content-section about-block">
-          <h2 class="about-h2">Education</h2>
-          <div class="about-edu-cards">
-            <a class="about-edu-card" href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer">
-              <div class="about-edu-card-head">
-                <span class="about-edu-card-title">Nanjing University</span>
-                <span class="about-edu-card-time">Sep 2026 – Present</span>
-              </div>
-              <div class="about-edu-card-meta">Software Engineering, Master's degree</div>
-            </a>
-            <a class="about-edu-card" href="https://ai.njau.edu.cn/" target="_blank" rel="noopener noreferrer">
-              <div class="about-edu-card-head">
-                <span class="about-edu-card-title">Nanjing Agricultural University</span>
-                <span class="about-edu-card-time">Sep 2022 – Jun 2026</span>
-              </div>
-              <div class="about-edu-card-meta">Data Science and Big Data Technology, Bachelor's degree</div>
-            </a>
-          </div>
-        </section>
-
         <hr class="divider" />
-
-        <section class="content-section">
-          <h2 class="about-h2">Statistics</h2>
-          <div class="statistics-cards">
-            <div class="stat-card">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <div class="stat-content">
-                <div class="stat-value" id="days-online">-</div>
-                <div class="stat-label">Days Online</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <div class="stat-content">
-                <div class="stat-value" id="last-updated">-</div>
-                <div class="stat-label">Last Updated</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-              </svg>
-              <div class="stat-content">
-                <div class="stat-value" id="total-posts">-</div>
-                <div class="stat-label">Total Posts</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-              <div class="stat-content">
-                <div class="stat-value" id="total-words">-</div>
-                <div class="stat-label">Total Words</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <hr class="divider" />
 
         <section class="content-section">
           <h2 class="about-h2">Contributions</h2>
@@ -254,6 +135,35 @@ const clientSiteStartDate = profile.siteStartDate;
     margin: 0 0 14px;
     color: var(--text-primary);
     line-height: 1.3;
+  }
+
+  .about-lynx .about-h2.about-h2--sidebar {
+    font-size: 1.12rem;
+    margin: 0 0 10px;
+  }
+
+  .about-lynx .about-sidebar-edu {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .about-lynx .about-sidebar-edu .about-edu-card-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .about-lynx .about-sidebar-edu .about-edu-card-time {
+    white-space: normal;
+    font-size: 0.8rem;
+  }
+
+  .about-lynx .about-sidebar-edu .about-edu-card-title {
+    font-size: 0.95rem;
+  }
+
+  .about-lynx .about-sidebar-edu .about-edu-card-meta {
+    font-size: 0.84rem;
   }
 
   .about-lynx .about-block + .about-block {
@@ -379,103 +289,9 @@ const clientSiteStartDate = profile.siteStartDate;
   }
 </style>
 
-<script define:vars={{ postsData, siteStartDate: clientSiteStartDate }}>
+<script is:inline>
   (function() {
     'use strict';
-    
-    // 立即检查变量
-    console.log('=== DEBUG START ===');
-    console.log('postsData type:', typeof postsData);
-    console.log('postsData is array:', Array.isArray(postsData));
-    console.log('postsData length:', Array.isArray(postsData) ? postsData.length : 'N/A');
-    console.log('siteStartDate:', siteStartDate);
-    console.log('=== DEBUG END ===');
-    
-    // 工具函数：计算总字数
-    function calculateWordCount(body) {
-      if (!body) return 0;
-      let text = body
-        .replace(/```[\s\S]*?```/g, '')
-        .replace(/`[^`]+`/g, '')
-        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-        .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
-        .replace(/^#+\s+/gm, '')
-        .replace(/\*\*([^\*]+)\*\*/g, '$1')
-        .replace(/\*([^\*]+)\*/g, '$1')
-        .replace(/~~([^~]+)~~/g, '$1')
-        .replace(/^>\s+/gm, '')
-        .replace(/^[\*\-\+]\s+/gm, '')
-        .replace(/^\d+\.\s+/gm, '')
-        .replace(/<[^>]+>/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      const chineseChars = (text.match(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g) || []).length;
-      const englishWords = text
-        .replace(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g, ' ')
-        .split(/\s+/)
-        .filter(word => word.length > 0).length;
-      
-      return chineseChars + englishWords;
-    }
-    
-    // 更新统计数据
-    function updateStatistics() {
-      console.log('[updateStatistics] Called');
-      try {
-        const posts = Array.isArray(postsData) ? postsData : [];
-        console.log('[updateStatistics] Posts count:', posts.length);
-        
-        // 更新总文章数
-        const totalPostsEl = document.getElementById('total-posts');
-        console.log('[updateStatistics] total-posts element:', !!totalPostsEl);
-        if (totalPostsEl) {
-          totalPostsEl.textContent = posts.length;
-          console.log('[updateStatistics] Set total-posts to:', posts.length);
-        } else {
-          console.error('[updateStatistics] total-posts element NOT FOUND!');
-        }
-        
-        // 更新总字数
-        const totalWords = posts.reduce((sum, post) => sum + calculateWordCount(post.body || ''), 0);
-        const totalWordsFormatted = totalWords >= 10000 ? `${(totalWords / 10000).toFixed(1)}w` : totalWords.toString();
-        const totalWordsEl = document.getElementById('total-words');
-        if (totalWordsEl) {
-          totalWordsEl.textContent = totalWordsFormatted;
-        }
-        
-        // 更新最后更新时间
-        const dates = posts
-          .map(post => post.date ? new Date(post.date) : null)
-          .filter(date => date !== null && !isNaN(date.getTime()))
-          .sort((a, b) => b.getTime() - a.getTime());
-        
-        if (dates.length > 0) {
-          const lastUpdated = dates[0];
-          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          const lastUpdatedFormatted = `${months[lastUpdated.getMonth()]} ${lastUpdated.getDate()}, ${lastUpdated.getFullYear()}`;
-          const lastUpdatedEl = document.getElementById('last-updated');
-          if (lastUpdatedEl) {
-            lastUpdatedEl.textContent = lastUpdatedFormatted;
-          }
-        }
-        
-        // 更新在线天数
-        if (siteStartDate) {
-          const startDate = new Date(siteStartDate);
-          const today = new Date();
-          if (!isNaN(startDate.getTime())) {
-            const daysOnline = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-            const daysOnlineEl = document.getElementById('days-online');
-            if (daysOnlineEl) {
-              daysOnlineEl.textContent = daysOnline;
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error updating statistics:', error);
-      }
-    }
   
     // 加载贡献图 - 使用解析后的数据重新渲染
     async function loadContributions() {
@@ -781,51 +597,21 @@ const clientSiteStartDate = profile.siteStartDate;
       }
     }
     
-    // 初始化函数
     function init() {
-      console.log('=== INIT START ===');
-      console.log('DOM ready state:', document.readyState);
-      
-      // 检查元素
-      const el1 = document.getElementById('total-posts');
-      const el2 = document.getElementById('days-online');
-      const el3 = document.getElementById('contributions-graph');
-      console.log('Elements found:', {
-        'total-posts': !!el1,
-        'days-online': !!el2,
-        'contributions-graph': !!el3
-      });
-      
-      try {
-        updateStatistics();
-        console.log('updateStatistics() completed');
-      } catch (e) {
-        console.error('updateStatistics() error:', e);
-      }
-      
       try {
         loadContributions();
-        console.log('loadContributions() called');
       } catch (e) {
         console.error('loadContributions() error:', e);
       }
-      
-      console.log('=== INIT END ===');
     }
     
-    // 确保在 DOM 加载后执行
-    console.log('Script executing, readyState:', document.readyState);
     if (document.readyState === 'loading') {
-      console.log('Waiting for DOMContentLoaded...');
       document.addEventListener('DOMContentLoaded', init);
     } else {
-      console.log('DOM ready, calling init...');
       setTimeout(init, 100);
     }
     
-    // 定期更新（每100h）
     setInterval(() => {
-      updateStatistics();
       loadContributions();
     }, 360000000);
   })();

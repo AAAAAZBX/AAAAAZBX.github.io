@@ -1,6 +1,26 @@
 {
   "commits": [
     {
+      "hash": "cb98d7d74eae49d196f0535f684e3385355f5ea6",
+      "date": "2026-04-20 15:44:03 +0800",
+      "message": "chore: update deploy workflow, package, contrib script, readme; remove stray pages/_image.png"
+    },
+    {
+      "hash": "1e1a3a4adaffa105c8ce4bad897ceca46d9b7a50",
+      "date": "2026-04-20 15:26:48 +0800",
+      "message": "chore: remove github-contrib-test.html (local HTML scrape used for parser dev)"
+    },
+    {
+      "hash": "2643462397fab47b27cb489f8201ae938b376c1b",
+      "date": "2026-04-20 08:51:22 +0800",
+      "message": "content: move PyTorch notes from src/content/PyTorch to src/content/LLM/PyTorch"
+    },
+    {
+      "hash": "ef7d2a67a4b3c7ac346e8efe9323312c4096c804",
+      "date": "2026-04-20 08:47:06 +0800",
+      "message": "Adjust Fluid board scroll overlap (home/archives/categories) and refresh build API JSON"
+    },
+    {
       "hash": "f85346c01af829ecb1b27c99ab7370bf17ef17bd",
       "date": "2026-04-19 17:22:23 +0800",
       "message": "Add service worker and preload for cached hero images"
@@ -29,27 +49,7 @@
       "hash": "64a2b5addb6f67c4e8811cc42492feb28bfad3a4",
       "date": "2026-04-16 13:48:24 +0800",
       "message": "Add stochastic processes notes and co-located Markov chain figure assets"
-    },
-    {
-      "hash": "2bbca6c44c5c70a5f0399fb6d7724209db1adcf5",
-      "date": "2026-04-15 21:18:35 +0800",
-      "message": "Refine About page: streamline sections and education card layout"
-    },
-    {
-      "hash": "2572380879232c3ffe81e356c0ddf0b8ddc2e3a8",
-      "date": "2026-04-15 05:55:04 +0800",
-      "message": "hong kong"
-    },
-    {
-      "hash": "bb4a63cfb398a70a066271a42b304a38fd92158e",
-      "date": "2026-04-15 05:32:52 +0800",
-      "message": "hong kong"
-    },
-    {
-      "hash": "9e320368468ed9632dca0e9fb2acdf99dd02bd8a",
-      "date": "2026-04-13 01:05:27 +0800",
-      "message": "fine-tuning"
     }
   ],
-  "timestamp": "2026-04-20T00:39:31.135Z"
+  "timestamp": "2026-04-22T14:59:46.502Z"
 }

@@ -11,8 +11,11 @@ interface Props {
 
 const { recentPosts, currentPage, totalPages } = Astro.props;
 
-const siteTitle = "Boxuan Zhang";
-const heroTypedText = "等博主做完毕业设计，一定猛猛更新！";
+const siteTitle = "B.X.Zhang Blog";
+const heroTypedText = "Algorithms, Systems, and AI for Finance";
+/** Hero 下静态开头语：与 content 里「基础与赛场为主、方向在摸索」的现状一致，避免把副标题也塞进 Typed 以免过长。 */
+const heroIntro =
+  "Trying to build things that are rigorous, useful, and worth remembering.";
 const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
 const folderDisplayMap = buildContentFolderDisplayMap();
 
@@ -67,7 +70,7 @@ const prevHref = currentPage > 1 ? homePageHref(currentPage - 1) : null;
 const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null;
 ---
 
-<div class="fluid-index-header-inner">
+<div class="fluid-index-header-inner fluid-index-header-home">
   <div id="banner" class="fluid-banner fluid-banner-photo-mode">
     <div class="fluid-banner-bg" aria-hidden="true">
       <img
@@ -83,9 +86,17 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
     <div class="fluid-banner-inner">
       <div class="fluid-banner-mask">
         <div class="fluid-banner-text">
-          <h1 class="fluid-banner-title" lang="zh-CN" aria-label={heroTypedText}>
+          <h1
+            class="fluid-banner-title"
+            lang="en"
+            aria-label={heroTypedText}
+            aria-describedby="fluid-hero-intro"
+          >
             <span id="fluid-hero-typed" data-typed-text={heroTypedText}></span>
           </h1>
+          <p class="fluid-banner-subtitle" id="fluid-hero-intro">
+            {heroIntro}
+          </p>
         </div>
         <a
           href="#fluid-board"

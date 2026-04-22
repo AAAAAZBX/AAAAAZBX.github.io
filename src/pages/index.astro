@@ -7,7 +7,7 @@ import {
   sliceHomePostsPage,
 } from "../lib/home-pagination";
 
-const siteTitle = "Boxuan Zhang";
+const siteTitle = "B.X.Zhang";
 const merged = await getMergedPosts();
 const totalPages = getHomeTotalPages(merged.length);
 const recentPosts = sliceHomePostsPage(merged, 1);

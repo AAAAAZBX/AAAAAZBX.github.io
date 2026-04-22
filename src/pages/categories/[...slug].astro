@@ -19,6 +19,7 @@ import {
   getCollectionLabel,
   type ColKey,
 } from "../../lib/content-posts";
+import { countapiHitUrl, getCountapiNamespace, countapiArticleKey } from "../../lib/site-stats";
 
 type RouteProps = {
   collection: ColKey;
@@ -58,6 +59,11 @@ const author = post.data.author?.trim() || DEFAULT_SITE_AUTHOR;
 const dateLine = formatPostMetaDateLine(post.data.date);
 const datetimeAttr = post.data.date ? formatPostDatetimeAttr(post.data.date) : "";
 const sectionTitle = getCollectionLabel(collection).en;
+
+const countArticlePageHitUrl = countapiHitUrl(
+  getCountapiNamespace(),
+  countapiArticleKey(collection, id)
+);
 ---
 
 <Layout title={`${post.data.title} | ${sectionTitle}`} overlayNav>
@@ -83,5 +89,13 @@ const sectionTitle = getCollectionLabel(collection).en;
       </div>
     </FluidArticleBoard>
   </main>
+  <script is:inline define:vars={{ countArticlePageHitUrl }}>
+    (function () {
+      if (!countArticlePageHitUrl) return;
+      fetch(countArticlePageHitUrl, { mode: "cors", cache: "no-store" }).catch(
+        function () {}
+      );
+    })();
+  </script>
 </Layout>
 

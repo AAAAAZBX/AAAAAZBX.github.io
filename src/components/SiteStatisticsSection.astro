@@ -1,0 +1,767 @@
+---
+import { PIE_EMPTY_DONUT_PATH, type CollectionPieItem } from "../lib/statistics-build";
+
+interface Props {
+  totalPosts: number;
+  pieItems: CollectionPieItem[];
+  perArticleViewRows: { title: string; href: string; getUrl: string }[];
+  countStatsGetUrls: { site: string };
+  postsData: { date: string | null; body: string }[];
+  siteStartDate: string;
+}
+
+const {
+  totalPosts,
+  pieItems,
+  perArticleViewRows,
+  countStatsGetUrls,
+  postsData,
+  siteStartDate: clientSiteStartDate,
+} = Astro.props;
+---
+
+<section class="content-section about-statistics-wrap stat-scope">
+  <h2 class="about-h2">Statistics</h2>
+  <div class="stat-dashboard" aria-label="Site statistics control panel">
+    <div class="stat-dashboard__rim">
+      <div class="stat-dashboard__kpi">
+        <div class="stat-kpi">
+          <span class="stat-kpi__label">Days online</span>
+          <span class="stat-kpi__value" id="days-online">-</span>
+        </div>
+        <div class="stat-kpi">
+          <span class="stat-kpi__label">Last update</span>
+          <span class="stat-kpi__value stat-kpi__value--text" id="last-updated">-</span>
+        </div>
+        <div class="stat-kpi">
+          <span class="stat-kpi__label">Site page views</span>
+          <span class="stat-kpi__value" id="stat-site-views">-</span>
+        </div>
+        <div class="stat-kpi">
+          <span class="stat-kpi__label">Word count</span>
+          <span class="stat-kpi__value" id="total-words">-</span>
+        </div>
+        <div class="stat-kpi">
+          <span class="stat-kpi__label">Total article views</span>
+          <span class="stat-kpi__value" id="stat-article-views-sum">—</span>
+        </div>
+      </div>
+
+      <div class="stat-dashboard__row stat-dashboard__row--split">
+        <div class="stat-panel stat-panel--ring">
+          <div class="stat-panel__head">
+            <span class="stat-panel__tag">M01</span>
+            <span class="stat-panel__title">Posts by collection</span>
+          </div>
+          <div class="stat-pie-wrap">
+            <ul class="stat-legend" aria-label="Collection legend">
+              {pieItems.map((it) => (
+                <li class="stat-legend__item">
+                  <span class="stat-legend__sw" style={`background: ${it.color}`}></span>
+                  <span class="stat-legend__name">{it.label}</span>
+                  <span class="stat-legend__n">{it.count}</span>
+                </li>
+              ))}
+            </ul>
+            <div class="stat-pie" aria-label="Posts by collection, donut chart">
+              <svg class="stat-pie__svg" viewBox="0 0 200 200" aria-hidden="true">
+                {
+                  pieItems.length > 0
+                    ? pieItems.map((it) => {
+                        const pct =
+                          totalPosts > 0
+                            ? ((it.count / totalPosts) * 100).toFixed(2)
+                            : "0.00";
+                        return (
+                          <path
+                            class="stat-pie__seg"
+                            d={it.slicePath}
+                            fill={it.color}
+                            data-pie-label={it.label}
+                            data-pie-count={String(it.count)}
+                            data-pie-pct={pct}
+                          />
+                        );
+                      })
+                    : (
+                        <path
+                          class="stat-pie__seg stat-pie__seg--empty"
+                          d={PIE_EMPTY_DONUT_PATH}
+                          fill="hsl(210 18% 48%)"
+                        />
+                      )
+                }
+              </svg>
+              <div
+                id="stat-pie-tooltip"
+                class="stat-pie__tooltip"
+                role="tooltip"
+                aria-hidden="true"
+              >
+                <div class="stat-pie__tooltip-cat">collection</div>
+                <div class="stat-pie__tooltip-line"></div>
+              </div>
+              <div class="stat-pie__hole" aria-hidden="true">
+                <div class="stat-pie__center-val">{totalPosts}</div>
+                <div class="stat-pie__center-lbl">posts</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-panel stat-panel--bars">
+        <div class="stat-panel__head">
+          <span class="stat-panel__tag">M02</span>
+          <span class="stat-panel__title">Article views by post</span>
+        </div>
+        <p class="stat-panel__sub">
+          Each post is counted once. The first request or a failed API may show 0 or a dash.
+        </p>
+        <div class="stat-bar-chart" id="stat-article-views-bars">
+          <p class="stat-bar-load">Loading per-post view counts…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .stat-scope .about-h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 0 14px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .stat-scope .stat-dashboard {
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--text-link) 18%, var(--border-color));
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--bg-tertiary) 88%, #0a0e14) 0%,
+      var(--bg-secondary) 45%,
+      var(--bg-tertiary) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 8px 28px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+
+  .stat-scope .stat-dashboard__rim {
+    padding: 18px 20px 22px;
+  }
+
+  .stat-scope .stat-dashboard__kpi {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px 14px;
+    margin-bottom: 20px;
+  }
+
+  .stat-scope .stat-kpi {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 12px 12px;
+    background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+    font-family: ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo, monospace;
+  }
+
+  .stat-scope .stat-kpi__label {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .stat-scope .stat-kpi__value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.1;
+  }
+
+  .stat-scope .stat-kpi__value--text {
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .stat-scope .stat-panel {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 16px 16px 18px;
+    background: var(--bg-primary);
+  }
+
+  .stat-scope .stat-panel + .stat-panel {
+    margin-top: 16px;
+  }
+
+  .stat-scope .stat-panel__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .stat-scope .stat-panel__tag {
+    font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+    font-size: 0.7rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--text-link) 18%, var(--bg-tertiary));
+    color: var(--text-link);
+  }
+
+  .stat-scope .stat-panel__title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .stat-scope .stat-panel__sub {
+    margin: 0 0 12px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .stat-scope .stat-pie-wrap {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 20px 32px;
+    overflow: visible;
+  }
+
+  @media (max-width: 520px) {
+    .stat-scope .stat-pie-wrap {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+
+  .stat-scope .stat-pie {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+    margin: 10px;
+  }
+
+  .stat-scope .stat-pie__svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .stat-scope .stat-pie__seg {
+    pointer-events: auto;
+    stroke: color-mix(in srgb, var(--bg-primary) 45%, var(--text-primary) 8%);
+    stroke-width: 0.75;
+    vector-effect: non-scaling-stroke;
+    transform-box: view-box;
+    transform-origin: 50% 50%;
+    filter: none;
+    transition:
+      transform 0.3s cubic-bezier(0.34, 1.25, 0.64, 1),
+      filter 0.28s ease;
+    cursor: pointer;
+  }
+
+  .stat-scope .stat-pie__seg:hover {
+    transform: scale(1.1);
+    filter:
+      drop-shadow(0 1px 2px color-mix(in srgb, var(--text-primary) 20%, transparent))
+      drop-shadow(0 4px 12px color-mix(in srgb, var(--nav-bg, #2f4154) 50%, transparent))
+      drop-shadow(0 10px 28px color-mix(in srgb, var(--nav-bg, #2f4154) 32%, transparent));
+  }
+
+  .stat-scope .stat-pie__seg--empty {
+    cursor: default;
+  }
+
+  .stat-scope .stat-pie__seg--empty:hover {
+    transform: none;
+    filter: none;
+  }
+
+  /* When paths use transform, portal tooltip to body so position:fixed matches clientX / clientY. */
+  #stat-pie-tooltip.stat-pie__tooltip,
+  .stat-scope .stat-pie__tooltip {
+    position: fixed;
+    z-index: 5000;
+    left: 0;
+    top: 0;
+    max-width: min(320px, calc(100vw - 16px));
+    padding: 8px 12px 10px;
+    background: var(--bg-primary);
+    border: 1px solid color-mix(in srgb, var(--text-link) 55%, var(--border-color));
+    border-radius: 6px;
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.08),
+      0 8px 24px rgba(0, 0, 0, 0.12);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.12s ease;
+  }
+
+  #stat-pie-tooltip.stat-pie__tooltip.is-visible,
+  .stat-scope .stat-pie__tooltip.is-visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #stat-pie-tooltip .stat-pie__tooltip-cat,
+  .stat-scope .stat-pie__tooltip-cat {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  #stat-pie-tooltip .stat-pie__tooltip-line,
+  .stat-scope .stat-pie__tooltip-line {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-family: ui-monospace, Menlo, monospace;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stat-scope .stat-pie__seg {
+      transition: none;
+    }
+    .stat-scope .stat-pie__seg:hover {
+      transform: none;
+      filter: none;
+    }
+  }
+
+  .stat-scope .stat-pie__hole {
+    position: absolute;
+    inset: 22%;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: inset 0 0 0 1px var(--border-color);
+  }
+
+  .stat-scope .stat-pie__center-val {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+    font-family: ui-monospace, Menlo, monospace;
+  }
+
+  .stat-scope .stat-pie__center-lbl {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .stat-scope .stat-legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: min(100%, 18rem);
+    align-self: center;
+  }
+
+  @media (max-width: 520px) {
+    .stat-scope .stat-legend {
+      max-width: 100%;
+      width: 100%;
+    }
+  }
+
+  .stat-scope .stat-legend__item {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px 10px;
+    font-size: 0.86rem;
+    margin: 6px 0;
+    color: var(--text-primary);
+  }
+
+  .stat-scope .stat-legend__sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .stat-scope .stat-legend__name {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .stat-scope .stat-legend__n {
+    font-weight: 700;
+    font-family: ui-monospace, Menlo, monospace;
+    color: var(--text-secondary);
+  }
+
+  .stat-scope .stat-bar-load {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 8px 0 0;
+  }
+
+  .stat-scope .stat-bar-chart {
+    max-height: 320px;
+    overflow: auto;
+    padding-right: 2px;
+  }
+
+  .stat-scope .stat-bar-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr) 48px;
+    gap: 8px 10px;
+    align-items: center;
+    margin: 0 0 8px;
+    font-size: 0.82rem;
+  }
+
+  .stat-scope .stat-bar-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-link);
+    text-decoration: none;
+  }
+
+  .stat-scope .stat-bar-label:hover {
+    text-decoration: underline;
+  }
+
+  .stat-scope .stat-bar-track {
+    height: 10px;
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px var(--nav-border, var(--border-color));
+  }
+
+  .stat-scope .stat-bar-fill {
+    height: 100%;
+    width: 0;
+    /* Match nav: accent + nav-bg blend */
+    background: linear-gradient(
+      90deg,
+      var(--fluid-link-hover-color, #30a9de),
+      color-mix(
+        in srgb,
+        var(--nav-bg, #2f4154) 55%,
+        var(--fluid-link-hover-color, #30a9de) 45%
+      )
+    );
+    border-radius: 6px;
+    transition: width 0.35s ease;
+  }
+
+  .stat-scope .stat-bar-n {
+    text-align: right;
+    font-weight: 700;
+    font-family: ui-monospace, Menlo, monospace;
+    color: var(--text-primary);
+  }
+</style>
+
+<script
+  define:vars={{
+    postsData,
+    siteStartDate: clientSiteStartDate,
+    countStatsGetUrls,
+    perArticleViewRows,
+  }}
+>
+  (function () {
+    "use strict";
+
+    function calculateWordCount(body) {
+      if (!body) return 0;
+      let text = body
+        .replace(/```[\s\S]*?```/g, "")
+        .replace(/`[^`]+`/g, "")
+        .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
+        .replace(/!\[([^\]]*)\]\([^\)]+\)/g, "")
+        .replace(/^#+\s+/gm, "")
+        .replace(/\*\*([^\*]+)\*\*/g, "$1")
+        .replace(/\*([^\*]+)\*/g, "$1")
+        .replace(/~~([^~]+)~~/g, "$1")
+        .replace(/^>\s+/gm, "")
+        .replace(/^[\*\-\+]\s+/gm, "")
+        .replace(/^\d+\.\s+/gm, "")
+        .replace(/<[^>]+>/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      const chineseChars = (text.match(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g) || [])
+        .length;
+      const englishWords = text
+        .replace(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g, " ")
+        .split(/\s+/)
+        .filter((word) => word.length > 0).length;
+      return chineseChars + englishWords;
+    }
+
+    function updateStatistics() {
+      try {
+        const posts = Array.isArray(postsData) ? postsData : [];
+        const totalWords = posts.reduce(
+          (sum, post) => sum + calculateWordCount(post.body || ""),
+          0
+        );
+        const totalWordsFormatted =
+          totalWords >= 10000 ? `${(totalWords / 10000).toFixed(1)}w` : String(totalWords);
+        const totalWordsEl = document.getElementById("total-words");
+        if (totalWordsEl) totalWordsEl.textContent = totalWordsFormatted;
+
+        const dates = posts
+          .map((post) => (post.date ? new Date(post.date) : null))
+          .filter((date) => date !== null && !isNaN(date.getTime()))
+          .sort((a, b) => b.getTime() - a.getTime());
+        if (dates.length > 0) {
+          const last = dates[0];
+          const months = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+          ];
+          const lastUpdatedFormatted = `${months[last.getMonth()]} ${last.getDate()}, ${last.getFullYear()}`;
+          const lastUpdatedEl = document.getElementById("last-updated");
+          if (lastUpdatedEl) lastUpdatedEl.textContent = lastUpdatedFormatted;
+        }
+        if (siteStartDate) {
+          const startDate = new Date(siteStartDate);
+          const today = new Date();
+          if (!isNaN(startDate.getTime())) {
+            const daysOnline = Math.floor(
+              (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            const daysOnlineEl = document.getElementById("days-online");
+            if (daysOnlineEl) daysOnlineEl.textContent = String(daysOnline);
+          }
+        }
+      } catch (e) {
+        console.error("Error updating statistics:", e);
+      }
+    }
+
+    async function loadCountStats() {
+      const siteEl = document.getElementById("stat-site-views");
+      if (!siteEl) return;
+      const mark = () => {
+        siteEl.textContent = "—";
+      };
+      if (typeof countStatsGetUrls === "undefined" || !countStatsGetUrls || !countStatsGetUrls.site) {
+        mark();
+        return;
+      }
+      const setNum = (n) => {
+        siteEl.textContent = typeof n === "number" && !Number.isNaN(n) ? String(n) : "—";
+      };
+      try {
+        const a = await fetch(String(countStatsGetUrls.site), { mode: "cors", cache: "no-store" })
+          .then((r) => r.json())
+          .catch(() => null);
+        setNum(a && typeof a.value === "number" ? a.value : null);
+      } catch (e) {
+        mark();
+      }
+    }
+
+    function fetchCountValue(url) {
+      return fetch(String(url), { mode: "cors", cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => (j && typeof j.value === "number" ? j.value : 0))
+        .catch(() => 0);
+    }
+
+    async function loadPerArticleBarChart() {
+      const host = document.getElementById("stat-article-views-bars");
+      const sumEl = document.getElementById("stat-article-views-sum");
+      if (!host) return;
+      const rows = Array.isArray(perArticleViewRows) ? perArticleViewRows : [];
+      if (rows.length === 0) {
+        host.innerHTML = '<p class="stat-bar-load">No posts</p>';
+        if (sumEl) sumEl.textContent = "0";
+        return;
+      }
+      const CHUNK = 8;
+      const withVals = [];
+      for (let i = 0; i < rows.length; i += CHUNK) {
+        const part = rows.slice(i, i + CHUNK);
+        const vals = await Promise.all(
+          part.map((r) => fetchCountValue(r.getUrl).then((v) => ({ ...r, v })))
+        );
+        withVals.push.apply(withVals, vals);
+      }
+      withVals.sort((a, b) => b.v - a.v);
+      const max = withVals.length ? Math.max(1, ...withVals.map((x) => x.v)) : 1;
+      let sum = 0;
+      const frag = document.createDocumentFragment();
+      withVals.forEach((row) => {
+        sum += row.v;
+        const wrap = document.createElement("div");
+        wrap.className = "stat-bar-row";
+        const a = document.createElement("a");
+        a.className = "stat-bar-label";
+        a.href = row.href;
+        a.textContent = row.title;
+        a.title = row.title;
+        const tr = document.createElement("div");
+        tr.className = "stat-bar-track";
+        const fill = document.createElement("div");
+        fill.className = "stat-bar-fill";
+        fill.style.width = `${(row.v / max) * 100}%`;
+        tr.appendChild(fill);
+        const n = document.createElement("span");
+        n.className = "stat-bar-n";
+        n.textContent = String(row.v);
+        wrap.appendChild(a);
+        wrap.appendChild(tr);
+        wrap.appendChild(n);
+        frag.appendChild(wrap);
+      });
+      host.textContent = "";
+      host.appendChild(frag);
+      if (sumEl) sumEl.textContent = String(sum);
+    }
+
+    function initPieTooltips() {
+      const pie = document.querySelector(".stat-scope .stat-pie");
+      const tip = document.getElementById("stat-pie-tooltip");
+      if (!pie || !tip) return;
+      const lineEl = tip.querySelector(".stat-pie__tooltip-line");
+      if (!lineEl) return;
+      if (tip.parentNode !== document.body) {
+        document.body.appendChild(tip);
+      }
+      const segs = pie.querySelectorAll("path.stat-pie__seg:not(.stat-pie__seg--empty)");
+      function placeTip() {
+        const w = tip.offsetWidth;
+        const h = tip.offsetHeight;
+        if (w < 1) return false;
+        return { w, h };
+      }
+      function positionTip(clientX, clientY) {
+        const edge = 10;
+        const gap = 8;
+        tip.classList.add("is-visible");
+        tip.setAttribute("aria-hidden", "false");
+        tip.style.left = "0px";
+        tip.style.top = "0px";
+        const run = () => {
+          const dim = placeTip();
+          if (!dim) {
+            requestAnimationFrame(run);
+            return;
+          }
+          const w = dim.w;
+          const h = dim.h;
+          /* Center tooltip under the pointer; avoid a constant bottom-right offset */
+          let x = clientX - w / 2;
+          /* Prefer above the pointer to stay near the active slice */
+          let y = clientY - h - gap;
+          if (y < edge) y = clientY + gap;
+          if (x < edge) x = edge;
+          if (x + w > window.innerWidth - edge) x = window.innerWidth - w - edge;
+          if (y + h > window.innerHeight - edge) y = window.innerHeight - h - edge;
+          tip.style.left = x + "px";
+          tip.style.top = y + "px";
+        };
+        requestAnimationFrame(run);
+      }
+      function show(e) {
+        const t = e.currentTarget;
+        if (!t || !t.getAttribute("data-pie-label")) return;
+        const label = t.getAttribute("data-pie-label") || "";
+        const count = t.getAttribute("data-pie-count") || "0";
+        const pct = t.getAttribute("data-pie-pct") || "0.00";
+        lineEl.textContent = `${label}: ${count} (${pct}%)`;
+        positionTip(e.clientX, e.clientY);
+      }
+      function move(e) {
+        if (tip.classList.contains("is-visible")) {
+          positionTip(e.clientX, e.clientY);
+        }
+      }
+      function hide() {
+        tip.classList.remove("is-visible");
+        tip.setAttribute("aria-hidden", "true");
+      }
+      segs.forEach((path) => {
+        path.addEventListener("mouseenter", show);
+        path.addEventListener("mousemove", move);
+        path.addEventListener("mouseleave", hide);
+      });
+    }
+
+    function init() {
+      try {
+        updateStatistics();
+      } catch (e) {
+        console.error("updateStatistics() error:", e);
+      }
+      try {
+        loadCountStats();
+      } catch (e) {
+        console.error("loadCountStats() error:", e);
+      }
+      try {
+        loadPerArticleBarChart();
+      } catch (e) {
+        console.error("loadPerArticleBarChart() error:", e);
+      }
+      try {
+        initPieTooltips();
+      } catch (e) {
+        console.error("initPieTooltips() error:", e);
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      setTimeout(init, 100);
+    }
+
+    setInterval(() => {
+      updateStatistics();
+      loadCountStats();
+      loadPerArticleBarChart();
+    }, 360000000);
+  })();
+</script>

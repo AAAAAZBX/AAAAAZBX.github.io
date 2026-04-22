@@ -1,0 +1,285 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getMergedPosts } from "../lib/content-posts";
+import { countapiGetUrl, getCountapiNamespace, COUNTAPI_KEYS } from "../lib/site-stats";
+import {
+  buildCollectionPieStats,
+  buildPerArticleViewRows,
+} from "../lib/statistics-build";
+import SiteStatisticsSection from "../components/SiteStatisticsSection.astro";
+
+const allPosts = await getMergedPosts();
+const countNs = getCountapiNamespace();
+const { totalPosts, pieItems } = buildCollectionPieStats(allPosts);
+const perArticleViewRows = buildPerArticleViewRows(allPosts, countNs);
+const countStatsGetUrls = {
+  site: countapiGetUrl(countNs, COUNTAPI_KEYS.sitePageViews),
+};
+const postsData = allPosts.map((post) => ({
+  date: post.date || null,
+  body: post.body || "",
+}));
+/** 与 about 中 profile.siteStartDate 一致 */
+const siteStartDate = "2025-12-03";
+
+const tagCounts = new Map<string, number>();
+for (const p of allPosts) {
+  for (const t of p.tags) {
+    const k = t.trim();
+    if (!k) continue;
+    tagCounts.set(k, (tagCounts.get(k) || 0) + 1);
+  }
+}
+const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
+  (a, b) => b[1] - a[1]
+);
+
+const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
+const bannerTypedText = "Tags";
+---
+
+<Layout title="Tags - Boxuan Zhang" overlayNav>
+  <div class="fluid-index-header-inner fluid-header-inner-compact">
+    <div
+      id="banner"
+      class="fluid-banner"
+      style={{
+        backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
+      }}
+    >
+      <div class="fluid-banner-inner">
+        <div class="fluid-banner-mask">
+          <div class="fluid-banner-text">
+            <h1 class="fluid-banner-title" lang="en" aria-label={bannerTypedText}>
+              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}></span>
+            </h1>
+          </div>
+          <a href="#fluid-board" class="fluid-scroll-down" aria-label="Scroll to tags">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main id="fluid-board" class="fluid-index-main fluid-board-page fluid-tags-main">
+    <div class="fluid-container fluid-nopadding-x-md">
+      <div id="board" class="fluid-board-surface">
+        <div class="fluid-container">
+          <div class="fluid-row">
+            <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
+              <section class="tags-cloud-section" aria-label="Tag cloud">
+                <h2 class="tags-page-h2">Tag cloud</h2>
+                <p class="tags-page-lead">标签来自各篇文章 front matter 的 <code>tags</code> 字段。点击词云中的词可跳转站内搜索（需已构建 Pagefind 索引）。</p>
+                <div id="tag-wordcloud-wrap" class="tag-wordcloud-wrap">
+                  {
+                    tagCloudPairs.length > 0 ? (
+                      <canvas
+                        id="tag-wordcloud-canvas"
+                        class="tag-wordcloud-canvas"
+                        width="800"
+                        height="380"
+                        aria-label="Tag word cloud"
+                      />
+                    ) : (
+                      <p class="tags-empty">暂无标签：可在文章元数据中添加 tags。</p>
+                    )
+                  }
+                </div>
+              </section>
+
+              <div class="tags-statistics-anchor">
+                <SiteStatisticsSection
+                  totalPosts={totalPosts}
+                  pieItems={pieItems}
+                  perArticleViewRows={perArticleViewRows}
+                  countStatsGetUrls={countStatsGetUrls}
+                  postsData={postsData}
+                  siteStartDate={siteStartDate}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
+  {tagCloudPairs.length > 0 && (
+    <script
+      is:inline
+      src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"
+    />
+  )}
+
+  <script is:inline define:vars={{ tagCloudPairs }}>
+    (function () {
+      var resizeTimer;
+      function runTagCloud() {
+        if (typeof window.WordCloud === "undefined" || !tagCloudPairs || !tagCloudPairs.length) {
+          return;
+        }
+        var wrap = document.getElementById("tag-wordcloud-wrap");
+        var canvas = document.getElementById("tag-wordcloud-canvas");
+        if (!wrap || !canvas) return;
+        var w = Math.max(300, Math.min(920, wrap.clientWidth || 800));
+        var h = 380;
+        canvas.width = w;
+        canvas.height = h;
+        var list = tagCloudPairs.map(function (p) {
+          return [p[0], p[1]];
+        });
+        var scale = w / 800;
+        window.WordCloud(canvas, {
+          list: list,
+          gridSize: Math.round(10 * scale),
+          weightFactor: function (n) {
+            return Math.pow(n, 0.55) * 14 * scale;
+          },
+          fontFamily:
+            "Segoe UI, system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif",
+          color: function () {
+            var isDark = document.documentElement.classList.contains("dark");
+            var l = isDark ? 55 + Math.random() * 15 : 32 + Math.random() * 20;
+            return "hsl(" + (200 + Math.random() * 150) + ", 60%, " + l + "%)";
+          },
+          rotateRatio: 0.35,
+          minSize: 8,
+          backgroundColor: "transparent",
+          click: function (item) {
+            if (item && item[0]) {
+              window.location.href =
+                "/search?q=" + encodeURIComponent(String(item[0]));
+            }
+          },
+        });
+      }
+      if (tagCloudPairs && tagCloudPairs.length) {
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", function () {
+            setTimeout(runTagCloud, 30);
+          });
+        } else {
+          setTimeout(runTagCloud, 30);
+        }
+        window.addEventListener("resize", function () {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(runTagCloud, 200);
+        });
+      }
+    })();
+  </script>
+
+  <script is:inline>
+    (function () {
+      function fluidHeroTyping() {
+        if (typeof window.Typed === "undefined") return;
+        var el = document.getElementById("fluid-hero-typed");
+        if (!el) return;
+        var text = el.getAttribute("data-typed-text");
+        if (!text) return;
+        el.textContent = "";
+        new window.Typed("#fluid-hero-typed", {
+          strings: ["  ", text],
+          typeSpeed: 50,
+          cursorChar: "_",
+          loop: false,
+          showCursor: true,
+        });
+      }
+      function fluidBoardScrollLiftTags() {
+        var hero = document.querySelector(
+          ".fluid-index-header-inner.fluid-header-inner-compact"
+        );
+        var board = document.querySelector(
+          "main.fluid-tags-main #board.fluid-board-surface"
+        );
+        if (!hero || !board) return;
+        var maxExtraPx = 88;
+        var ticking = false;
+        function scrollBlendSpan() {
+          var h = hero.clientHeight || 1;
+          return Math.max(h * 0.85, 120);
+        }
+        function update() {
+          var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+          var span = scrollBlendSpan();
+          var t = span > 0 ? y / span : 0;
+          if (t > 1) t = 1;
+          if (t < 0) t = 0;
+          var u = t * t * (3 - 2 * t);
+          var lift = Math.round(u * maxExtraPx);
+          board.style.transform = "translate3d(0," + -lift + "px,0)";
+          ticking = false;
+        }
+        function requestUpdate() {
+          if (!ticking) {
+            ticking = true;
+            window.requestAnimationFrame(update);
+          }
+        }
+        window.addEventListener("scroll", requestUpdate, { passive: true });
+        window.addEventListener("resize", requestUpdate);
+        update();
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () {
+          fluidHeroTyping();
+          fluidBoardScrollLiftTags();
+        });
+      } else {
+        fluidHeroTyping();
+        fluidBoardScrollLiftTags();
+      }
+    })();
+  </script>
+
+  <style is:global>
+    .fluid-tags-main .tags-page-h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin: 0 0 10px;
+      color: var(--text-primary, var(--fluid-text-color, #1a1a1a));
+    }
+    .fluid-tags-main .tags-page-lead {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-secondary, var(--fluid-sec-text-color, #6b7280));
+      margin: 0 0 20px;
+    }
+    .fluid-tags-main .tags-page-lead code {
+      font-size: 0.86em;
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+      background: var(--bg-tertiary, rgba(0, 0, 0, 0.06));
+    }
+    .fluid-tags-main .tag-wordcloud-wrap {
+      min-height: 200px;
+      margin-bottom: 28px;
+    }
+    .fluid-tags-main .tag-wordcloud-canvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+    .fluid-tags-main .tags-empty,
+    .fluid-tags-main .tags-statistics-anchor {
+      margin-top: 0;
+    }
+  </style>
+</Layout>
