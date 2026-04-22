@@ -1,6 +1,11 @@
 {
   "commits": [
     {
+      "hash": "5b9055847afa814fb766c64fe5343a0f509b1fd7",
+      "date": "2026-04-22 23:18:31 +0800",
+      "message": "Site: tags page (unlisted in nav), statistics section, nav and layout tweaks; sync built API JSON."
+    },
+    {
       "hash": "cb98d7d74eae49d196f0535f684e3385355f5ea6",
       "date": "2026-04-20 15:44:03 +0800",
       "message": "chore: update deploy workflow, package, contrib script, readme; remove stray pages/_image.png"
@@ -44,12 +49,7 @@
       "hash": "3f0130b9a51945525b0a5ea8f17f399bdc8882ed",
       "date": "2026-04-16 13:54:25 +0800",
       "message": "Update About page: education layout, intro order, and interest labels"
-    },
-    {
-      "hash": "64a2b5addb6f67c4e8811cc42492feb28bfad3a4",
-      "date": "2026-04-16 13:48:24 +0800",
-      "message": "Add stochastic processes notes and co-located Markov chain figure assets"
     }
   ],
-  "timestamp": "2026-04-22T14:59:46.502Z"
+  "timestamp": "2026-04-22T16:25:09.732Z"
 }

@@ -12,12 +12,15 @@
   "dependencies": {
     "@astrojs/markdown-remark": "^6.3.9",
     "@astrojs/mdx": "^4.3.12",
+    "@supabase/supabase-js": "^2.104.0",
     "astro": "^5.16.3",
+    "leaflet": "^1.9.4",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "sharp": "^0.33.0"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "pagefind": "^1.4.0"
   },
   "optionalDependencies": {

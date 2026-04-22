@@ -1,0 +1,562 @@
+---
+import "leaflet/dist/leaflet.css";
+import { isVisitorLogConfigured } from "../lib/visitor-env";
+
+const configured = isVisitorLogConfigured();
+---
+
+<section class="visitor-insights visitor-insights--embed" data-pagefind-ignore aria-label="Visitor map and tables">
+  <div class="visitor-insights__inner">
+    <h2 class="visitor-insights__h1">访客与地理分布</h2>
+    <p class="visitor-insights__lead">
+      以下为基于访问时公网 IP 的大致地理位置（通常到城市级，非 GPS）。每次打开页面记一条访问。地图按<strong>城市</strong>聚合成<strong>红圆</strong>（圆盘，非针尖）：<strong>该城市不重复
+      IP 数越多，红圆越大</strong>（对数缩放、尺寸已压小）。悬停红圆可见城市名（如 <em>Beijing, 北京</em> 形式，由 IP 库与本地小词典补全）。
+    </p>
+
+    {
+      !configured && (
+        <div class="visitor-insights__warn" role="status">
+          <p>
+            尚未配置 <code>PUBLIC_SUPABASE_URL</code> 与 <code>PUBLIC_SUPABASE_ANON_KEY</code>。请在本仓库根目录创建
+            <code>.env</code>（复制 <code>env.example</code> 后填写），在 Supabase 的 SQL Editor 中执行
+            <code>supabase/blog_visits.sql</code> 一次。保存 <code>.env</code> 后需<strong>重启</strong>开发服务器
+            <code>npm run dev</code>（或重新执行 <code>npm run build</code>）环境变量才会生效。配置成功后，再浏览任意页面会写入记录，Tags
+            页才能看到 IP/地图。
+          </p>
+        </div>
+      )
+    }
+
+    <div class="visitor-insights__section" aria-label="World map">
+      <h3 class="visitor-insights__h2">世界地图（每城市一个红圆，大小 ∝ 该城不重复 IP 数，对数）</h3>
+      {
+        configured ? (
+          <>
+            <div id="visit-map" class="visitor-insights__map" />
+            <p id="visit-map-note" class="visitor-insights__muted" />
+          </>
+        ) : (
+          <div class="visitor-insights__map visitor-insights__map--placeholder">
+            <p>
+              当前未配置数据库：这里不会出现地图。按下方说明配置 Supabase 并重启开发服务器后，会显示 OpenStreetMap
+              底图与城市<strong>红圆</strong>（数据来自 <code>ipapi.co</code> 返回的经纬度）。
+            </p>
+          </div>
+        )
+      }
+    </div>
+
+    <div class="visitor-insights__section" aria-label="By city">
+      <h3 class="visitor-insights__h2">按城市 / 地区（访问次数）</h3>
+      <div class="visitor-insights__table-wrap">
+        <table class="visitor-insights__table" id="visit-by-city">
+          <thead>
+            <tr>
+              <th>国家/地区</th>
+              <th>城市</th>
+              <th>不重复 IP</th>
+              <th>访问次数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {configured ? (
+              <tr>
+                <td colspan="4">加载中…</td>
+              </tr>
+            ) : (
+              <tr>
+                <td colspan="4">需配置 Supabase 后显示。</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="visitor-insights__section" aria-label="Raw visits">
+      <h3 class="visitor-insights__h2">最近访问记录（每条为一次页面打开，每页 20 条）</h3>
+      <div class="visitor-insights__table-wrap">
+        <table class="visitor-insights__table visitor-insights__table--wide" id="visit-raw">
+          <thead>
+            <tr>
+              <th>时间 (UTC+8 展示)</th>
+              <th>IP</th>
+              <th>国家</th>
+              <th>城市</th>
+              <th>省/区</th>
+            </tr>
+          </thead>
+          <tbody>
+            {configured ? (
+              <tr>
+                <td colspan="5">加载中…</td>
+              </tr>
+            ) : (
+              <tr>
+                <td colspan="5">需配置 Supabase 后显示。</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      {configured && <div id="visit-raw-pager" class="visitor-insights__pager" hidden aria-label="最近访问记录分页" />}
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .visitor-insights--embed {
+    max-width: 100%;
+    margin: 2.5rem 0 0;
+    padding: 0;
+  }
+  .visitor-insights--embed .visitor-insights__inner {
+    color: var(--text-primary);
+  }
+  .visitor-insights--embed .visitor-insights__h1 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+  }
+  .visitor-insights--embed .visitor-insights__h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+  }
+  .visitor-insights--embed .visitor-insights__lead,
+  .visitor-insights--embed .visitor-insights__muted {
+    color: var(--text-secondary);
+    line-height: 1.55;
+    font-size: 0.9rem;
+    margin: 0 0 1.25rem;
+  }
+  .visitor-insights--embed .visitor-insights__warn {
+    background: color-mix(in srgb, var(--text-link) 12%, var(--bg-tertiary));
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .visitor-insights--embed .visitor-insights__warn p {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .visitor-insights--embed .visitor-insights__warn code {
+    font-size: 0.8em;
+  }
+  .visitor-insights--embed .visitor-insights__section {
+    margin-bottom: 2rem;
+  }
+  .visitor-insights--embed .visitor-insights__map {
+    width: 100%;
+    height: min(48vh, 420px);
+    min-height: 280px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+  }
+  .visitor-insights--embed .visitor-insights__map--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 1.5rem;
+  }
+  .visitor-insights--embed .visitor-insights__map--placeholder p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 42em;
+  }
+  .visitor-insights--embed .visitor-insights__map--placeholder code {
+    font-size: 0.86em;
+  }
+  .visitor-insights--embed .visitor-insights__table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+  }
+  .visitor-insights--embed .visitor-insights__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .visitor-insights--embed .visitor-insights__table th,
+  .visitor-insights--embed .visitor-insights__table td {
+    padding: 0.55rem 0.7rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .visitor-insights--embed .visitor-insights__table th {
+    background: var(--bg-tertiary);
+    font-weight: 600;
+  }
+  .visitor-insights--embed .visitor-insights__table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .visitor-insights--embed .visitor-insights__table--wide {
+    min-width: 640px;
+  }
+  .dark .visitor-insights--embed .leaflet-tile {
+    filter: brightness(0.8) contrast(1.05);
+  }
+  .visitor-insights--embed .leaflet-tooltip.visitor-insights__marker-tt {
+    background: var(--bg-primary, #fff);
+    color: var(--text-primary, #1a1a1a);
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    padding: 8px 10px;
+    max-width: 280px;
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+  .dark .visitor-insights--embed .leaflet-tooltip.visitor-insights__marker-tt {
+    background: var(--bg-primary, #1a1a1a);
+    color: var(--text-primary, #e5e5e5);
+  }
+  .visitor-insights--embed .visitor-insights__marker-tt .visitor-insights__marker-tt-line1 {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .visitor-insights--embed .visitor-insights__marker-tt .visitor-insights__marker-tt-line2 {
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.8rem;
+  }
+  .visitor-insights--embed .visitor-insights__pager {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.5rem 0.25rem;
+  }
+  .visitor-insights--embed .visitor-insights__pager[hidden] {
+    display: none;
+  }
+  .visitor-insights--embed .visitor-insights__pager-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem 1rem;
+  }
+  .visitor-insights--embed .visitor-insights__pager-info {
+    font-size: 0.82rem;
+    color: var(--text-secondary, #6b7280);
+  }
+  .visitor-insights--embed .visitor-insights__pager-btn {
+    font: inherit;
+    font-size: 0.84rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+    background: var(--bg-tertiary, rgba(0, 0, 0, 0.05));
+    color: var(--text-primary, #1a1a1a);
+    cursor: pointer;
+  }
+  .visitor-insights--embed .visitor-insights__pager-btn:hover:not(:disabled) {
+    background: var(--bg-tertiary, rgba(0, 0, 0, 0.08));
+  }
+  .visitor-insights--embed .visitor-insights__pager-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+</style>
+
+<script>
+  import { createClient } from "@supabase/supabase-js";
+  import L from "leaflet";
+  import { formatCityPair, resolveCityBilingual } from "../lib/city-bilingual";
+  import { getSupabaseClientConfig } from "../lib/visitor-env";
+
+  const TABLE = "blog_visits";
+  const RAW_PER_PAGE = 20;
+
+  type VisitRow = {
+    id: string;
+    created_at: string;
+    ip: string;
+    city: string | null;
+    region: string | null;
+    country: string | null;
+    lat: number | null;
+    lon: number | null;
+  };
+
+  let rawVisits: VisitRow[] = [];
+  let rawPageIndex = 1;
+
+  function fmtTime(iso: string): string {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString("zh-CN", { hour12: false, timeZone: "Asia/Shanghai" });
+    } catch {
+      return iso;
+    }
+  }
+
+  /** 红圆像素半径：不重复 IP 数 n 的对数缩放，整体偏小 */
+  function radiusForUniqueIps(n: number): number {
+    if (n < 1) return 2.5;
+    const log2n = Math.log(1 + n) / Math.LN2;
+    const r = 2.2 + 2.4 * log2n;
+    return Math.min(11, Math.max(2.5, r));
+  }
+
+  function renderRawVisitPage(): void {
+    const list = rawVisits;
+    const total = list.length;
+    const totalPages = Math.max(1, Math.ceil(total / RAW_PER_PAGE) || 1);
+    rawPageIndex = Math.min(Math.max(1, rawPageIndex), totalPages);
+    const p = rawPageIndex;
+    const start = (p - 1) * RAW_PER_PAGE;
+    const slice = list.slice(start, start + RAW_PER_PAGE);
+
+    const rawTbody = document.querySelector("#visit-raw tbody");
+    if (rawTbody) {
+      if (total === 0) {
+        rawTbody.innerHTML = `<tr><td colspan="5">暂无记录</td></tr>`;
+      } else {
+        rawTbody.innerHTML = slice
+          .map((r) => {
+            const pair = resolveCityBilingual(r.city, r.region);
+            const label = formatCityPair(pair.zh, pair.en);
+            return `<tr><td>${escapeHtml(fmtTime(r.created_at))}</td><td><code>${escapeHtml(r.ip)}</code></td><td>${escapeHtml(
+              r.country || "—"
+            )}</td><td>${escapeHtml(label)}</td><td>${escapeHtml(r.region || "—")}</td></tr>`;
+          })
+          .join("");
+      }
+    }
+
+    const pager = document.getElementById("visit-raw-pager");
+    if (!pager) return;
+    if (total === 0) {
+      pager.setAttribute("hidden", "");
+      pager.innerHTML = "";
+      return;
+    }
+    pager.removeAttribute("hidden");
+    const prevDis = p <= 1;
+    const nextDis = p >= totalPages;
+    pager.innerHTML = `<div class="visitor-insights__pager-inner">
+      <button type="button" class="visitor-insights__pager-btn" data-raw-pager="prev" ${prevDis ? "disabled" : ""}>上一页</button>
+      <span class="visitor-insights__pager-info">第 ${p} / ${totalPages} 页（共 ${total} 条，每页 ${RAW_PER_PAGE} 条）</span>
+      <button type="button" class="visitor-insights__pager-btn" data-raw-pager="next" ${nextDis ? "disabled" : ""}>下一页</button>
+    </div>`;
+  }
+
+  function onRawPagerClick(e: Event): void {
+    const t = (e.target as HTMLElement).closest("button[data-raw-pager]");
+    if (!t) return;
+    const dir = t.getAttribute("data-raw-pager");
+    const total = rawVisits.length;
+    const totalPages = Math.max(1, Math.ceil(total / RAW_PER_PAGE) || 1);
+    if (dir === "prev" && rawPageIndex > 1) {
+      rawPageIndex -= 1;
+      renderRawVisitPage();
+    } else if (dir === "next" && rawPageIndex < totalPages) {
+      rawPageIndex += 1;
+      renderRawVisitPage();
+    }
+  }
+
+  async function load(): Promise<void> {
+    const cfg = getSupabaseClientConfig();
+    if (!cfg) return;
+
+    const supabase = createClient(cfg.url, cfg.anonKey);
+    const { data: rows, error } = await supabase
+      .from(TABLE)
+      .select("id, created_at, ip, city, region, country, lat, lon")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+
+    const note = document.getElementById("visit-map-note");
+    if (error) {
+      if (note) {
+        note.textContent = "读取失败: " + error.message;
+      }
+      return;
+    }
+
+    const list = (rows ?? []) as VisitRow[];
+    if (note) {
+      note.textContent = `共 ${list.length} 条记录（最多拉取 5000 条）。`;
+    }
+
+    const cityKey = (r: (typeof list)[number]) =>
+      [r.country || "—", r.city || r.region || "—"].join("\t");
+
+    type CityAgg = {
+      country: string;
+      city: string;
+      visitCount: number;
+      uniqueIps: number;
+    };
+    const cityIps = new Map<string, Set<string>>();
+    const firstByCityKey = new Map<string, VisitRow>();
+    for (const r of list) {
+      const k = cityKey(r);
+      if (!cityIps.has(k)) cityIps.set(k, new Set());
+      cityIps.get(k)!.add(r.ip);
+      if (!firstByCityKey.has(k)) {
+        firstByCityKey.set(k, r);
+      }
+    }
+    const visitByCityKey = new Map<string, number>();
+    for (const r of list) {
+      const k = cityKey(r);
+      visitByCityKey.set(k, (visitByCityKey.get(k) || 0) + 1);
+    }
+    const cityRows: CityAgg[] = [...cityIps.keys()].map((k) => {
+      const rep = firstByCityKey.get(k)!;
+      const pair = resolveCityBilingual(rep.city, rep.region);
+      const [country] = k.split("\t");
+      return {
+        country,
+        city: formatCityPair(pair.zh, pair.en),
+        visitCount: visitByCityKey.get(k) || 0,
+        uniqueIps: cityIps.get(k)!.size,
+      };
+    });
+    cityRows.sort((a, b) => b.visitCount - a.visitCount);
+
+    const cityTbody = document.querySelector("#visit-by-city tbody");
+    if (cityTbody) {
+      cityTbody.innerHTML = cityRows
+        .map(
+          (x) =>
+            `<tr><td>${escapeHtml(x.country)}</td><td>${escapeHtml(x.city)}</td><td>${x.uniqueIps}</td><td>${x.visitCount}</td></tr>`,
+        )
+        .join("");
+    }
+
+    rawVisits = list;
+    rawPageIndex = 1;
+    renderRawVisitPage();
+    const pagerHost = document.getElementById("visit-raw-pager");
+    if (pagerHost && !pagerHost.dataset.pagerBound) {
+      pagerHost.dataset.pagerBound = "1";
+      pagerHost.addEventListener("click", onRawPagerClick);
+    }
+
+    type CityPoint = {
+      lat: number;
+      lon: number;
+      uniqueIps: number;
+      visitCount: number;
+      country: string;
+      city: string | null;
+      region: string | null;
+    };
+    const byCity = new Map<string, CityPoint & { latSum: number; lonSum: number; w: number }>();
+    for (const r of list) {
+      if (r.lat == null || r.lon == null) continue;
+      const k = cityKey(r);
+      if (!byCity.has(k)) {
+        byCity.set(k, {
+          lat: 0,
+          lon: 0,
+          uniqueIps: 0,
+          visitCount: 0,
+          country: r.country || "—",
+          city: r.city,
+          region: r.region,
+          latSum: 0,
+          lonSum: 0,
+          w: 0,
+        });
+      }
+      const agg = byCity.get(k)!;
+      agg.latSum += r.lat;
+      agg.lonSum += r.lon;
+      agg.w += 1;
+    }
+    for (const k of byCity.keys()) {
+      const agg = byCity.get(k)!;
+      const ips = cityIps.get(k);
+      agg.uniqueIps = ips ? ips.size : 0;
+      agg.visitCount = visitByCityKey.get(k) || 0;
+      agg.lat = agg.latSum / agg.w;
+      agg.lon = agg.lonSum / agg.w;
+    }
+
+    const cityPoints: CityPoint[] = [...byCity.values()].map(
+      ({ lat, lon, uniqueIps, visitCount, country, city, region }) => ({
+        lat,
+        lon,
+        uniqueIps,
+        visitCount,
+        country,
+        city,
+        region,
+      })
+    );
+
+    const el = document.getElementById("visit-map");
+    if (!el) return;
+    if (cityPoints.length === 0) {
+      el.replaceChildren();
+      const p = document.createElement("p");
+      p.className = "visitor-insights__muted";
+      p.style.padding = "1rem";
+      p.textContent = "尚无可定位坐标的数据。若仅有 IP 而无经纬度，请检查 ipapi 返回或稍后再记。";
+      el.appendChild(p);
+      return;
+    }
+
+    const map = L.map(el, { worldCopyJump: true, scrollWheelZoom: true }).setView([20, 0], 2);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+    }).addTo(map);
+
+    const latLngs: L.LatLngExpression[] = [];
+    const redStroke = "#b91c1c";
+    const redFill = "#ef4444";
+
+    for (const p of cityPoints) {
+      const rad = radiusForUniqueIps(p.uniqueIps);
+      const pair = resolveCityBilingual(p.city, p.region);
+      const nameLine = formatCityPair(pair.zh, pair.en);
+      const detail = `${escapeHtml(p.country || "—")} · 不重复 IP：${p.uniqueIps} · 访问：${p.visitCount}`;
+      const html = `<div class="visitor-insights__marker-tt">
+        <div class="visitor-insights__marker-tt-line1">${escapeHtml(nameLine)}</div>
+        <div class="visitor-insights__marker-tt-line2">${detail}</div>
+      </div>`;
+      const marker = L.circleMarker([p.lat, p.lon], {
+        radius: rad,
+        color: redStroke,
+        weight: 1,
+        fillColor: redFill,
+        fillOpacity: 0.65,
+      }).addTo(map);
+      marker.bindTooltip(html, {
+        direction: "top",
+        sticky: true,
+        opacity: 1,
+        className: "visitor-insights__marker-tt",
+        interactive: true,
+      });
+      latLngs.push([p.lat, p.lon]);
+    }
+    if (latLngs.length) {
+      map.fitBounds(L.latLngBounds(latLngs), { padding: [28, 28], maxZoom: 6 });
+    }
+  }
+
+  function escapeHtml(s: string): string {
+    return s
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  if (getSupabaseClientConfig()) {
+    void load();
+  }
+</script>

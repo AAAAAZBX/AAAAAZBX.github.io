@@ -5,7 +5,11 @@ const {
   title = "Boxuan Zhang",
   isArticle = false,
   overlayNav = false,
+  noindex = false,
 } = Astro.props;
+const logVisitorVisits = Boolean(
+  import.meta.env.PUBLIC_SUPABASE_URL && import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
 const year = new Date().getFullYear();
 /** 与 public 资源、Service Worker 注册一致（支持子路径部署） */
 const baseUrl = import.meta.env.BASE_URL;
@@ -21,6 +25,7 @@ const countSitePageHitUrl = countapiHitUrl(
     <meta charset="UTF-8" />
     <title>{title}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     
     <!-- 防止夜间模式闪烁的早期脚本 -->
     <script is:inline>
@@ -197,6 +202,15 @@ const countSitePageHitUrl = countapiHitUrl(
     <slot />
 
     <footer>© {year} Boxuan Zhang</footer>
+
+    {
+      logVisitorVisits && (
+        <script>
+          import { runVisitLog } from "../scripts/visit-logger.ts";
+          void runVisitLog();
+        </script>
+      )
+    }
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
