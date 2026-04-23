@@ -29,29 +29,8 @@ const profile = {
           <h1 class="name">{profile.name}</h1>
           <p class="role">{profile.title}</p>
 
-        </div>
-
-        <div class="about-sidebar-edu">
-          <h2 class="about-h2 about-h2--sidebar">Education</h2>
-          <div class="about-edu-cards">
-            <a class="about-edu-card" href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer">
-              <div class="about-edu-card-head">
-                <span class="about-edu-card-title">Nanjing University</span>
-                <span class="about-edu-card-time">Sep 2026 – Present</span>
-              </div>
-              <div class="about-edu-card-meta">Software Engineering, Master's degree</div>
-            </a>
-            <a class="about-edu-card" href="https://ai.njau.edu.cn/" target="_blank" rel="noopener noreferrer">
-              <div class="about-edu-card-head">
-                <span class="about-edu-card-title">Nanjing Agricultural University</span>
-                <span class="about-edu-card-time">Sep 2022 – Jun 2026</span>
-              </div>
-              <div class="about-edu-card-meta">Data Science and Big Data Technology, Bachelor's degree</div>
-            </a>
-          </div>
         </div>
 
-<div class="spacer"></div>
 <div class="spacer"></div>
 
         <div class="contact-list">
@@ -100,6 +79,28 @@ const profile = {
 
         <hr class="divider" />
 
+        <section class="content-section about-block">
+          <h2 class="about-h2">Education</h2>
+          <div class="about-edu-cards">
+            <a class="about-edu-card" href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer">
+              <div class="about-edu-card-head">
+                <span class="about-edu-card-title">Nanjing University</span>
+                <span class="about-edu-card-time">Sep 2026 – Present</span>
+              </div>
+              <div class="about-edu-card-meta">Software Engineering, Master's degree</div>
+            </a>
+            <a class="about-edu-card" href="https://ai.njau.edu.cn/" target="_blank" rel="noopener noreferrer">
+              <div class="about-edu-card-head">
+                <span class="about-edu-card-title">Nanjing Agricultural University</span>
+                <span class="about-edu-card-time">Sep 2022 – Jun 2026</span>
+              </div>
+              <div class="about-edu-card-meta">Data Science and Big Data Technology, Bachelor's degree</div>
+            </a>
+          </div>
+        </section>
+
+        <hr class="divider" />
+
         <section class="content-section">
           <h2 class="about-h2">Contributions</h2>
           <div class="contributions-container">
@@ -135,35 +136,6 @@ const profile = {
     margin: 0 0 14px;
     color: var(--text-primary);
     line-height: 1.3;
-  }
-
-  .about-lynx .about-h2.about-h2--sidebar {
-    font-size: 1.12rem;
-    margin: 0 0 10px;
-  }
-
-  .about-lynx .about-sidebar-edu {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .about-lynx .about-sidebar-edu .about-edu-card-head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .about-lynx .about-sidebar-edu .about-edu-card-time {
-    white-space: normal;
-    font-size: 0.8rem;
-  }
-
-  .about-lynx .about-sidebar-edu .about-edu-card-title {
-    font-size: 0.95rem;
-  }
-
-  .about-lynx .about-sidebar-edu .about-edu-card-meta {
-    font-size: 0.84rem;
   }
 
   .about-lynx .about-block + .about-block {

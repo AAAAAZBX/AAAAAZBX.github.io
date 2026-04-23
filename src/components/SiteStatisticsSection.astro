@@ -54,15 +54,6 @@ const {
             <span class="stat-panel__title">Posts by collection</span>
           </div>
           <div class="stat-pie-wrap">
-            <ul class="stat-legend" aria-label="Collection legend">
-              {pieItems.map((it) => (
-                <li class="stat-legend__item">
-                  <span class="stat-legend__sw" style={`background: ${it.color}`}></span>
-                  <span class="stat-legend__name">{it.label}</span>
-                  <span class="stat-legend__n">{it.count}</span>
-                </li>
-              ))}
-            </ul>
             <div class="stat-pie" aria-label="Posts by collection, donut chart">
               <svg class="stat-pie__svg" viewBox="0 0 200 200" aria-hidden="true">
                 {
@@ -106,6 +97,15 @@ const {
                 <div class="stat-pie__center-lbl">posts</div>
               </div>
             </div>
+            <ul class="stat-legend" aria-label="Collection legend">
+              {pieItems.map((it) => (
+                <li class="stat-legend__item">
+                  <span class="stat-legend__sw" style={`background: ${it.color}`}></span>
+                  <span class="stat-legend__name">{it.label}</span>
+                  <span class="stat-legend__n">{it.count}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
