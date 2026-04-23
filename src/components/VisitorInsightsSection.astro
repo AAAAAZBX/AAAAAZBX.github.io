@@ -10,7 +10,8 @@ const configured = isVisitorLogConfigured();
     <h2 class="visitor-insights__h1">访客与地理分布</h2>
     <p class="visitor-insights__lead">
       以下为基于访问时公网 IP 的大致地理位置（通常到城市级，非 GPS）。每次打开页面记一条访问。地图按<strong>城市</strong>聚合成<strong>红圆</strong>（圆盘，非针尖）：<strong>该城市不重复
-      IP 数越多，红圆越大</strong>（对数缩放、尺寸已压小）。悬停红圆可见城市名（如 <em>Beijing, 北京</em> 形式，由 IP 库与本地小词典补全）。
+      IP 数越多，红圆越大</strong>（对数缩放、尺寸已压小）。悬停红圆可见城市名（如 <em>Beijing, 北京</em> 形式，由 IP 库与本地小词典补全）。若在国内访问仍偏差较大，可配置
+      <code>PUBLIC_AMAP_WEB_KEY</code>（高德 Web 服务，见 <code>env.example</code>），记访问时国内 IP 会优先用高德再入库。
     </p>
 
     {
@@ -366,6 +367,16 @@ const configured = isVisitorLogConfigured();
     const cfg = getSupabaseClientConfig();
     if (!cfg) return;
 
+    const note = document.getElementById("visit-map-note");
+    /** 浏览器里只能用 Publishable 或 legacy anon，不能用 Secret / service_role */
+    if (cfg.anonKey.trim().startsWith("sb_secret_")) {
+      if (note) {
+        note.textContent =
+          "当前密钥为 Secret 类型，不能用于公开网页。请到 Supabase → API Keys 使用 Publishable 或 Legacy 里的 anon（eyJ 开头），并更新 GitHub / .env 后重新部署。";
+      }
+      return;
+    }
+
     const supabase = createClient(cfg.url, cfg.anonKey);
     const { data: rows, error } = await supabase
       .from(TABLE)
@@ -373,10 +384,14 @@ const configured = isVisitorLogConfigured();
       .order("created_at", { ascending: false })
       .limit(5000);
 
-    const note = document.getElementById("visit-map-note");
     if (error) {
       if (note) {
-        note.textContent = "读取失败: " + error.message;
+        let m = "读取失败: " + error.message;
+        if (/invalid api key/i.test(error.message)) {
+          m +=
+            " 常见原因：① 把 Secret 键当成了公钥；② 密钥与项目 URL 不是同一项目；③ Secret 值前后多了引号或截断。请到 Supabase API Keys 重新复制 Publishable 或 legacy anon，更新后重新部署。";
+        }
+        note.textContent = m;
       }
       return;
     }

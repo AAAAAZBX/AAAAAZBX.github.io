@@ -1,6 +1,16 @@
 {
   "commits": [
     {
+      "hash": "15786437bb796f6ce2b9962e39d0ca289c51df05",
+      "date": "2026-04-23 00:42:55 +0800",
+      "message": "ci: pass Supabase env to GitHub Pages build; trim visitor env values"
+    },
+    {
+      "hash": "d55999329e09c0def21f0ca84257e5d61df70b0a",
+      "date": "2026-04-23 00:27:27 +0800",
+      "message": "feat: Supabase visit logging, visitor map on Tags, city labels"
+    },
+    {
       "hash": "5b9055847afa814fb766c64fe5343a0f509b1fd7",
       "date": "2026-04-22 23:18:31 +0800",
       "message": "Site: tags page (unlisted in nav), statistics section, nav and layout tweaks; sync built API JSON."
@@ -39,17 +49,7 @@
       "hash": "8a3a3e1570b5c90e452e53658f663c86ae592fb3",
       "date": "2026-04-18 12:51:07 +0800",
       "message": "Adjust post page hero height and fix min-height override for article layout"
-    },
-    {
-      "hash": "c1cd4492f689a69a6784f4eb71b19b84c2bce46c",
-      "date": "2026-04-17 10:28:03 +0800",
-      "message": "Refine categories tree expand rules; fix home meta icon; update stochastic processes chapter 2"
-    },
-    {
-      "hash": "3f0130b9a51945525b0a5ea8f17f399bdc8882ed",
-      "date": "2026-04-16 13:54:25 +0800",
-      "message": "Update About page: education layout, intro order, and interest labels"
     }
   ],
-  "timestamp": "2026-04-22T16:25:09.732Z"
+  "timestamp": "2026-04-23T02:37:01.263Z"
 }

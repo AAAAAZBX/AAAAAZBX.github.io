@@ -31,6 +31,8 @@ jobs:
           PUBLIC_WALINE_SERVER_URL: ${{ secrets.PUBLIC_WALINE_SERVER_URL }}
           PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
           PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+          # 可选：国内 IP 用高德，不设则只走 ipapi
+          PUBLIC_AMAP_WEB_KEY: ${{ secrets.PUBLIC_AMAP_WEB_KEY }}
         # 如果以后改用 pnpm / bun，可以在这里配置 package-manager
         # with:
         #   package-manager: pnpm@9
