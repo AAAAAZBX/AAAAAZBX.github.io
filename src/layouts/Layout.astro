@@ -5,6 +5,7 @@ const {
   title = "Boxuan Zhang",
   isArticle = false,
   overlayNav = false,
+  hideNav = false,
   noindex = false,
 } = Astro.props;
 const logVisitorVisits = Boolean(
@@ -150,55 +151,59 @@ const countSitePageHitUrl = countapiHitUrl(
   </head>
 
   <body class:list={[overlayNav && "home-fluid-index"]}>
-    <header>
-      <div class="nav">
-        <div class="nav-inner">
-        <div class="nav-left">
-          <a href="/">Boxuan Zhang</a>
-        </div>
-        <nav class="nav-links">
-          <a href="/" class="nav-link-iconed">
-            <i class="iconfont icon-home-fill" aria-hidden="true"></i>
-            <span>Home</span>
-          </a>
-          <a href="/archives" class="nav-link-iconed">
-            <i class="iconfont icon-archive-fill" aria-hidden="true"></i>
-            <span>Archives</span>
-          </a>
-          <a href="/categories" class="nav-link-iconed">
-            <i class="iconfont icon-category-fill" aria-hidden="true"></i>
-            <span>Categories</span>
-          </a>
-          {/** Statistics 页不放入导航，仅自己记 URL `/statistics` 访问 */}
-          <a href="/about" class="nav-link-iconed">
-            <i class="iconfont icon-user-fill" aria-hidden="true"></i>
-            <span>About</span>
-          </a>
-          <a href="/search" class="nav-search-link" title="Search" aria-label="Search">
-            <i class="iconfont icon-search" aria-hidden="true"></i>
-          </a>
-          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-            <!-- 太阳图标（亮色模式） -->
-            <svg class="theme-icon theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            <!-- 月亮图标（暗色模式） -->
-            <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-          </button>
-        </nav>
-        </div>
-      </div>
-    </header>
+    {
+      !hideNav && (
+        <header>
+          <div class="nav">
+            <div class="nav-inner">
+            <div class="nav-left">
+              <a href="/">B.X.Zhang</a>
+            </div>
+            <nav class="nav-links">
+              <a href="/" class="nav-link-iconed">
+                <i class="iconfont icon-home-fill" aria-hidden="true"></i>
+                <span>Home</span>
+              </a>
+              <a href="/archives" class="nav-link-iconed">
+                <i class="iconfont icon-archive-fill" aria-hidden="true"></i>
+                <span>Archives</span>
+              </a>
+              <a href="/categories" class="nav-link-iconed">
+                <i class="iconfont icon-category-fill" aria-hidden="true"></i>
+                <span>Categories</span>
+              </a>
+              {/** Statistics 页不放入导航，仅自己记 URL `/statistics` 访问 */}
+              <a href="/about" class="nav-link-iconed">
+                <i class="iconfont icon-user-fill" aria-hidden="true"></i>
+                <span>About</span>
+              </a>
+              <a href="/search" class="nav-search-link" title="Search" aria-label="Search">
+                <i class="iconfont icon-search" aria-hidden="true"></i>
+              </a>
+              <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+                <!-- 太阳图标（亮色模式） -->
+                <svg class="theme-icon theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="5"></circle>
+                  <line x1="12" y1="1" x2="12" y2="3"></line>
+                  <line x1="12" y1="21" x2="12" y2="23"></line>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                  <line x1="1" y1="12" x2="3" y2="12"></line>
+                  <line x1="21" y1="12" x2="23" y2="12"></line>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <!-- 月亮图标（暗色模式） -->
+                <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+              </button>
+            </nav>
+            </div>
+          </div>
+        </header>
+      )
+    }
 
     <slot />
 

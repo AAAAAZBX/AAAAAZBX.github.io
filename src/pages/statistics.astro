@@ -50,10 +50,10 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
 
 ---
 
-<Layout title="Statistics - Boxuan Zhang" overlayNav noindex>
+<Layout title="Statistics - Boxuan Zhang" overlayNav hideNav noindex>
   <main class="stats-console-main">
     <section class="stats-console">
-      <header class="stats-console__topbar">
+      <div class="stats-console__topbar">
         <div class="stats-console__title-wrap">
           <h1 class="stats-console__title">Statistics Console</h1>
           <p class="stats-console__subtitle">Landscape dashboard for content and visitor insights</p>
@@ -64,7 +64,7 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
             Source {useSupabaseArticleStats ? "Supabase" : "CountAPI"}
           </span>
         </div>
-      </header>
+      </div>
 
       <div class="stats-console__grid">
         <section class="stats-console__panel stats-console__panel--main" aria-label="Core statistics">
@@ -89,9 +89,9 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
 
   <style is:global>
     .stats-console-main {
-      min-height: calc(100vh - 82px);
+      min-height: 100vh;
       width: 100%;
-      padding: 86px 16px 18px;
+      padding: 18px 16px 18px;
       background:
         radial-gradient(circle at 12% 8%, rgba(48, 169, 222, 0.18), transparent 34%),
         radial-gradient(circle at 88% 14%, rgba(50, 86, 150, 0.16), transparent 38%),
@@ -158,8 +158,8 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
 
     .stats-console__grid {
       display: grid;
-      grid-template-columns: minmax(320px, 0.82fr) minmax(760px, 1.78fr);
-      gap: 14px;
+      grid-template-columns: minmax(300px, 0.72fr) minmax(840px, 2.03fr);
+      gap: 12px;
       min-height: calc(100vh - 200px);
     }
 
@@ -309,9 +309,9 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
     }
 
     .stats-console-main .stat-scope .stat-panel--bars .stat-bar-chart {
-      flex: 1;
-      max-height: none;
-      min-height: 320px;
+      flex: 0 0 auto;
+      max-height: 300px;
+      min-height: 0;
     }
 
     .stats-console-main .visitor-insights--embed {
@@ -327,7 +327,8 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
       grid-template-areas:
         "title title"
         "map map"
-        "city raw";
+        "city city"
+        "raw raw";
       gap: 12px;
       min-height: 0;
     }
@@ -396,6 +397,20 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
       min-width: 0;
     }
 
+    .stats-console-main
+      .visitor-insights--embed
+      .visitor-insights__section[aria-label="By city"]
+      .visitor-insights__table-wrap {
+      height: 220px;
+    }
+
+    .stats-console-main
+      .visitor-insights--embed
+      .visitor-insights__section[aria-label="Raw visits"]
+      .visitor-insights__table-wrap {
+      height: clamp(340px, 46vh, 640px);
+    }
+
     @media (max-width: 1280px) {
       .stats-console-main .visitor-insights--embed .visitor-insights__inner {
         grid-template-columns: 1fr;
@@ -427,7 +442,7 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
         min-width: 1040px;
       }
       .stats-console__grid {
-        grid-template-columns: minmax(300px, 0.9fr) minmax(680px, 1.55fr);
+        grid-template-columns: minmax(280px, 0.83fr) minmax(710px, 1.75fr);
       }
 
       .stats-console-main .stat-scope .stat-kpi__label {
@@ -435,4 +450,5 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
       }
     }
   </style>
+
 </Layout>

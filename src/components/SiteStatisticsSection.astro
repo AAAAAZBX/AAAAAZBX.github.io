@@ -121,6 +121,18 @@ const supabaseClientConfig = getSupabaseClientConfig();
         <div class="stat-bar-chart" id="stat-article-views-bars">
           <p class="stat-bar-load">Loading per-post view counts…</p>
         </div>
+        <div class="stat-bar-actions">
+          <button
+            id="stat-article-views-toggle"
+            class="stat-bar-toggle"
+            type="button"
+            hidden
+            aria-controls="stat-article-views-bars"
+            aria-expanded="false"
+          >
+            Expand
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -403,6 +415,29 @@ const supabaseClientConfig = getSupabaseClientConfig();
     padding-right: 2px;
   }
 
+  .stat-scope .stat-bar-actions {
+    margin-top: 4px;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .stat-scope .stat-bar-toggle {
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: color-mix(in srgb, var(--bg-secondary) 86%, transparent);
+    color: rgba(226, 232, 240, 0.92);
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    border-radius: 999px;
+    line-height: 1.35;
+    cursor: pointer;
+  }
+
+  .stat-scope .stat-bar-toggle:hover {
+    border-color: rgba(148, 163, 184, 0.55);
+    color: #f8fafc;
+  }
+
   .stat-scope .stat-bar-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr) 48px;
@@ -574,13 +609,32 @@ const supabaseClientConfig = getSupabaseClientConfig();
       });
     }
 
-    function applyArticleBarRows(host, sumEl, withVals) {
-      withVals.sort((a, b) => b.v - a.v);
-      const max = withVals.length ? Math.max(1, ...withVals.map((x) => x.v)) : 1;
-      let sum = 0;
+    const BAR_COLLAPSED_LIMIT = 5;
+    let articleBarsExpanded = false;
+    let articleBarRows = [];
+
+    function updateArticleToggleUI(host) {
+      const btn = document.getElementById("stat-article-views-toggle");
+      if (!btn) return;
+      const hasMore = articleBarRows.length > BAR_COLLAPSED_LIMIT;
+      btn.hidden = !hasMore;
+      if (!hasMore) return;
+      btn.textContent = articleBarsExpanded
+        ? "Collapse"
+        : `Expand (${articleBarRows.length})`;
+      btn.setAttribute("aria-expanded", articleBarsExpanded ? "true" : "false");
+      btn.onclick = () => {
+        articleBarsExpanded = !articleBarsExpanded;
+        renderArticleBarRows(host);
+      };
+    }
+
+    function renderArticleBarRows(host) {
+      const rows = articleBarRows;
+      const visible = articleBarsExpanded ? rows : rows.slice(0, BAR_COLLAPSED_LIMIT);
+      const max = rows.length ? Math.max(1, ...rows.map((x) => x.v)) : 1;
       const frag = document.createDocumentFragment();
-      withVals.forEach((row) => {
-        sum += row.v;
+      visible.forEach((row) => {
         const wrap = document.createElement("div");
         wrap.className = "stat-bar-row";
         const a = document.createElement("a");
@@ -604,6 +658,17 @@ const supabaseClientConfig = getSupabaseClientConfig();
       });
       host.textContent = "";
       host.appendChild(frag);
+      updateArticleToggleUI(host);
+    }
+
+    function applyArticleBarRows(host, sumEl, withVals) {
+      const sorted = [...withVals].sort((a, b) => b.v - a.v);
+      articleBarRows = sorted;
+      let sum = 0;
+      sorted.forEach((x) => {
+        sum += x.v;
+      });
+      renderArticleBarRows(host);
       if (sumEl) sumEl.textContent = String(sum);
     }
 

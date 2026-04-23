@@ -7,7 +7,7 @@ const configured = isVisitorLogConfigured();
 
 <section class="visitor-insights visitor-insights--embed" data-pagefind-ignore aria-label="Visitor map and tables">
   <div class="visitor-insights__inner">
-    <h2 class="visitor-insights__h1">访客与地理分布</h2>
+    <h2 class="visitor-insights__h1">Visitors & Geographic Distribution</h2>
     <p class="visitor-insights__lead">
       以下为基于访问时公网 IP 的大致地理位置（通常到城市级，非 GPS）。每次打开页面记一条访问。地图按<strong>城市</strong>聚合成<strong>红圆</strong>（圆盘，非针尖）：<strong>该城市不重复
       IP 数越多，红圆越大</strong>（对数缩放、尺寸已压小）。悬停红圆可见城市名（如 <em>Beijing, 北京</em> 形式，由 IP 库与本地小词典补全）。若在国内访问仍偏差较大，可配置
@@ -29,7 +29,6 @@ const configured = isVisitorLogConfigured();
     }
 
     <div class="visitor-insights__section" aria-label="World map">
-      <h3 class="visitor-insights__h2">世界地图（每城市一个红圆，大小 ∝ 该城访客数量，对数）</h3>
       {
         configured ? (
           <>
@@ -48,25 +47,25 @@ const configured = isVisitorLogConfigured();
     </div>
 
     <div class="visitor-insights__section" aria-label="By city">
-      <h3 class="visitor-insights__h2">按城市 / 地区（访问次数）</h3>
+      <h3 class="visitor-insights__h2">By City / Region (Visits)</h3>
       <div class="visitor-insights__table-wrap">
         <table class="visitor-insights__table" id="visit-by-city">
           <thead>
             <tr>
-              <th>国家/地区</th>
-              <th>城市</th>
-              <th>访客数量</th>
-              <th>访问次数</th>
+              <th>Country/Region</th>
+              <th>City</th>
+              <th>Visitors</th>
+              <th>Visits</th>
             </tr>
           </thead>
           <tbody>
             {configured ? (
               <tr>
-                <td colspan="4">加载中…</td>
+                <td colspan="4">Loading...</td>
               </tr>
             ) : (
               <tr>
-                <td colspan="4">需配置 Supabase 后显示。</td>
+                <td colspan="4">Configure Supabase to display data.</td>
               </tr>
             )}
           </tbody>
@@ -75,32 +74,36 @@ const configured = isVisitorLogConfigured();
     </div>
 
     <div class="visitor-insights__section" aria-label="Raw visits">
-      <h3 class="visitor-insights__h2">最近访问记录（每条为一次页面打开，每页 20 条）</h3>
+      <h3 class="visitor-insights__h2">Recent Visits (one page-open per row, 20 per page)</h3>
       <div class="visitor-insights__table-wrap">
         <table class="visitor-insights__table visitor-insights__table--wide" id="visit-raw">
           <thead>
             <tr>
-              <th>时间 (UTC+8 展示)</th>
+              <th>UTC+8</th>
+              <th>OS</th>
+              <th>Browser</th>
+              <th>Device</th>
               <th>IP</th>
-              <th>国家</th>
-              <th>城市</th>
-              <th>省/区</th>
+              <th>Country</th>
+              <th>City</th>
+              <th>Region</th>
+              <th>Route</th>
             </tr>
           </thead>
           <tbody>
             {configured ? (
               <tr>
-                <td colspan="5">加载中…</td>
+                <td colspan="9">Loading...</td>
               </tr>
             ) : (
               <tr>
-                <td colspan="5">需配置 Supabase 后显示。</td>
+                <td colspan="9">Configure Supabase to display data.</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      {configured && <div id="visit-raw-pager" class="visitor-insights__pager" hidden aria-label="最近访问记录分页" />}
+      {configured && <div id="visit-raw-pager" class="visitor-insights__pager" hidden aria-label="Raw visits pagination" />}
     </div>
   </div>
 </section>
@@ -199,6 +202,20 @@ const configured = isVisitorLogConfigured();
   .visitor-insights--embed .visitor-insights__table--wide {
     min-width: 640px;
   }
+  .visitor-insights--embed .visitor-insights__route-cell {
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .visitor-insights--embed .visitor-insights__route-cell code {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
   .dark .visitor-insights--embed .leaflet-tile {
     filter: brightness(0.8) contrast(1.05);
   }
@@ -272,12 +289,15 @@ const configured = isVisitorLogConfigured();
   import { getSupabaseClientConfig } from "../lib/visitor-env";
 
   const TABLE = "blog_visits";
+  const IP_CACHE_TABLE = "blog_visit_ip_cache";
   const RAW_PER_PAGE = 20;
 
   type VisitRow = {
     id: string;
     created_at: string;
     ip: string;
+    page_path: string | null;
+    user_agent: string | null;
     city: string | null;
     region: string | null;
     country: string | null;
@@ -305,6 +325,32 @@ const configured = isVisitorLogConfigured();
     return Math.min(11, Math.max(2.5, r));
   }
 
+  function parseClientInfo(uaRaw: string | null): { os: string; browser: string; device: string } {
+    const ua = String(uaRaw || "");
+    const low = ua.toLowerCase();
+
+    let os = "Unknown";
+    if (low.includes("windows nt 10")) os = "Windows 10/11";
+    else if (low.includes("windows")) os = "Windows";
+    else if (low.includes("android")) os = "Android";
+    else if (low.includes("iphone") || low.includes("ipad") || low.includes("cpu iphone os")) os = "iOS/iPadOS";
+    else if (low.includes("mac os x") || low.includes("macintosh")) os = "macOS";
+    else if (low.includes("linux")) os = "Linux";
+
+    let browser = "Unknown";
+    if (low.includes("edg/")) browser = "Edge";
+    else if (low.includes("opr/") || low.includes("opera")) browser = "Opera";
+    else if (low.includes("chrome/") && !low.includes("edg/") && !low.includes("opr/")) browser = "Chrome";
+    else if (low.includes("firefox/")) browser = "Firefox";
+    else if (low.includes("safari/") && !low.includes("chrome/") && !low.includes("chromium/")) browser = "Safari";
+
+    let device = "Desktop";
+    if (low.includes("ipad") || low.includes("tablet")) device = "Tablet";
+    else if (low.includes("mobile") || low.includes("iphone") || low.includes("android")) device = "Mobile";
+
+    return { os, browser, device };
+  }
+
   function renderRawVisitPage(): void {
     const list = rawVisits;
     const total = list.length;
@@ -317,15 +363,23 @@ const configured = isVisitorLogConfigured();
     const rawTbody = document.querySelector("#visit-raw tbody");
     if (rawTbody) {
       if (total === 0) {
-        rawTbody.innerHTML = `<tr><td colspan="5">暂无记录</td></tr>`;
+        rawTbody.innerHTML = `<tr><td colspan="9">No records</td></tr>`;
       } else {
         rawTbody.innerHTML = slice
           .map((r) => {
             const pair = resolveCityBilingual(r.city, r.region);
-            const label = formatCityPair(pair.zh, pair.en);
-            return `<tr><td>${escapeHtml(fmtTime(r.created_at))}</td><td><code>${escapeHtml(r.ip)}</code></td><td>${escapeHtml(
-              r.country || "—"
-            )}</td><td>${escapeHtml(label)}</td><td>${escapeHtml(r.region || "—")}</td></tr>`;
+            const label = pair.en || r.city || r.region || "—";
+            const client = parseClientInfo(r.user_agent);
+            const route = String(r.page_path || "—").trim() || "—";
+            return `<tr><td>${escapeHtml(fmtTime(r.created_at))}</td><td>${escapeHtml(client.os)}</td><td>${escapeHtml(
+              client.browser
+            )}</td><td>${escapeHtml(client.device)}</td><td><code>${escapeHtml(
+              r.ip
+            )}</code></td><td>${escapeHtml(r.country || "—")}</td><td>${escapeHtml(
+              label
+            )}</td><td>${escapeHtml(
+              r.region || "—"
+            )}</td><td class="visitor-insights__route-cell"><code>${escapeHtml(route)}</code></td></tr>`;
           })
           .join("");
       }
@@ -342,9 +396,9 @@ const configured = isVisitorLogConfigured();
     const prevDis = p <= 1;
     const nextDis = p >= totalPages;
     pager.innerHTML = `<div class="visitor-insights__pager-inner">
-      <button type="button" class="visitor-insights__pager-btn" data-raw-pager="prev" ${prevDis ? "disabled" : ""}>上一页</button>
-      <span class="visitor-insights__pager-info">第 ${p} / ${totalPages} 页（共 ${total} 条，每页 ${RAW_PER_PAGE} 条）</span>
-      <button type="button" class="visitor-insights__pager-btn" data-raw-pager="next" ${nextDis ? "disabled" : ""}>下一页</button>
+      <button type="button" class="visitor-insights__pager-btn" data-raw-pager="prev" ${prevDis ? "disabled" : ""}>Prev</button>
+      <span class="visitor-insights__pager-info">Page ${p} / ${totalPages} (Total ${total}, ${RAW_PER_PAGE} per page)</span>
+      <button type="button" class="visitor-insights__pager-btn" data-raw-pager="next" ${nextDis ? "disabled" : ""}>Next</button>
     </div>`;
   }
 
@@ -361,6 +415,64 @@ const configured = isVisitorLogConfigured();
       rawPageIndex += 1;
       renderRawVisitPage();
     }
+  }
+
+  type CacheGeo = {
+    ip: string;
+    city: string | null;
+    region: string | null;
+    country: string | null;
+    lat: number | null;
+    lon: number | null;
+  };
+
+  function needGeoFill(r: VisitRow): boolean {
+    return !r.city || !r.region || !r.country || r.lat == null || r.lon == null;
+  }
+
+  async function hydrateGeoFromCache(
+    supabase: ReturnType<typeof createClient>,
+    list: VisitRow[],
+  ): Promise<VisitRow[]> {
+    const ips = [...new Set(
+      list
+        .filter((r) => r.ip && !/^local-/i.test(r.ip) && needGeoFill(r))
+        .map((r) => r.ip)
+    )];
+    if (ips.length === 0) return list;
+
+    const cacheMap = new Map<string, CacheGeo>();
+    const CHUNK = 200;
+    for (let i = 0; i < ips.length; i += CHUNK) {
+      const part = ips.slice(i, i + CHUNK);
+      try {
+        const res = await supabase
+          .from(IP_CACHE_TABLE)
+          .select("ip, city, region, country, lat, lon")
+          .in("ip", part);
+        if (!res.error && Array.isArray(res.data)) {
+          for (const row of res.data as CacheGeo[]) {
+            if (row?.ip) cacheMap.set(row.ip, row);
+          }
+        }
+      } catch {
+        // ignore cache lookup errors
+      }
+    }
+
+    if (cacheMap.size === 0) return list;
+    return list.map((r) => {
+      const c = cacheMap.get(r.ip);
+      if (!c) return r;
+      return {
+        ...r,
+        city: r.city ?? c.city ?? null,
+        region: r.region ?? c.region ?? null,
+        country: r.country ?? c.country ?? null,
+        lat: r.lat ?? c.lat ?? null,
+        lon: r.lon ?? c.lon ?? null,
+      };
+    });
   }
 
   async function load(): Promise<void> {
@@ -384,7 +496,7 @@ const configured = isVisitorLogConfigured();
       const res = await Promise.race([
         supabase
           .from(TABLE)
-          .select("id, created_at, ip, city, region, country, lat, lon")
+          .select("id, created_at, ip, page_path, user_agent, city, region, country, lat, lon")
           .order("created_at", { ascending: false })
           .limit(5000),
         new Promise<never>((_, rej) =>
@@ -415,14 +527,15 @@ const configured = isVisitorLogConfigured();
       }
       const rawTbodyErr = document.querySelector("#visit-raw tbody");
       if (rawTbodyErr) {
-        rawTbodyErr.innerHTML = `<tr><td colspan="5">${escapeHtml(m)}</td></tr>`;
+        rawTbodyErr.innerHTML = `<tr><td colspan="9">${escapeHtml(m)}</td></tr>`;
       }
       return;
     }
 
-    const list = (rows ?? []) as VisitRow[];
+    const rawList = (rows ?? []) as VisitRow[];
+    const list = await hydrateGeoFromCache(supabase, rawList);
     if (note) {
-      note.textContent = `共 ${list.length} 条记录（最多拉取 5000 条）。`;
+      note.textContent = `${list.length} records total (up to 5000 fetched).`;
     }
 
     const cityKey = (r: (typeof list)[number]) =>
@@ -455,7 +568,7 @@ const configured = isVisitorLogConfigured();
       const [country] = k.split("\t");
       return {
         country,
-        city: formatCityPair(pair.zh, pair.en),
+        city: pair.en || rep.city || rep.region || "—",
         visitCount: visitByCityKey.get(k) || 0,
         uniqueIps: cityIps.get(k)!.size,
       };

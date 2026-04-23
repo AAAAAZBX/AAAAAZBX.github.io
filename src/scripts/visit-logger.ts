@@ -8,6 +8,7 @@ import {
 import { siteRelativePathname } from "../lib/site-path";
 
 const TABLE = "blog_visits";
+const IP_CACHE_TABLE = "blog_visit_ip_cache";
 
 function isBot(ua: string): boolean {
   return /bot|crawl|spider|slurp|bingpreview|facebookexternal|embedly|quora|whatsapp/i.test(ua);
@@ -80,6 +81,33 @@ type VisitRow = {
   user_agent: string;
 };
 
+type CachedGeo = {
+  ip: string;
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  lat: number | null;
+  lon: number | null;
+};
+
+function mergeGeoPreferCurrent<T extends {
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  lat: number | null;
+  lon: number | null;
+}>(current: T, cached: CachedGeo | null): T {
+  if (!cached) return current;
+  return {
+    ...current,
+    city: current.city ?? cached.city ?? null,
+    region: current.region ?? cached.region ?? null,
+    country: current.country ?? cached.country ?? null,
+    lat: typeof current.lat === "number" ? current.lat : (cached.lat ?? null),
+    lon: typeof current.lon === "number" ? current.lon : (cached.lon ?? null),
+  };
+}
+
 function fallbackClientIpLikeId(): string {
   const key = "__visit_fallback_client_id__";
   try {
@@ -106,6 +134,83 @@ function toRowFromIpapi(data: IpApi): VisitRow {
     lon: typeof data.longitude === "number" ? data.longitude : null,
     user_agent: (typeof navigator !== "undefined" && navigator.userAgent) ? navigator.userAgent.slice(0, 1024) : "",
   };
+}
+
+function hasGeoInfo(row: {
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  lat: number | null;
+  lon: number | null;
+}): boolean {
+  return Boolean(
+    row.city || row.region || row.country || typeof row.lat === "number" || typeof row.lon === "number"
+  );
+}
+
+function hasMissingGeoField(row: {
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  lat: number | null;
+  lon: number | null;
+}): boolean {
+  return !row.city || !row.region || !row.country || typeof row.lat !== "number" || typeof row.lon !== "number";
+}
+
+async function readGeoFromCache(supabase: SupabaseClient, ip: string): Promise<CachedGeo | null> {
+  if (!ip || /^local-/i.test(ip)) return null;
+  try {
+    const r = await supabase
+      .from(IP_CACHE_TABLE)
+      .select("ip, city, region, country, lat, lon")
+      .eq("ip", ip)
+      .limit(1)
+      .maybeSingle();
+    if (!r.error && r.data && hasGeoInfo(r.data)) {
+      return r.data as CachedGeo;
+    }
+  } catch {
+    // ignore missing table / policy / network errors
+  }
+
+  // 回退：即使缓存表未建，也尝试从历史访问中复用该 IP 的地理信息
+  try {
+    const r2 = await supabase
+      .from(TABLE)
+      .select("ip, city, region, country, lat, lon")
+      .eq("ip", ip)
+      .order("created_at", { ascending: false })
+      .limit(12);
+    if (!r2.error && Array.isArray(r2.data)) {
+      const found = r2.data.find((x) => hasGeoInfo(x));
+      if (found) {
+        return found as CachedGeo;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+async function writeGeoCache(supabase: SupabaseClient, row: VisitRow): Promise<void> {
+  if (!row.ip || /^local-/i.test(row.ip) || !hasGeoInfo(row)) return;
+  try {
+    await supabase.from(IP_CACHE_TABLE).upsert(
+      {
+        ip: row.ip,
+        city: row.city,
+        region: row.region,
+        country: row.country,
+        lat: row.lat,
+        lon: row.lon,
+      },
+      { onConflict: "ip" }
+    );
+  } catch {
+    // ignore when cache table is not ready
+  }
 }
 
 /**
@@ -190,7 +295,42 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
     return;
   }
 
-  const row = await Promise.race<VisitRow | null>([
+  // 快速拿 IP 并命中缓存：同 IP 曾解析过地理信息时可立即复用。
+  const ipHint = await fetchIpOnly();
+  if (ipHint) {
+    const cached = await readGeoFromCache(supabase, ipHint);
+    if (cached) {
+      const siteBase = options?.siteBasePath ?? "/";
+      const pagePath =
+        typeof window !== "undefined" && window.location?.pathname
+          ? siteRelativePathname(window.location.pathname, siteBase)
+          : null;
+      const fromCachePayload = {
+        ip: cached.ip,
+        city: cached.city,
+        region: cached.region,
+        country: cached.country,
+        lat: cached.lat,
+        lon: cached.lon,
+        user_agent:
+          typeof navigator !== "undefined" && navigator.userAgent
+            ? navigator.userAgent.slice(0, 1024)
+            : "",
+      };
+      let ins = await supabase.from(TABLE).insert({
+        ...fromCachePayload,
+        page_path: pagePath,
+      });
+      if (!ins.error) return;
+      const insMsg = String(ins.error?.message || "");
+      if (/page_path/i.test(insMsg) || /PGRST204/i.test(insMsg)) {
+        ins = await supabase.from(TABLE).insert(fromCachePayload);
+        if (!ins.error) return;
+      }
+    }
+  }
+
+  const rowRaw = await Promise.race<VisitRow | null>([
     buildVisitRow(),
     new Promise<VisitRow>((resolve) =>
       setTimeout(
@@ -211,8 +351,15 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
       ),
     ),
   ]);
-  if (!row) {
+  if (!rowRaw) {
     return;
+  }
+
+  // 第二道兜底：即便前面的 ipHint 失败，也用最终解析出的 row.ip 再查一次缓存补齐空地理字段。
+  let row: VisitRow = rowRaw;
+  if (row.ip && !/^local-/i.test(row.ip) && hasMissingGeoField(row)) {
+    const cachedByRowIp = await readGeoFromCache(supabase, row.ip);
+    row = mergeGeoPreferCurrent(row, cachedByRowIp);
   }
 
   const siteBase = options?.siteBasePath ?? "/";
@@ -247,5 +394,7 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
       }
     }
     console.warn("[visit-log]", msg);
+    return;
   }
+  await writeGeoCache(supabase, row);
 }
