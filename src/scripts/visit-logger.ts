@@ -26,19 +26,31 @@ type IpApi = {
   longitude?: number | null;
 };
 
+async function fetchJsonWithTimeout(url: string, timeoutMs: number): Promise<unknown | null> {
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, {
+      mode: "cors",
+      credentials: "omit",
+      signal: ctrl.signal,
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(tid);
+  }
+}
+
 function getAmapKey(): string {
   return String(import.meta.env.PUBLIC_AMAP_WEB_KEY ?? "").trim();
 }
 
 async function fetchIpapi(): Promise<IpApi | null> {
-  const r = await fetch("https://ipapi.co/json/", {
-    mode: "cors",
-    credentials: "omit",
-  });
-  if (!r.ok) {
-    return null;
-  }
-  const j = (await r.json()) as IpApi;
+  const j = (await fetchJsonWithTimeout("https://ipapi.co/json/", 2500)) as IpApi | null;
+  if (!j) return null;
   if (j.error) {
     return null;
   }
@@ -51,15 +63,9 @@ async function fetchIpOnly(): Promise<string | null> {
     "https://api.ip.sb/geoip",
   ];
   for (const u of providers) {
-    try {
-      const r = await fetch(u, { mode: "cors", credentials: "omit" });
-      if (!r.ok) continue;
-      const j = (await r.json()) as { ip?: string };
-      const ip = String(j?.ip || "").trim();
-      if (ip) return ip;
-    } catch {
-      // try next provider
-    }
+    const j = (await fetchJsonWithTimeout(u, 1800)) as { ip?: string } | null;
+    const ip = String(j?.ip || "").trim();
+    if (ip) return ip;
   }
   return null;
 }
@@ -184,7 +190,27 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
     return;
   }
 
-  const row = await buildVisitRow();
+  const row = await Promise.race<VisitRow | null>([
+    buildVisitRow(),
+    new Promise<VisitRow>((resolve) =>
+      setTimeout(
+        () =>
+          resolve({
+            ip: fallbackClientIpLikeId(),
+            city: null,
+            region: null,
+            country: null,
+            lat: null,
+            lon: null,
+            user_agent:
+              typeof navigator !== "undefined" && navigator.userAgent
+                ? navigator.userAgent.slice(0, 1024)
+                : "",
+          }),
+        3000,
+      ),
+    ),
+  ]);
   if (!row) {
     return;
   }
