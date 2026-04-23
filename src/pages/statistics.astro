@@ -347,6 +347,10 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
       display: none;
     }
 
+    .stats-console-main .visitor-insights--embed .visitor-insights__h2 {
+      color: #f4f8ff;
+    }
+
     .stats-console-main
       .visitor-insights--embed
       .visitor-insights__section[aria-label="World map"] {
@@ -390,11 +394,38 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
 
     .stats-console-main .visitor-insights--embed .visitor-insights__table-wrap {
       height: auto;
-      overflow: visible;
+      overflow-x: auto;
+      overflow-y: visible;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table-wrap::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table-wrap::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table-wrap::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.42);
+      border-radius: 999px;
+      border: 1px solid rgba(11, 19, 34, 0.35);
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table-wrap::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.62);
     }
 
     .stats-console-main .visitor-insights--embed .visitor-insights__table--wide {
-      min-width: 0;
+      min-width: 1080px;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table {
+      width: max-content;
+      min-width: 100%;
     }
 
     .stats-console-main
@@ -426,6 +457,7 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
     .stats-console-main .visitor-insights--embed .visitor-insights__table td {
       border-bottom-color: rgba(148, 163, 184, 0.2);
       color: #e7eefb;
+      white-space: nowrap;
     }
 
     .stats-console-main .visitor-insights--embed .visitor-insights__table th {

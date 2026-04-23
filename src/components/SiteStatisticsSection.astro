@@ -116,9 +116,6 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
       </div>
 
       <div class="stat-panel stat-panel--bars">
-        <div class="stat-panel__head">
-          <span class="stat-panel__title">Article views by post</span>
-        </div>
         <div class="stat-bar-chart" id="stat-article-views-bars">
           <p class="stat-bar-load">Loading per-post view counts…</p>
         </div>
@@ -820,11 +817,11 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
       const recentCommentsHtml = renderRecentCommentsList(recentComments || []);
       host.innerHTML = `<div class="stat-rank-wrap">
         <section class="stat-rank-block">
-          <h4 class="stat-rank-title">阅读排行榜</h4>
+          <h4 class="stat-rank-title">Top Reads</h4>
           ${byViews}
         </section>
         <section class="stat-rank-block">
-          <h4 class="stat-rank-title">最近评论</h4>
+          <h4 class="stat-rank-title">Recent Comments</h4>
           ${recentCommentsHtml}
         </section>
       </div>`;
