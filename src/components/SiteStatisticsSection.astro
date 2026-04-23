@@ -28,6 +28,7 @@ const {
 } = Astro.props;
 const articleViewsSource = articleViewsSourceProp;
 const supabaseClientConfig = getSupabaseClientConfig();
+const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").trim();
 ---
 
 <section class="content-section about-statistics-wrap stat-scope">
@@ -120,18 +121,6 @@ const supabaseClientConfig = getSupabaseClientConfig();
         </div>
         <div class="stat-bar-chart" id="stat-article-views-bars">
           <p class="stat-bar-load">Loading per-post view counts…</p>
-        </div>
-        <div class="stat-bar-actions">
-          <button
-            id="stat-article-views-toggle"
-            class="stat-bar-toggle"
-            type="button"
-            hidden
-            aria-controls="stat-article-views-bars"
-            aria-expanded="false"
-          >
-            Expand
-          </button>
         </div>
       </div>
     </div>
@@ -295,13 +284,32 @@ const supabaseClientConfig = getSupabaseClientConfig();
     pointer-events: auto;
     stroke: none;
     filter: brightness(1);
-    transition: filter 0.22s ease, opacity 0.22s ease;
+    opacity: 0.96;
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(1);
+    transition:
+      transform 0.22s ease,
+      filter 0.22s ease,
+      opacity 0.22s ease,
+      stroke 0.22s ease,
+      stroke-width 0.22s ease;
     cursor: pointer;
   }
 
-  .stat-scope .stat-pie__seg:hover {
-    /* 不再缩放 path：避免边界命中变化导致 hover 抖动 */
-    filter: brightness(1.08) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
+  .stat-scope .stat-pie:hover .stat-pie__seg:not(.stat-pie__seg--empty) {
+    opacity: 0.58;
+  }
+
+  .stat-scope .stat-pie__seg:hover,
+  .stat-scope .stat-pie__seg:focus-visible {
+    /* 放大强调 + 高亮描边，接近“扇区凸显”效果 */
+    transform: scale(1.08);
+    filter: brightness(1.2) saturate(1.15) drop-shadow(0 3px 8px rgba(0, 0, 0, 0.28));
+    opacity: 1 !important;
+    stroke: rgba(255, 255, 255, 0.55);
+    stroke-width: 1.4;
+    outline: none;
   }
 
   .stat-scope .stat-pie__seg--empty {
@@ -310,6 +318,7 @@ const supabaseClientConfig = getSupabaseClientConfig();
 
   .stat-scope .stat-pie__seg--empty:hover {
     filter: brightness(1);
+    stroke: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -317,7 +326,8 @@ const supabaseClientConfig = getSupabaseClientConfig();
       transition: none;
     }
     .stat-scope .stat-pie__seg:hover {
-      filter: brightness(1.04);
+      transform: scale(1.04);
+      filter: brightness(1.14);
     }
   }
 
@@ -413,84 +423,117 @@ const supabaseClientConfig = getSupabaseClientConfig();
     max-height: 320px;
     overflow: auto;
     padding-right: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
   }
 
-  .stat-scope .stat-bar-actions {
-    margin-top: 4px;
-    display: flex;
-    justify-content: flex-start;
+  .stat-scope .stat-bar-chart::-webkit-scrollbar {
+    width: 7px;
   }
 
-  .stat-scope .stat-bar-toggle {
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: color-mix(in srgb, var(--bg-secondary) 86%, transparent);
-    color: rgba(226, 232, 240, 0.92);
-    padding: 2px 8px;
-    font-size: 0.7rem;
-    letter-spacing: 0.02em;
+  .stat-scope .stat-bar-chart::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .stat-scope .stat-bar-chart::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.45);
     border-radius: 999px;
-    line-height: 1.35;
-    cursor: pointer;
   }
 
-  .stat-scope .stat-bar-toggle:hover {
-    border-color: rgba(148, 163, 184, 0.55);
-    color: #f8fafc;
+  .stat-scope .stat-bar-chart::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.65);
   }
 
-  .stat-scope .stat-bar-row {
+  .stat-scope .stat-rank-wrap {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr) 48px;
-    gap: 8px 10px;
-    align-items: center;
-    margin: 0 0 8px;
-    font-size: 0.82rem;
+    gap: 14px;
   }
 
-  .stat-scope .stat-bar-label {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--text-link);
+  .stat-scope .stat-rank-block {
+    display: grid;
+    gap: 6px;
+  }
+
+  .stat-scope .stat-rank-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f5f9ff;
+    letter-spacing: 0.01em;
+  }
+
+  .stat-scope .stat-rank-list {
+    margin: 0;
+    padding-left: 1.45rem;
+    display: grid;
+    gap: 4px;
+  }
+
+  .stat-scope .stat-rank-item {
+    color: #d9e4f5;
+    line-height: 1.45;
+    font-size: 0.85rem;
+  }
+
+  .stat-scope .stat-rank-link {
+    color: #d9e4f5;
     text-decoration: none;
   }
 
-  .stat-scope .stat-bar-label:hover {
+  .stat-scope .stat-rank-link:hover {
+    color: #f8fbff;
     text-decoration: underline;
   }
 
-  .stat-scope .stat-bar-track {
-    height: 10px;
-    border-radius: 6px;
-    background: transparent;
-    overflow: visible;
-    box-shadow: none;
-  }
-
-  .stat-scope .stat-bar-fill {
-    height: 100%;
-    width: 0;
-    /* Match nav: accent + nav-bg blend */
-    background: linear-gradient(
-      90deg,
-      var(--fluid-link-hover-color, #30a9de),
-      color-mix(
-        in srgb,
-        var(--nav-bg, #2f4154) 55%,
-        var(--fluid-link-hover-color, #30a9de) 45%
-      )
-    );
-    border-radius: 6px;
-    transition: width 0.35s ease;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
-  }
-
-  .stat-scope .stat-bar-n {
-    text-align: right;
-    font-weight: 700;
+  .stat-scope .stat-rank-num {
+    color: #f8fafc;
     font-family: var(--stat-number-font);
-    color: var(--text-primary);
+    font-weight: 600;
+    margin-left: 4px;
+  }
+
+  .stat-scope .stat-rank-empty {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+  }
+
+  .stat-scope .stat-comment-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+
+  .stat-scope .stat-comment-item {
+    margin: 0;
+    padding: 0;
+    line-height: 1.45;
+    font-size: 0.82rem;
+    color: #d9e4f5;
+  }
+
+  .stat-scope .stat-comment-link {
+    color: #d9e4f5;
+    text-decoration: none;
+  }
+
+  .stat-scope .stat-comment-link:hover {
+    color: #f8fbff;
+    text-decoration: underline;
+  }
+
+  .stat-scope .stat-comment-author {
+    color: #f8fafc;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  .stat-scope .stat-comment-time {
+    color: var(--text-secondary);
+    font-size: 0.74rem;
+    margin-left: 6px;
   }
 </style>
 
@@ -503,6 +546,7 @@ const supabaseClientConfig = getSupabaseClientConfig();
     perArticleViewRows,
     articleViewsSource,
     supabaseClientConfig,
+    walineServerUrl,
   }}
 >
   (function () {
@@ -564,13 +608,51 @@ const supabaseClientConfig = getSupabaseClientConfig();
       const mark = () => {
         siteEl.textContent = "—";
       };
-      if (typeof countStatsGetUrls === "undefined" || !countStatsGetUrls || !countStatsGetUrls.site) {
-        mark();
-        return;
-      }
       const setNum = (n) => {
         siteEl.textContent = typeof n === "number" && !Number.isNaN(n) ? String(n) : "—";
       };
+      const loadSiteViewsFromSupabase = async () => {
+        const cfg =
+          supabaseClientConfig &&
+          typeof supabaseClientConfig === "object" &&
+          typeof supabaseClientConfig.url === "string" &&
+          typeof supabaseClientConfig.anonKey === "string"
+            ? supabaseClientConfig
+            : null;
+        if (!cfg) return null;
+        const k = String(cfg.anonKey || "").trim();
+        if (!k || k.startsWith("sb_secret_")) return null;
+        try {
+          const endpoint =
+            String(cfg.url).replace(/\/+$/, "") +
+            "/rest/v1/blog_visits?select=id&order=created_at.desc&limit=1";
+          const ctrl = new AbortController();
+          const tid = setTimeout(() => ctrl.abort(), 10000);
+          const res = await fetch(endpoint, {
+            method: "GET",
+            headers: {
+              apikey: cfg.anonKey,
+              Authorization: `Bearer ${cfg.anonKey}`,
+              Prefer: "count=exact",
+              Range: "0-0",
+            },
+            signal: ctrl.signal,
+          }).finally(() => clearTimeout(tid));
+          if (!res.ok) return null;
+          const cr = res.headers.get("content-range") || "";
+          const m = cr.match(/\/(\d+)\s*$/);
+          if (m) return Number(m[1]);
+          return null;
+        } catch {
+          return null;
+        }
+      };
+      if (typeof countStatsGetUrls === "undefined" || !countStatsGetUrls || !countStatsGetUrls.site) {
+        const fallbackNum = await loadSiteViewsFromSupabase();
+        if (typeof fallbackNum === "number") setNum(fallbackNum);
+        else mark();
+        return;
+      }
       try {
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), 10000);
@@ -582,9 +664,18 @@ const supabaseClientConfig = getSupabaseClientConfig();
           .then((r) => r.json())
           .catch(() => null)
           .finally(() => clearTimeout(t));
-        setNum(a && typeof a.value === "number" ? a.value : null);
+        const countapiNum = a && typeof a.value === "number" ? a.value : null;
+        if (typeof countapiNum === "number") {
+          setNum(countapiNum);
+          return;
+        }
+        const fallbackNum = await loadSiteViewsFromSupabase();
+        if (typeof fallbackNum === "number") setNum(fallbackNum);
+        else mark();
       } catch (e) {
-        mark();
+        const fallbackNum = await loadSiteViewsFromSupabase();
+        if (typeof fallbackNum === "number") setNum(fallbackNum);
+        else mark();
       }
     }
 
@@ -609,67 +700,153 @@ const supabaseClientConfig = getSupabaseClientConfig();
       });
     }
 
-    const BAR_COLLAPSED_LIMIT = 5;
-    let articleBarsExpanded = false;
-    let articleBarRows = [];
-
-    function updateArticleToggleUI(host) {
-      const btn = document.getElementById("stat-article-views-toggle");
-      if (!btn) return;
-      const hasMore = articleBarRows.length > BAR_COLLAPSED_LIMIT;
-      btn.hidden = !hasMore;
-      if (!hasMore) return;
-      btn.textContent = articleBarsExpanded
-        ? "Collapse"
-        : `Expand (${articleBarRows.length})`;
-      btn.setAttribute("aria-expanded", articleBarsExpanded ? "true" : "false");
-      btn.onclick = () => {
-        articleBarsExpanded = !articleBarsExpanded;
-        renderArticleBarRows(host);
-      };
+    function escapeHtml(s) {
+      return String(s || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
-    function renderArticleBarRows(host) {
-      const rows = articleBarRows;
-      const visible = articleBarsExpanded ? rows : rows.slice(0, BAR_COLLAPSED_LIMIT);
-      const max = rows.length ? Math.max(1, ...rows.map((x) => x.v)) : 1;
-      const frag = document.createDocumentFragment();
-      visible.forEach((row) => {
-        const wrap = document.createElement("div");
-        wrap.className = "stat-bar-row";
-        const a = document.createElement("a");
-        a.className = "stat-bar-label";
-        a.href = row.href;
-        a.textContent = row.title;
-        a.title = row.title;
-        const tr = document.createElement("div");
-        tr.className = "stat-bar-track";
-        const fill = document.createElement("div");
-        fill.className = "stat-bar-fill";
-        fill.style.width = `${(row.v / max) * 100}%`;
-        tr.appendChild(fill);
-        const n = document.createElement("span");
-        n.className = "stat-bar-n";
-        n.textContent = String(row.v);
-        wrap.appendChild(a);
-        wrap.appendChild(tr);
-        wrap.appendChild(n);
-        frag.appendChild(wrap);
-      });
-      host.textContent = "";
-      host.appendChild(frag);
-      updateArticleToggleUI(host);
+    function renderRankList(rows, valueKey) {
+      const top = [...rows]
+        .sort((a, b) => {
+          const av = Number(a[valueKey] ?? 0);
+          const bv = Number(b[valueKey] ?? 0);
+          return bv - av;
+        })
+        .filter((x) => Number(x[valueKey] ?? 0) > 0)
+        .slice(0, 5);
+
+      if (top.length === 0) {
+        return `<p class="stat-rank-empty">No data.</p>`;
+      }
+      const items = top
+        .map((x) => {
+          const n = Number(x[valueKey] ?? 0);
+          return `<li class="stat-rank-item"><a class="stat-rank-link" href="${escapeHtml(x.href)}" title="${escapeHtml(
+            x.title
+          )}">${escapeHtml(x.title)}</a><span class="stat-rank-num">(${n})</span></li>`;
+        })
+        .join("");
+      return `<ol class="stat-rank-list">${items}</ol>`;
     }
 
-    function applyArticleBarRows(host, sumEl, withVals) {
-      const sorted = [...withVals].sort((a, b) => b.v - a.v);
-      articleBarRows = sorted;
-      let sum = 0;
-      sorted.forEach((x) => {
-        sum += x.v;
+    function toRecentCommentArray(raw) {
+      if (Array.isArray(raw)) return raw;
+      if (raw && typeof raw === "object") {
+        if (Array.isArray(raw.data)) return raw.data;
+        if (Array.isArray(raw.comments)) return raw.comments;
+        if (Array.isArray(raw.result)) return raw.result;
+      }
+      return [];
+    }
+
+    function stripHtml(input) {
+      return String(input || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    }
+
+    function cutText(input, n) {
+      const s = String(input || "");
+      return s.length > n ? `${s.slice(0, n)}...` : s;
+    }
+
+    function fmtShortTime(value) {
+      if (!value) return "";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleString("zh-CN", {
+        hour12: false,
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
       });
-      renderArticleBarRows(host);
+    }
+
+    async function fetchRecentComments(limit) {
+      if (!walineServerUrl) return [];
+      const base = String(walineServerUrl).replace(/\/+$/, "");
+      const endpoints = [
+        `${base}/comment?type=recent&count=${limit}`,
+        `${base}/comment?type=recent&pageSize=${limit}`,
+        `${base}/comment?type=recent&size=${limit}`,
+      ];
+      for (const endpoint of endpoints) {
+        try {
+          const ctrl = new AbortController();
+          const tid = setTimeout(() => ctrl.abort(), 7000);
+          const res = await fetch(endpoint, {
+            method: "GET",
+            mode: "cors",
+            cache: "no-store",
+            signal: ctrl.signal,
+          }).finally(() => clearTimeout(tid));
+          if (!res.ok) continue;
+          const json = await res.json();
+          const rows = toRecentCommentArray(json);
+          if (!rows.length) continue;
+          const normalized = rows
+            .map((x) => {
+              const author = x.nick || x.author || x.name || x.user?.nick || "匿名";
+              const contentRaw = x.comment || x.content || x.text || "";
+              const content = cutText(stripHtml(contentRaw), 72);
+              const url = x.url || x.link || x.path || x.page?.url || "";
+              const time =
+                x.insertedAt || x.createdAt || x.created_at || x.updatedAt || x.time || x.date || "";
+              return {
+                author: String(author || "匿名"),
+                content: String(content || ""),
+                url: String(url || ""),
+                time: fmtShortTime(time),
+              };
+            })
+            .filter((x) => x.content)
+            .slice(0, limit);
+          if (normalized.length) return normalized;
+        } catch {
+          // try next endpoint
+        }
+      }
+      return [];
+    }
+
+    function renderRecentCommentsList(items) {
+      if (!items || items.length === 0) {
+        return `<p class="stat-rank-empty">暂无最近评论</p>`;
+      }
+      const li = items
+        .map((x) => {
+          const href = x.url ? escapeHtml(String(x.url)) : "#";
+          const timeText = x.time ? `<span class="stat-comment-time">${escapeHtml(x.time)}</span>` : "";
+          return `<li class="stat-comment-item">
+            <a class="stat-comment-link" href="${href}">
+              <span class="stat-comment-author">${escapeHtml(x.author)}:</span>
+              <span>${escapeHtml(x.content)}</span>
+            </a>
+            ${timeText}
+          </li>`;
+        })
+        .join("");
+      return `<ul class="stat-comment-list">${li}</ul>`;
+    }
+
+    function applyArticleBarRows(host, sumEl, withVals, recentComments) {
+      const sum = withVals.reduce((acc, item) => acc + (Number(item.v) || 0), 0);
       if (sumEl) sumEl.textContent = String(sum);
+      const byViews = renderRankList(withVals, "v");
+      const recentCommentsHtml = renderRecentCommentsList(recentComments || []);
+      host.innerHTML = `<div class="stat-rank-wrap">
+        <section class="stat-rank-block">
+          <h4 class="stat-rank-title">阅读排行榜</h4>
+          ${byViews}
+        </section>
+        <section class="stat-rank-block">
+          <h4 class="stat-rank-title">最近评论</h4>
+          ${recentCommentsHtml}
+        </section>
+      </div>`;
     }
 
     async function loadPerArticleBarChart() {
@@ -728,7 +905,8 @@ const supabaseClientConfig = getSupabaseClientConfig();
                 });
                 const totalFromPath = withVals.reduce((acc, item) => acc + (item.v || 0), 0);
                 if (totalFromPath > 0) {
-                  applyArticleBarRows(host, sumEl, withVals);
+                  const recentComments = await fetchRecentComments(5);
+                  applyArticleBarRows(host, sumEl, withVals, recentComments);
                   return;
                 }
                 console.warn(
@@ -753,7 +931,8 @@ const supabaseClientConfig = getSupabaseClientConfig();
         );
         withVals.push.apply(withVals, vals);
       }
-      applyArticleBarRows(host, sumEl, withVals);
+      const recentComments = await fetchRecentComments(5);
+      applyArticleBarRows(host, sumEl, withVals, recentComments);
     }
 
     function init() {
