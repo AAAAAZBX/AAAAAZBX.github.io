@@ -29,7 +29,7 @@ const configured = isVisitorLogConfigured();
     }
 
     <div class="visitor-insights__section" aria-label="World map">
-      <h3 class="visitor-insights__h2">世界地图（每城市一个红圆，大小 ∝ 该城不重复 IP 数，对数）</h3>
+      <h3 class="visitor-insights__h2">世界地图（每城市一个红圆，大小 ∝ 该城访客数量，对数）</h3>
       {
         configured ? (
           <>
@@ -55,7 +55,7 @@ const configured = isVisitorLogConfigured();
             <tr>
               <th>国家/地区</th>
               <th>城市</th>
-              <th>不重复 IP</th>
+              <th>访客数量</th>
               <th>访问次数</th>
             </tr>
           </thead>
@@ -547,30 +547,32 @@ const configured = isVisitorLogConfigured();
     }
 
     const map = L.map(el, { worldCopyJump: true, scrollWheelZoom: true }).setView([20, 0], 2);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+      subdomains: "abcd",
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
     }).addTo(map);
 
     const latLngs: L.LatLngExpression[] = [];
-    const redStroke = "#b91c1c";
-    const redFill = "#ef4444";
+    const markerStroke = "#1d4ed8";
+    const markerFill = "#2563eb";
 
     for (const p of cityPoints) {
       const rad = radiusForUniqueIps(p.uniqueIps);
       const pair = resolveCityBilingual(p.city, p.region);
       const nameLine = formatCityPair(pair.zh, pair.en);
-      const detail = `${escapeHtml(p.country || "—")} · 不重复 IP：${p.uniqueIps} · 访问：${p.visitCount}`;
+      const detail = `${escapeHtml(p.country || "—")} · 访客数量：${p.uniqueIps} · 访问：${p.visitCount}`;
       const html = `<div class="visitor-insights__marker-tt">
         <div class="visitor-insights__marker-tt-line1">${escapeHtml(nameLine)}</div>
         <div class="visitor-insights__marker-tt-line2">${detail}</div>
       </div>`;
       const marker = L.circleMarker([p.lat, p.lon], {
         radius: rad,
-        color: redStroke,
+        color: markerStroke,
         weight: 1,
-        fillColor: redFill,
-        fillOpacity: 0.65,
+        fillColor: markerFill,
+        fillOpacity: 0.5,
       }).addTo(map);
       marker.bindTooltip(html, {
         direction: "top",

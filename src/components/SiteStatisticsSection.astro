@@ -60,7 +60,6 @@ const supabaseClientConfig = getSupabaseClientConfig();
       <div class="stat-dashboard__row stat-dashboard__row--split">
         <div class="stat-panel stat-panel--ring">
           <div class="stat-panel__head">
-            <span class="stat-panel__tag">M01</span>
             <span class="stat-panel__title">Posts by collection</span>
           </div>
           <div class="stat-pie-wrap">
@@ -117,16 +116,8 @@ const supabaseClientConfig = getSupabaseClientConfig();
 
       <div class="stat-panel stat-panel--bars">
         <div class="stat-panel__head">
-          <span class="stat-panel__tag">M02</span>
           <span class="stat-panel__title">Article views by post</span>
         </div>
-        <p class="stat-panel__sub">
-          {
-            articleViewsSource === "supabase"
-              ? "每打开一次文章页计一次，数据来自已配置的 blog_visits（按站内路径 page_path 聚合），与 M02 条形图一致。若表未迁移，读写失败时可能显示 0。"
-              : "每篇文章用 CountAPI 独立计数；首次请求或网络失败时可能显示 0 或 “—”。"
-          }
-        </p>
         <div class="stat-bar-chart" id="stat-article-views-bars">
           <p class="stat-bar-load">Loading per-post view counts…</p>
         </div>
@@ -231,15 +222,6 @@ const supabaseClientConfig = getSupabaseClientConfig();
     align-items: center;
     gap: 10px;
     margin-bottom: 12px;
-  }
-
-  .stat-scope .stat-panel__tag {
-    font-family: var(--stat-number-font);
-    font-size: 0.7rem;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--text-link) 18%, var(--bg-tertiary));
-    color: var(--text-link);
   }
 
   .stat-scope .stat-panel__title {
@@ -446,9 +428,9 @@ const supabaseClientConfig = getSupabaseClientConfig();
   .stat-scope .stat-bar-track {
     height: 10px;
     border-radius: 6px;
-    background: var(--bg-tertiary);
-    overflow: hidden;
-    box-shadow: inset 0 0 0 1px var(--nav-border, var(--border-color));
+    background: transparent;
+    overflow: visible;
+    box-shadow: none;
   }
 
   .stat-scope .stat-bar-fill {
@@ -466,6 +448,7 @@ const supabaseClientConfig = getSupabaseClientConfig();
     );
     border-radius: 6px;
     transition: width 0.35s ease;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
   }
 
   .stat-scope .stat-bar-n {
@@ -493,7 +476,13 @@ const supabaseClientConfig = getSupabaseClientConfig();
       if (!href) return "/";
       const p = String(href).split("?")[0].split("#")[0];
       const withSlash = p.startsWith("/") ? p : `/${p}`;
-      return withSlash.replace(/\/+$/, "") || "/";
+      let decoded = withSlash;
+      try {
+        decoded = decodeURI(withSlash);
+      } catch {
+        decoded = withSlash;
+      }
+      return decoded.replace(/\/+$/, "") || "/";
     }
 
     function updateStatistics() {
@@ -672,8 +661,14 @@ const supabaseClientConfig = getSupabaseClientConfig();
                   const v = map.get(k2) ?? 0;
                   return { ...r, v };
                 });
-                applyArticleBarRows(host, sumEl, withVals);
-                return;
+                const totalFromPath = withVals.reduce((acc, item) => acc + (item.v || 0), 0);
+                if (totalFromPath > 0) {
+                  applyArticleBarRows(host, sumEl, withVals);
+                  return;
+                }
+                console.warn(
+                  "[stat] blog_visit_path_stats is empty/all-zero, fallback to countapi"
+                );
               } else {
                 console.warn("[stat] blog_visit_path_stats HTTP failed:", res.status);
               }

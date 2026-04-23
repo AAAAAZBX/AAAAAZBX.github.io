@@ -19,7 +19,14 @@ export function siteRelativePathname(pathname: string, siteBase: string): string
 /** 与 `post.href` 比较用，与入库的 `page_path` 规则一致 */
 export function normalizeArticlePathForStats(href: string): string {
   if (!href) return "/";
-  const p = String(href).split("?")[0]!.split("#")[0]!;
-  const withSlash = p.startsWith("/") ? p : `/${p}`;
-  return withSlash.replace(/\/+$/, "") || "/";
+  const raw = String(href).split("?")[0]!.split("#")[0]!;
+  const withSlash = raw.startsWith("/") ? raw : `/${raw}`;
+  // 统一“已编码路径(%E4...)”与“未编码路径(中文/空格)”为同一键，避免聚合对不上。
+  let decoded = withSlash;
+  try {
+    decoded = decodeURI(withSlash);
+  } catch {
+    decoded = withSlash;
+  }
+  return decoded.replace(/\/+$/, "") || "/";
 }

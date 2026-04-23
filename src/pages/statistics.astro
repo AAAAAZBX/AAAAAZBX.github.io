@@ -48,261 +48,391 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
 );
 */
 
-const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
-const bannerTypedText = "Statistics";
 ---
 
 <Layout title="Statistics - Boxuan Zhang" overlayNav noindex>
-  <div class="fluid-index-header-inner fluid-header-inner-compact">
-    <div
-      id="banner"
-      class="fluid-banner"
-      style={{
-        backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
-      }}
-    >
-      <div class="fluid-banner-inner">
-        <div class="fluid-banner-mask">
-          <div class="fluid-banner-text">
-            <h1 class="fluid-banner-title" lang="en" aria-label={bannerTypedText}>
-              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}></span>
-            </h1>
-          </div>
-          <a href="#fluid-board" class="fluid-scroll-down" aria-label="Scroll to statistics">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M6 9l6 6 6-6"></path>
-            </svg>
-          </a>
+  <main class="stats-console-main">
+    <section class="stats-console">
+      <header class="stats-console__topbar">
+        <div class="stats-console__title-wrap">
+          <h1 class="stats-console__title">Statistics Console</h1>
+          <p class="stats-console__subtitle">Landscape dashboard for content and visitor insights</p>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <main id="fluid-board" class="fluid-index-main fluid-board-page fluid-statistics-main">
-    <div class="fluid-container fluid-nopadding-x-md">
-      <div id="board" class="fluid-board-surface">
-        <div class="fluid-container">
-          <div class="fluid-row">
-            <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
-              {/* Tag cloud 暂时关闭 — 与 frontmatter 中 tagCloudPairs 成对恢复
-              <section class="tags-cloud-section" aria-label="Tag cloud">
-                <h2 class="tags-page-h2">Tag cloud</h2>
-                <p class="tags-page-lead">标签来自各篇文章 front matter 的 <code>tags</code> 字段。点击词云中的词可跳转站内搜索（需已构建 Pagefind 索引）。</p>
-                <div id="tag-wordcloud-wrap" class="tag-wordcloud-wrap">
-                  {
-                    tagCloudPairs.length > 0 ? (
-                      <canvas
-                        id="tag-wordcloud-canvas"
-                        class="tag-wordcloud-canvas"
-                        width="800"
-                        height="380"
-                        aria-label="Tag word cloud"
-                      />
-                    ) : (
-                      <p class="tags-empty">暂无标签：可在文章元数据中添加 tags。</p>
-                    )
-                  }
-                </div>
-              </section>
-              */}
-
-              <div class="tags-statistics-anchor">
-                <SiteStatisticsSection
-                  totalPosts={totalPosts}
-                  pieItems={pieItems}
-                  perArticleViewRows={perArticleViewRows}
-                  countStatsGetUrls={countStatsGetUrls}
-                  totalWordCount={totalWordCount}
-                  lastPostDateIso={lastPostDateIso}
-                  siteStartDate={siteStartDate}
-                  articleViewsSource={useSupabaseArticleStats ? "supabase" : "countapi"}
-                />
-                <VisitorInsightsSection />
-              </div>
-            </div>
-          </div>
+        <div class="stats-console__meta">
+          <span class="stats-console__pill">Posts {totalPosts}</span>
+          <span class="stats-console__pill">
+            Source {useSupabaseArticleStats ? "Supabase" : "CountAPI"}
+          </span>
         </div>
+      </header>
+
+      <div class="stats-console__grid">
+        <section class="stats-console__panel stats-console__panel--main" aria-label="Core statistics">
+          <SiteStatisticsSection
+            totalPosts={totalPosts}
+            pieItems={pieItems}
+            perArticleViewRows={perArticleViewRows}
+            countStatsGetUrls={countStatsGetUrls}
+            totalWordCount={totalWordCount}
+            lastPostDateIso={lastPostDateIso}
+            siteStartDate={siteStartDate}
+            articleViewsSource={useSupabaseArticleStats ? "supabase" : "countapi"}
+          />
+        </section>
+
+        <aside class="stats-console__panel stats-console__panel--side" aria-label="Visitor insights">
+          <VisitorInsightsSection />
+        </aside>
       </div>
-    </div>
+    </section>
   </main>
 
-  <script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
-  {/* Tag cloud 脚本暂时关闭
-  {tagCloudPairs.length > 0 && (
-    <script
-      is:inline
-      src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"
-    />
-  )}
-
-  <script is:inline define:vars={{ tagCloudPairs }}>
-    (function () {
-      var resizeTimer;
-      function runTagCloud() {
-        if (typeof window.WordCloud === "undefined" || !tagCloudPairs || !tagCloudPairs.length) {
-          return;
-        }
-        var wrap = document.getElementById("tag-wordcloud-wrap");
-        var canvas = document.getElementById("tag-wordcloud-canvas");
-        if (!wrap || !canvas) return;
-        var w = Math.max(300, Math.min(920, wrap.clientWidth || 800));
-        var h = 380;
-        canvas.width = w;
-        canvas.height = h;
-        var list = tagCloudPairs.map(function (p) {
-          return [p[0], p[1]];
-        });
-        var scale = w / 800;
-        window.WordCloud(canvas, {
-          list: list,
-          gridSize: Math.round(10 * scale),
-          weightFactor: function (n) {
-            return Math.pow(n, 0.55) * 14 * scale;
-          },
-          fontFamily:
-            "Segoe UI, system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif",
-          color: function () {
-            var isDark = document.documentElement.classList.contains("dark");
-            var l = isDark ? 55 + Math.random() * 15 : 32 + Math.random() * 20;
-            return "hsl(" + (200 + Math.random() * 150) + ", 60%, " + l + "%)";
-          },
-          rotateRatio: 0.35,
-          minSize: 8,
-          backgroundColor: "transparent",
-          click: function (item) {
-            if (item && item[0]) {
-              window.location.href =
-                "/search?q=" + encodeURIComponent(String(item[0]));
-            }
-          },
-        });
-      }
-      if (tagCloudPairs && tagCloudPairs.length) {
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", function () {
-            setTimeout(runTagCloud, 30);
-          });
-        } else {
-          setTimeout(runTagCloud, 30);
-        }
-        window.addEventListener("resize", function () {
-          clearTimeout(resizeTimer);
-          resizeTimer = setTimeout(runTagCloud, 200);
-        });
-      }
-    })();
-  </script>
-  */}
-
-  <script is:inline>
-    (function () {
-      function fluidHeroTyping() {
-        if (typeof window.Typed === "undefined") return;
-        var el = document.getElementById("fluid-hero-typed");
-        if (!el) return;
-        var text = el.getAttribute("data-typed-text");
-        if (!text) return;
-        el.textContent = "";
-        new window.Typed("#fluid-hero-typed", {
-          strings: ["  ", text],
-          typeSpeed: 50,
-          cursorChar: "_",
-          loop: false,
-          showCursor: true,
-        });
-      }
-      function fluidBoardScrollLiftStats() {
-        var hero = document.querySelector(
-          ".fluid-index-header-inner.fluid-header-inner-compact"
-        );
-        var board = document.querySelector(
-          "main.fluid-statistics-main #board.fluid-board-surface"
-        );
-        if (!hero || !board) return;
-        var maxExtraPx = 88;
-        var ticking = false;
-        function scrollBlendSpan() {
-          var h = hero.clientHeight || 1;
-          return Math.max(h * 0.85, 120);
-        }
-        function update() {
-          var y = window.pageYOffset || document.documentElement.scrollTop || 0;
-          var span = scrollBlendSpan();
-          var t = span > 0 ? y / span : 0;
-          if (t > 1) t = 1;
-          if (t < 0) t = 0;
-          var u = t * t * (3 - 2 * t);
-          var lift = Math.round(u * maxExtraPx);
-          board.style.transform = "translate3d(0," + -lift + "px,0)";
-          ticking = false;
-        }
-        function requestUpdate() {
-          if (!ticking) {
-            ticking = true;
-            window.requestAnimationFrame(update);
-          }
-        }
-        window.addEventListener("scroll", requestUpdate, { passive: true });
-        window.addEventListener("resize", requestUpdate);
-        update();
-      }
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", function () {
-          fluidHeroTyping();
-          fluidBoardScrollLiftStats();
-        });
-      } else {
-        fluidHeroTyping();
-        fluidBoardScrollLiftStats();
-      }
-    })();
-  </script>
-
   <style is:global>
-    /* Tag cloud 样式（与词云成对恢复）
-    .fluid-statistics-main .tags-page-h2 {
-      font-size: 1.35rem;
-      font-weight: 600;
-      margin: 0 0 10px;
-      color: var(--text-primary, var(--fluid-text-color, #1a1a1a));
+    .stats-console-main {
+      min-height: calc(100vh - 82px);
+      width: 100%;
+      padding: 86px 16px 18px;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(48, 169, 222, 0.18), transparent 34%),
+        radial-gradient(circle at 88% 14%, rgba(50, 86, 150, 0.16), transparent 38%),
+        linear-gradient(155deg, #0b1220 0%, #0f172a 45%, #101b30 100%);
+      color: #d8e3f2;
+      overflow-x: auto;
     }
-    .fluid-statistics-main .tags-page-lead {
-      font-size: 0.9rem;
-      line-height: 1.6;
-      color: var(--text-secondary, var(--fluid-sec-text-color, #6b7280));
-      margin: 0 0 20px;
-    }
-    .fluid-statistics-main .tags-page-lead code {
-      font-size: 0.86em;
-      padding: 0.1em 0.35em;
-      border-radius: 4px;
-      background: var(--bg-tertiary, rgba(0, 0, 0, 0.06));
-    }
-    .fluid-statistics-main .tag-wordcloud-wrap {
-      min-height: 200px;
-      margin-bottom: 28px;
-    }
-    .fluid-statistics-main .tag-wordcloud-canvas {
-      display: block;
-      max-width: 100%;
-      height: auto;
+
+    .stats-console {
+      min-width: 1180px;
+      max-width: 1760px;
       margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 14px;
     }
-    .fluid-statistics-main .tags-empty,
-    */
-    .fluid-statistics-main .tags-statistics-anchor {
-      margin-top: 0;
+
+    .stats-console__topbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px 20px;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      padding: 6px 2px 2px;
+      backdrop-filter: none;
+    }
+
+    .stats-console__title {
+      margin: 0;
+      color: #f1f6ff;
+      font-size: 1.22rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .stats-console__subtitle {
+      margin: 4px 0 0;
+      color: rgba(206, 221, 241, 0.76);
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+    }
+
+    .stats-console__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .stats-console__pill {
+      border: none;
+      color: #e0f2fe;
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0.82;
+    }
+
+    .stats-console__grid {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.82fr) minmax(760px, 1.78fr);
+      gap: 14px;
+      min-height: calc(100vh - 200px);
+    }
+
+    .stats-console__panel {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      overflow: auto;
+      min-height: 0;
+      padding: 6px;
+    }
+
+    .stats-console__panel--main {
+      scrollbar-gutter: stable;
+    }
+
+    .stats-console__panel--side {
+      scrollbar-gutter: stable;
+    }
+
+    .stats-console-main .content-section.about-statistics-wrap.stat-scope {
+      margin: 0;
+      padding: 0;
+      max-width: none;
+      --text-primary: #ffffff;
+      --text-secondary: #ffffff;
+      --text-link: #ffffff;
+      --text-link-hover: #ffffff;
+    }
+
+    /* 左列：上方小饼图，下方文章排行 */
+    .stats-console-main .stat-scope .stat-dashboard {
+      background: transparent;
+      box-shadow: none;
+      border: none;
+    }
+
+    .stats-console-main .stat-scope .stat-dashboard__rim {
+      padding: 0;
+      display: grid;
+      grid-template-areas:
+        "ring"
+        "kpi"
+        "bars";
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .stats-console-main .stat-scope .stat-dashboard__row--split {
+      grid-area: ring;
+      margin: 0;
+    }
+
+    .stats-console-main .stat-scope .stat-dashboard__kpi {
+      grid-area: kpi;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin: 0;
+    }
+
+    .stats-console-main .stat-scope .stat-kpi {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-start;
+      gap: 10px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      border-radius: 0;
+    }
+
+    .stats-console-main .stat-scope .stat-kpi__label {
+      flex: 0 0 138px;
+      font-size: 0.66rem;
+      margin: 0;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .stats-console-main .stat-scope .stat-kpi__value {
+      font-size: 0.96rem;
+      color: #eff6ff;
+      margin: 0;
+      line-height: 1.3;
+      font-weight: 400;
+    }
+
+    .stats-console-main .stat-scope .stat-kpi__value--text {
+      font-size: 0.9rem;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stats-console-main .stat-scope .stat-panel {
+      margin: 0;
+      border: none;
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .stats-console-main .stat-scope .stat-panel--ring {
+      padding: 10px 12px 12px;
+    }
+
+    .stats-console-main .stat-scope .stat-panel--ring .stat-panel__head {
+      margin-bottom: 8px;
+    }
+
+    .stats-console-main .stat-scope .stat-panel--ring .stat-pie-wrap {
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px 18px;
+    }
+
+    .stats-console-main .stat-scope .stat-panel--ring .stat-pie {
+      width: 150px;
+      height: 150px;
+      margin: 0;
+      flex: 0 0 150px;
+    }
+
+    .stats-console-main .stat-scope .stat-panel--ring .stat-pie__center-val {
+      font-size: 1.45rem;
+    }
+
+    .stats-console-main .stat-scope .stat-panel--ring .stat-legend {
+      max-width: calc(100% - 170px);
+    }
+
+    .stats-console-main .stat-scope .stat-panel--bars {
+      grid-area: bars;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 12px;
+    }
+
+    .stats-console-main .stat-scope .stat-panel--bars .stat-panel__sub {
+      margin-bottom: 10px;
+    }
+
+    .stats-console-main .stat-scope .stat-panel--bars .stat-bar-chart {
+      flex: 1;
+      max-height: none;
+      min-height: 320px;
+    }
+
+    .stats-console-main .visitor-insights--embed {
+      margin: 0;
+      padding: 0;
+      max-width: none;
+    }
+
+    /* 右列：上大地图，下两表并排 */
+    .stats-console-main .visitor-insights--embed .visitor-insights__inner {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.88fr) minmax(360px, 1.12fr);
+      grid-template-areas:
+        "title title"
+        "map map"
+        "city raw";
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__h1 {
+      grid-area: title;
+      margin-bottom: 0;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__h1 {
+      color: #f1f6ff;
+      margin-bottom: 0.65rem;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__lead {
+      display: none;
+    }
+
+    .stats-console-main
+      .visitor-insights--embed
+      .visitor-insights__section[aria-label="World map"] {
+      grid-area: map;
+      margin-bottom: 0;
+    }
+
+    .stats-console-main
+      .visitor-insights--embed
+      .visitor-insights__section[aria-label="By city"] {
+      grid-area: city;
+      margin-bottom: 0;
+      min-height: 0;
+    }
+
+    .stats-console-main
+      .visitor-insights--embed
+      .visitor-insights__section[aria-label="Raw visits"] {
+      grid-area: raw;
+      margin-bottom: 0;
+      min-height: 0;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__map {
+      height: min(56vh, 560px);
+      min-height: 350px;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__lead,
+    .stats-console-main .visitor-insights--embed .visitor-insights__muted {
+      color: rgba(203, 215, 233, 0.82);
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table-wrap,
+    .stats-console-main .visitor-insights--embed .visitor-insights__map {
+      border: none;
+      border-radius: 0;
+      background: rgba(6, 11, 20, 0.22);
+      box-shadow: none;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table-wrap {
+      height: 300px;
+      overflow: auto;
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table--wide {
+      min-width: 0;
+    }
+
+    @media (max-width: 1280px) {
+      .stats-console-main .visitor-insights--embed .visitor-insights__inner {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "title"
+          "map"
+          "city"
+          "raw";
+      }
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table th,
+    .stats-console-main .visitor-insights--embed .visitor-insights__table td {
+      border-bottom-color: rgba(148, 163, 184, 0.2);
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__table th {
+      background: rgba(11, 19, 34, 0.35);
+    }
+
+    .stats-console-main .visitor-insights--embed .visitor-insights__warn {
+      border: none;
+      border-radius: 0;
+      background: rgba(14, 116, 144, 0.15);
+    }
+
+    @media (max-width: 1360px) {
+      .stats-console {
+        min-width: 1040px;
+      }
+      .stats-console__grid {
+        grid-template-columns: minmax(300px, 0.9fr) minmax(680px, 1.55fr);
+      }
+
+      .stats-console-main .stat-scope .stat-kpi__label {
+        flex-basis: 126px;
+      }
     }
   </style>
 </Layout>
