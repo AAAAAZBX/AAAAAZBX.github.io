@@ -1,5 +1,6 @@
 import type { MergedPost } from "./content-posts";
 import { countapiArticleKey, countapiGetUrl } from "./site-stats";
+import { normalizeArticlePathForStats } from "./site-path";
 
 export function calculateWordCount(body: string | undefined): number {
   const safeBody = typeof body === "string" ? body : "";
@@ -125,7 +126,7 @@ export function buildCollectionPieStats(allPosts: MergedPost[]): {
 export function buildPerArticleViewRows(
   allPosts: MergedPost[],
   namespace: string
-): { title: string; href: string; getUrl: string }[] {
+): { title: string; href: string; getUrl: string; pathKey: string }[] {
   return allPosts.map((post) => ({
     title: post.title,
     href: post.href,
@@ -133,5 +134,6 @@ export function buildPerArticleViewRows(
       namespace,
       countapiArticleKey(post.collection, post.slug)
     ),
+    pathKey: normalizeArticlePathForStats(post.href),
   }));
 }

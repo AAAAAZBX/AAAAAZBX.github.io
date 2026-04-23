@@ -1,13 +1,19 @@
 ---
 import { PIE_EMPTY_DONUT_PATH, type CollectionPieItem } from "../lib/statistics-build";
+import { getSupabaseClientConfig } from "../lib/visitor-env";
 
 interface Props {
   totalPosts: number;
   pieItems: CollectionPieItem[];
-  perArticleViewRows: { title: string; href: string; getUrl: string }[];
+  perArticleViewRows: { title: string; href: string; getUrl: string; pathKey: string }[];
   countStatsGetUrls: { site: string };
-  postsData: { date: string | null; body: string }[];
+  /** 构建期算好的全站正文字数，避免把全站 `body` 注入客户端 */
+  totalWordCount: number;
+  /** 最新文章日期（ISO） */
+  lastPostDateIso: string | null;
   siteStartDate: string;
+  /** 已配置 Supabase 访客表时用库内 `page_path` 聚合，否则用 CountAPI */
+  articleViewsSource?: "countapi" | "supabase";
 }
 
 const {
@@ -15,9 +21,13 @@ const {
   pieItems,
   perArticleViewRows,
   countStatsGetUrls,
-  postsData,
+  totalWordCount: serverTotalWordCount,
+  lastPostDateIso: serverLastPostDateIso,
   siteStartDate: clientSiteStartDate,
+  articleViewsSource: articleViewsSourceProp = "countapi",
 } = Astro.props;
+const articleViewsSource = articleViewsSourceProp;
+const supabaseClientConfig = getSupabaseClientConfig();
 ---
 
 <section class="content-section about-statistics-wrap stat-scope">
@@ -63,6 +73,7 @@ const {
                           totalPosts > 0
                             ? ((it.count / totalPosts) * 100).toFixed(2)
                             : "0.00";
+                        const line = `${it.label}：${it.count}（${pct}%）`;
                         return (
                           <path
                             class="stat-pie__seg"
@@ -71,7 +82,10 @@ const {
                             data-pie-label={it.label}
                             data-pie-count={String(it.count)}
                             data-pie-pct={pct}
-                          />
+                            title={line}
+                          >
+                            <title>{line}</title>
+                          </path>
                         );
                       })
                     : (
@@ -83,15 +97,6 @@ const {
                       )
                 }
               </svg>
-              <div
-                id="stat-pie-tooltip"
-                class="stat-pie__tooltip"
-                role="tooltip"
-                aria-hidden="true"
-              >
-                <div class="stat-pie__tooltip-cat">collection</div>
-                <div class="stat-pie__tooltip-line"></div>
-              </div>
               <div class="stat-pie__hole" aria-hidden="true">
                 <div class="stat-pie__center-val">{totalPosts}</div>
                 <div class="stat-pie__center-lbl">posts</div>
@@ -116,7 +121,11 @@ const {
           <span class="stat-panel__title">Article views by post</span>
         </div>
         <p class="stat-panel__sub">
-          Each post is counted once. The first request or a failed API may show 0 or a dash.
+          {
+            articleViewsSource === "supabase"
+              ? "每打开一次文章页计一次，数据来自已配置的 blog_visits（按站内路径 page_path 聚合），与 M02 条形图一致。若表未迁移，读写失败时可能显示 0。"
+              : "每篇文章用 CountAPI 独立计数；首次请求或网络失败时可能显示 0 或 “—”。"
+          }
         </p>
         <div class="stat-bar-chart" id="stat-article-views-bars">
           <p class="stat-bar-load">Loading per-post view counts…</p>
@@ -127,6 +136,22 @@ const {
 </section>
 
 <style is:global>
+  .stat-scope {
+    /* 与 about 页一致：数字改为站点正文 sans 字体栈 */
+    --stat-number-font: var(
+      --font-family-sans-serif,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial,
+      "Noto Sans",
+      "Liberation Sans",
+      sans-serif
+    );
+  }
+
   .stat-scope .about-h2 {
     font-size: 1.35rem;
     font-weight: 600;
@@ -166,7 +191,7 @@ const {
     border-radius: 8px;
     padding: 10px 12px 12px;
     background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
-    font-family: ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo, monospace;
+    font-family: var(--stat-number-font);
   }
 
   .stat-scope .stat-kpi__label {
@@ -209,7 +234,7 @@ const {
   }
 
   .stat-scope .stat-panel__tag {
-    font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+    font-family: var(--stat-number-font);
     font-size: 0.7rem;
     padding: 2px 7px;
     border-radius: 4px;
@@ -255,8 +280,10 @@ const {
     height: 180px;
     border-radius: 50%;
     flex-shrink: 0;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+    background: var(--bg-primary);
     margin: 10px;
+    overflow: visible;
+    z-index: 0;
   }
 
   .stat-scope .stat-pie__svg {
@@ -266,29 +293,21 @@ const {
     height: 100%;
     display: block;
     overflow: visible;
-    pointer-events: none;
+    /* `pointer-events: none` 在部分 WebKit/Chrome 上会导致子 path 命中区域异常，改为 all 后仍只有扇区可点 */
+    pointer-events: all;
   }
 
   .stat-scope .stat-pie__seg {
     pointer-events: auto;
-    stroke: color-mix(in srgb, var(--bg-primary) 45%, var(--text-primary) 8%);
-    stroke-width: 0.75;
-    vector-effect: non-scaling-stroke;
-    transform-box: view-box;
-    transform-origin: 50% 50%;
-    filter: none;
-    transition:
-      transform 0.3s cubic-bezier(0.34, 1.25, 0.64, 1),
-      filter 0.28s ease;
+    stroke: none;
+    filter: brightness(1);
+    transition: filter 0.22s ease, opacity 0.22s ease;
     cursor: pointer;
   }
 
   .stat-scope .stat-pie__seg:hover {
-    transform: scale(1.1);
-    filter:
-      drop-shadow(0 1px 2px color-mix(in srgb, var(--text-primary) 20%, transparent))
-      drop-shadow(0 4px 12px color-mix(in srgb, var(--nav-bg, #2f4154) 50%, transparent))
-      drop-shadow(0 10px 28px color-mix(in srgb, var(--nav-bg, #2f4154) 32%, transparent));
+    /* 不再缩放 path：避免边界命中变化导致 hover 抖动 */
+    filter: brightness(1.08) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
   }
 
   .stat-scope .stat-pie__seg--empty {
@@ -296,54 +315,7 @@ const {
   }
 
   .stat-scope .stat-pie__seg--empty:hover {
-    transform: none;
-    filter: none;
-  }
-
-  /* When paths use transform, portal tooltip to body so position:fixed matches clientX / clientY. */
-  #stat-pie-tooltip.stat-pie__tooltip,
-  .stat-scope .stat-pie__tooltip {
-    position: fixed;
-    z-index: 5000;
-    left: 0;
-    top: 0;
-    max-width: min(320px, calc(100vw - 16px));
-    padding: 8px 12px 10px;
-    background: var(--bg-primary);
-    border: 1px solid color-mix(in srgb, var(--text-link) 55%, var(--border-color));
-    border-radius: 6px;
-    box-shadow:
-      0 2px 8px rgba(0, 0, 0, 0.08),
-      0 8px 24px rgba(0, 0, 0, 0.12);
-    font-size: 0.82rem;
-    line-height: 1.45;
-    pointer-events: none;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.12s ease;
-  }
-
-  #stat-pie-tooltip.stat-pie__tooltip.is-visible,
-  .stat-scope .stat-pie__tooltip.is-visible {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  #stat-pie-tooltip .stat-pie__tooltip-cat,
-  .stat-scope .stat-pie__tooltip-cat {
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-  }
-
-  #stat-pie-tooltip .stat-pie__tooltip-line,
-  .stat-scope .stat-pie__tooltip-line {
-    color: var(--text-primary);
-    font-weight: 600;
-    font-family: ui-monospace, Menlo, monospace;
+    filter: brightness(1);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -351,14 +323,14 @@ const {
       transition: none;
     }
     .stat-scope .stat-pie__seg:hover {
-      transform: none;
-      filter: none;
+      filter: brightness(1.04);
     }
   }
 
   .stat-scope .stat-pie__hole {
     position: absolute;
     inset: 22%;
+    z-index: 1;
     border-radius: 50%;
     background: var(--bg-secondary);
     display: flex;
@@ -366,7 +338,11 @@ const {
     align-items: center;
     justify-content: center;
     text-align: center;
-    box-shadow: inset 0 0 0 1px var(--border-color);
+    /* 去掉内圈「圆环」线；不挡环上扇形的鼠标事件 */
+    border: none;
+    box-shadow: none;
+    outline: none;
+    pointer-events: none;
   }
 
   .stat-scope .stat-pie__center-val {
@@ -374,7 +350,7 @@ const {
     font-weight: 800;
     color: var(--text-primary);
     line-height: 1.1;
-    font-family: ui-monospace, Menlo, monospace;
+    font-family: var(--stat-number-font);
   }
 
   .stat-scope .stat-pie__center-lbl {
@@ -429,7 +405,7 @@ const {
 
   .stat-scope .stat-legend__n {
     font-weight: 700;
-    font-family: ui-monospace, Menlo, monospace;
+    font-family: var(--stat-number-font);
     color: var(--text-secondary);
   }
 
@@ -495,73 +471,52 @@ const {
   .stat-scope .stat-bar-n {
     text-align: right;
     font-weight: 700;
-    font-family: ui-monospace, Menlo, monospace;
+    font-family: var(--stat-number-font);
     color: var(--text-primary);
   }
 </style>
 
 <script
   define:vars={{
-    postsData,
+    serverTotalWordCount,
+    serverLastPostDateIso,
     siteStartDate: clientSiteStartDate,
     countStatsGetUrls,
     perArticleViewRows,
+    articleViewsSource,
+    supabaseClientConfig,
   }}
 >
   (function () {
     "use strict";
-
-    function calculateWordCount(body) {
-      if (!body) return 0;
-      let text = body
-        .replace(/```[\s\S]*?```/g, "")
-        .replace(/`[^`]+`/g, "")
-        .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
-        .replace(/!\[([^\]]*)\]\([^\)]+\)/g, "")
-        .replace(/^#+\s+/gm, "")
-        .replace(/\*\*([^\*]+)\*\*/g, "$1")
-        .replace(/\*([^\*]+)\*/g, "$1")
-        .replace(/~~([^~]+)~~/g, "$1")
-        .replace(/^>\s+/gm, "")
-        .replace(/^[\*\-\+]\s+/gm, "")
-        .replace(/^\d+\.\s+/gm, "")
-        .replace(/<[^>]+>/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-      const chineseChars = (text.match(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g) || [])
-        .length;
-      const englishWords = text
-        .replace(/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/g, " ")
-        .split(/\s+/)
-        .filter((word) => word.length > 0).length;
-      return chineseChars + englishWords;
+    function normalizeArticlePathForStats(href) {
+      if (!href) return "/";
+      const p = String(href).split("?")[0].split("#")[0];
+      const withSlash = p.startsWith("/") ? p : `/${p}`;
+      return withSlash.replace(/\/+$/, "") || "/";
     }
 
     function updateStatistics() {
       try {
-        const posts = Array.isArray(postsData) ? postsData : [];
-        const totalWords = posts.reduce(
-          (sum, post) => sum + calculateWordCount(post.body || ""),
-          0
-        );
-        const totalWordsFormatted =
-          totalWords >= 10000 ? `${(totalWords / 10000).toFixed(1)}w` : String(totalWords);
+        const n =
+          typeof serverTotalWordCount === "number" && !Number.isNaN(serverTotalWordCount)
+            ? serverTotalWordCount
+            : 0;
+        const totalWordsFormatted = n >= 10000 ? `${(n / 10000).toFixed(1)}w` : String(n);
         const totalWordsEl = document.getElementById("total-words");
         if (totalWordsEl) totalWordsEl.textContent = totalWordsFormatted;
 
-        const dates = posts
-          .map((post) => (post.date ? new Date(post.date) : null))
-          .filter((date) => date !== null && !isNaN(date.getTime()))
-          .sort((a, b) => b.getTime() - a.getTime());
-        if (dates.length > 0) {
-          const last = dates[0];
-          const months = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-          ];
-          const lastUpdatedFormatted = `${months[last.getMonth()]} ${last.getDate()}, ${last.getFullYear()}`;
-          const lastUpdatedEl = document.getElementById("last-updated");
-          if (lastUpdatedEl) lastUpdatedEl.textContent = lastUpdatedFormatted;
+        if (serverLastPostDateIso) {
+          const last = new Date(serverLastPostDateIso);
+          if (!isNaN(last.getTime())) {
+            const months = [
+              "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+            ];
+            const lastUpdatedFormatted = `${months[last.getMonth()]} ${last.getDate()}, ${last.getFullYear()}`;
+            const lastUpdatedEl = document.getElementById("last-updated");
+            if (lastUpdatedEl) lastUpdatedEl.textContent = lastUpdatedFormatted;
+          }
         }
         if (siteStartDate) {
           const startDate = new Date(siteStartDate);
@@ -593,9 +548,16 @@ const {
         siteEl.textContent = typeof n === "number" && !Number.isNaN(n) ? String(n) : "—";
       };
       try {
-        const a = await fetch(String(countStatsGetUrls.site), { mode: "cors", cache: "no-store" })
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 10000);
+        const a = await fetch(String(countStatsGetUrls.site), {
+          mode: "cors",
+          cache: "no-store",
+          signal: ctrl.signal,
+        })
           .then((r) => r.json())
-          .catch(() => null);
+          .catch(() => null)
+          .finally(() => clearTimeout(t));
         setNum(a && typeof a.value === "number" ? a.value : null);
       } catch (e) {
         mark();
@@ -603,31 +565,27 @@ const {
     }
 
     function fetchCountValue(url) {
-      return fetch(String(url), { mode: "cors", cache: "no-store" })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((j) => (j && typeof j.value === "number" ? j.value : 0))
-        .catch(() => 0);
+      return new Promise((resolve) => {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => {
+          ctrl.abort();
+          resolve(0);
+        }, 10000);
+        fetch(String(url), { mode: "cors", cache: "no-store", signal: ctrl.signal })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((j) => (j && typeof j.value === "number" ? j.value : 0))
+          .then((v) => {
+            clearTimeout(tid);
+            resolve(v);
+          })
+          .catch(() => {
+            clearTimeout(tid);
+            resolve(0);
+          });
+      });
     }
 
-    async function loadPerArticleBarChart() {
-      const host = document.getElementById("stat-article-views-bars");
-      const sumEl = document.getElementById("stat-article-views-sum");
-      if (!host) return;
-      const rows = Array.isArray(perArticleViewRows) ? perArticleViewRows : [];
-      if (rows.length === 0) {
-        host.innerHTML = '<p class="stat-bar-load">No posts</p>';
-        if (sumEl) sumEl.textContent = "0";
-        return;
-      }
-      const CHUNK = 8;
-      const withVals = [];
-      for (let i = 0; i < rows.length; i += CHUNK) {
-        const part = rows.slice(i, i + CHUNK);
-        const vals = await Promise.all(
-          part.map((r) => fetchCountValue(r.getUrl).then((v) => ({ ...r, v })))
-        );
-        withVals.push.apply(withVals, vals);
-      }
+    function applyArticleBarRows(host, sumEl, withVals) {
       withVals.sort((a, b) => b.v - a.v);
       const max = withVals.length ? Math.max(1, ...withVals.map((x) => x.v)) : 1;
       let sum = 0;
@@ -660,73 +618,82 @@ const {
       if (sumEl) sumEl.textContent = String(sum);
     }
 
-    function initPieTooltips() {
-      const pie = document.querySelector(".stat-scope .stat-pie");
-      const tip = document.getElementById("stat-pie-tooltip");
-      if (!pie || !tip) return;
-      const lineEl = tip.querySelector(".stat-pie__tooltip-line");
-      if (!lineEl) return;
-      if (tip.parentNode !== document.body) {
-        document.body.appendChild(tip);
+    async function loadPerArticleBarChart() {
+      const host = document.getElementById("stat-article-views-bars");
+      const sumEl = document.getElementById("stat-article-views-sum");
+      if (!host) return;
+      const rows = Array.isArray(perArticleViewRows) ? perArticleViewRows : [];
+      if (rows.length === 0) {
+        host.innerHTML = '<p class="stat-bar-load">No posts</p>';
+        if (sumEl) sumEl.textContent = "0";
+        return;
       }
-      const segs = pie.querySelectorAll("path.stat-pie__seg:not(.stat-pie__seg--empty)");
-      function placeTip() {
-        const w = tip.offsetWidth;
-        const h = tip.offsetHeight;
-        if (w < 1) return false;
-        return { w, h };
-      }
-      function positionTip(clientX, clientY) {
-        const edge = 10;
-        const gap = 8;
-        tip.classList.add("is-visible");
-        tip.setAttribute("aria-hidden", "false");
-        tip.style.left = "0px";
-        tip.style.top = "0px";
-        const run = () => {
-          const dim = placeTip();
-          if (!dim) {
-            requestAnimationFrame(run);
-            return;
+
+      if (articleViewsSource === "supabase") {
+        const cfg =
+          supabaseClientConfig &&
+          typeof supabaseClientConfig === "object" &&
+          typeof supabaseClientConfig.url === "string" &&
+          typeof supabaseClientConfig.anonKey === "string"
+            ? supabaseClientConfig
+            : null;
+        if (cfg) {
+          const k = String(cfg.anonKey || "").trim();
+          if (k.startsWith("sb_secret_")) {
+            console.warn(
+              "[stat] Supabase：当前为 Secret 公钥，无法用于网页；M02 将回退 CountAPI。"
+            );
+          } else {
+            try {
+              const endpoint = String(cfg.url).replace(/\/+$/, "") +
+                "/rest/v1/blog_visit_path_stats?select=page_path,views";
+              const ctrl = new AbortController();
+              const tid = setTimeout(() => ctrl.abort(), 12000);
+              const res = await fetch(endpoint, {
+                method: "GET",
+                headers: {
+                  apikey: cfg.anonKey,
+                  Authorization: `Bearer ${cfg.anonKey}`,
+                  Accept: "application/json",
+                },
+                signal: ctrl.signal,
+              }).finally(() => clearTimeout(tid));
+              if (res.ok) {
+                const data = await res.json();
+                const map = new Map();
+                for (const r of data) {
+                  const p = normalizeArticlePathForStats(String(r.page_path || ""));
+                  const n = Number(r.views);
+                  const add = Number.isFinite(n) ? n : 0;
+                  map.set(p, (map.get(p) || 0) + add);
+                }
+                const withVals = rows.map((r) => {
+                  const k2 = r.pathKey || normalizeArticlePathForStats(r.href);
+                  const v = map.get(k2) ?? 0;
+                  return { ...r, v };
+                });
+                applyArticleBarRows(host, sumEl, withVals);
+                return;
+              } else {
+                console.warn("[stat] blog_visit_path_stats HTTP failed:", res.status);
+              }
+            } catch (e) {
+              console.warn("[stat] blog_visit_path_stats failed, falling back to countapi", e);
+            }
           }
-          const w = dim.w;
-          const h = dim.h;
-          /* Center tooltip under the pointer; avoid a constant bottom-right offset */
-          let x = clientX - w / 2;
-          /* Prefer above the pointer to stay near the active slice */
-          let y = clientY - h - gap;
-          if (y < edge) y = clientY + gap;
-          if (x < edge) x = edge;
-          if (x + w > window.innerWidth - edge) x = window.innerWidth - w - edge;
-          if (y + h > window.innerHeight - edge) y = window.innerHeight - h - edge;
-          tip.style.left = x + "px";
-          tip.style.top = y + "px";
-        };
-        requestAnimationFrame(run);
-      }
-      function show(e) {
-        const t = e.currentTarget;
-        if (!t || !t.getAttribute("data-pie-label")) return;
-        const label = t.getAttribute("data-pie-label") || "";
-        const count = t.getAttribute("data-pie-count") || "0";
-        const pct = t.getAttribute("data-pie-pct") || "0.00";
-        lineEl.textContent = `${label}: ${count} (${pct}%)`;
-        positionTip(e.clientX, e.clientY);
-      }
-      function move(e) {
-        if (tip.classList.contains("is-visible")) {
-          positionTip(e.clientX, e.clientY);
         }
       }
-      function hide() {
-        tip.classList.remove("is-visible");
-        tip.setAttribute("aria-hidden", "true");
+
+      const CHUNK = 8;
+      const withVals = [];
+      for (let i = 0; i < rows.length; i += CHUNK) {
+        const part = rows.slice(i, i + CHUNK);
+        const vals = await Promise.all(
+          part.map((r) => fetchCountValue(r.getUrl).then((v) => ({ ...r, v })))
+        );
+        withVals.push.apply(withVals, vals);
       }
-      segs.forEach((path) => {
-        path.addEventListener("mouseenter", show);
-        path.addEventListener("mousemove", move);
-        path.addEventListener("mouseleave", hide);
-      });
+      applyArticleBarRows(host, sumEl, withVals);
     }
 
     function init() {
@@ -744,11 +711,6 @@ const {
         loadPerArticleBarChart();
       } catch (e) {
         console.error("loadPerArticleBarChart() error:", e);
-      }
-      try {
-        initPieTooltips();
-      } catch (e) {
-        console.error("initPieTooltips() error:", e);
       }
     }
 

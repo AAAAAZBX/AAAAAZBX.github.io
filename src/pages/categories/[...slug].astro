@@ -20,6 +20,7 @@ import {
   type ColKey,
 } from "../../lib/content-posts";
 import { countapiHitUrl, getCountapiNamespace, countapiArticleKey } from "../../lib/site-stats";
+import { isVisitorLogConfigured } from "../../lib/visitor-env";
 
 type RouteProps = {
   collection: ColKey;
@@ -60,10 +61,13 @@ const dateLine = formatPostMetaDateLine(post.data.date);
 const datetimeAttr = post.data.date ? formatPostDatetimeAttr(post.data.date) : "";
 const sectionTitle = getCollectionLabel(collection).en;
 
-const countArticlePageHitUrl = countapiHitUrl(
-  getCountapiNamespace(),
-  countapiArticleKey(collection, id)
-);
+const useSupabaseForArticleViews = isVisitorLogConfigured();
+const countArticlePageHitUrl = useSupabaseForArticleViews
+  ? null
+  : countapiHitUrl(
+      getCountapiNamespace(),
+      countapiArticleKey(collection, id)
+    );
 ---
 
 <Layout title={`${post.data.title} | ${sectionTitle}`} overlayNav>

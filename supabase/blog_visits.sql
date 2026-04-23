@@ -10,7 +10,8 @@ create table if not exists public.blog_visits (
   country text,
   lat double precision,
   lon double precision,
-  user_agent text
+  user_agent text,
+  page_path text
 );
 
 create index if not exists blog_visits_created_at_idx on public.blog_visits (created_at desc);

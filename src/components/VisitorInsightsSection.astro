@@ -21,7 +21,7 @@ const configured = isVisitorLogConfigured();
             尚未配置 <code>PUBLIC_SUPABASE_URL</code> 与 <code>PUBLIC_SUPABASE_ANON_KEY</code>。请在本仓库根目录创建
             <code>.env</code>（复制 <code>env.example</code> 后填写），在 Supabase 的 SQL Editor 中执行
             <code>supabase/blog_visits.sql</code> 一次。保存 <code>.env</code> 后需<strong>重启</strong>开发服务器
-            <code>npm run dev</code>（或重新执行 <code>npm run build</code>）环境变量才会生效。配置成功后，再浏览任意页面会写入记录，Tags
+            <code>npm run dev</code>（或重新执行 <code>npm run build</code>）环境变量才会生效。配置成功后，再浏览任意页面会写入记录，Statistics
             页才能看到 IP/地图。
           </p>
         </div>
@@ -378,20 +378,44 @@ const configured = isVisitorLogConfigured();
     }
 
     const supabase = createClient(cfg.url, cfg.anonKey);
-    const { data: rows, error } = await supabase
-      .from(TABLE)
-      .select("id, created_at, ip, city, region, country, lat, lon")
-      .order("created_at", { ascending: false })
-      .limit(5000);
+    let rows: unknown;
+    let error: { message?: string } | null = null;
+    try {
+      const res = await Promise.race([
+        supabase
+          .from(TABLE)
+          .select("id, created_at, ip, city, region, country, lat, lon")
+          .order("created_at", { ascending: false })
+          .limit(5000),
+        new Promise<never>((_, rej) =>
+          setTimeout(
+            () => rej(new Error("请求 Supabase 超时（约 20s）。请检查本机到 Supabase 的网络、VPN，或见控制台。")),
+            20000
+          )
+        ),
+      ]);
+      rows = res.data;
+      error = res.error;
+    } catch (e) {
+      const err = e as Error;
+      error = { message: err?.message || String(e) };
+      rows = null;
+    }
 
     if (error) {
-      if (note) {
-        let m = "读取失败: " + error.message;
-        if (/invalid api key/i.test(error.message)) {
-          m +=
-            " 常见原因：① 把 Secret 键当成了公钥；② 密钥与项目 URL 不是同一项目；③ Secret 值前后多了引号或截断。请到 Supabase API Keys 重新复制 Publishable 或 legacy anon，更新后重新部署。";
-        }
-        note.textContent = m;
+      let m = "读取失败: " + (error?.message || "");
+      if (error?.message && /invalid api key/i.test(String(error.message))) {
+        m +=
+          " 常见原因：① 把 Secret 键当成了公钥；② 密钥与项目 URL 不是同一项目；③ Secret 值前后多了引号或截断。请到 Supabase API Keys 重新复制 Publishable 或 legacy anon，更新后重新部署。";
+      }
+      if (note) note.textContent = m;
+      const cityTbody = document.querySelector("#visit-by-city tbody");
+      if (cityTbody) {
+        cityTbody.innerHTML = `<tr><td colspan="4">${escapeHtml(m)}</td></tr>`;
+      }
+      const rawTbodyErr = document.querySelector("#visit-raw tbody");
+      if (rawTbodyErr) {
+        rawTbodyErr.innerHTML = `<tr><td colspan="5">${escapeHtml(m)}</td></tr>`;
       }
       return;
     }

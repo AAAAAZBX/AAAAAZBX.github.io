@@ -1,4 +1,4 @@
-﻿/* ======= 0. CSS 鍙橀噺瀹氫箟 (浜壊/鏆楄壊妯″紡) ======= */
+/* ======= 0. CSS 鍙橀噺瀹氫箟 (浜壊/鏆楄壊妯″紡) ======= */
 :root {
   /*
    * 姝ｆ枃瀛椾綋鏍堬細涓?lynx-li.github.io 涓€鑷达紙鍏堝姞杞?Bootstrap 4.6.1锛屽啀鍔犺浇 Fluid main.css锛夈€?   * 鎽樿嚜 https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.css 鏍瑰彉閲?--font-family-sans-serif
@@ -1581,12 +1581,12 @@ body.home-fluid-index.dark .fluid-index-main.fluid-board-page {
 }
 
 /*
- * Archives / Categories / Tags：main 建立独立 BFC（flow-root），避免 #board 的负 margin 与外层 margin 折叠，
+ * Archives / Categories / Statistics：main 建立独立 BFC（flow-root），避免 #board 的负 margin 与外层 margin 折叠，
  * 否则会出现「顶图下沿与正文一起被整体上提」、叠层失效的问题。
  */
 body.home-fluid-index main.fluid-archives-main,
 body.home-fluid-index main.fluid-categories-main,
-body.home-fluid-index main.fluid-board-page.fluid-tags-main {
+body.home-fluid-index main.fluid-board-page.fluid-statistics-main {
   display: flow-root;
 }
 
@@ -1666,11 +1666,11 @@ body.home-fluid-index main.fluid-board-page #board.fluid-board-surface {
 }
 
 /*
- * Archives / Categories / Tags：白卡片向上叠入顶图（与 lynx 次级页一致）；Tags 同页的额外上推仍由 tags.astro 里 JS 的 transform 叠加。
+ * Archives / Categories / Statistics：白卡片向上叠入顶图（与 lynx 次级页一致）；Statistics 同页的额外上推仍由 statistics.astro 里 JS 的 transform 叠加。
  */
 body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
 body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface,
-body.home-fluid-index main.fluid-board-page.fluid-tags-main #board.fluid-board-surface {
+body.home-fluid-index main.fluid-board-page.fluid-statistics-main #board.fluid-board-surface {
   margin-top: -2.25rem;
   padding-top: 2rem;
   padding-bottom: 3rem;
@@ -1686,7 +1686,7 @@ body.home-fluid-index main.fluid-board-page.fluid-tags-main #board.fluid-board-s
 
 html.dark body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
 html.dark body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface,
-html.dark body.home-fluid-index main.fluid-board-page.fluid-tags-main #board.fluid-board-surface {
+html.dark body.home-fluid-index main.fluid-board-page.fluid-statistics-main #board.fluid-board-surface {
   border-top-color: rgba(61, 71, 88, 0.85);
   box-shadow:
     0 -8px 36px rgba(0, 0, 0, 0.35),
@@ -1708,7 +1708,7 @@ body.home-fluid-index main.fluid-board-page #board.fluid-board-surface.fluid-boa
 
   body.home-fluid-index main.fluid-archives-main #board.fluid-board-surface,
   body.home-fluid-index main.fluid-categories-main #board.fluid-board-surface,
-  body.home-fluid-index main.fluid-board-page.fluid-tags-main #board.fluid-board-surface {
+  body.home-fluid-index main.fluid-board-page.fluid-statistics-main #board.fluid-board-surface {
     margin-top: -1.75rem;
     padding-top: 1.5rem;
     padding-bottom: 2.5rem;

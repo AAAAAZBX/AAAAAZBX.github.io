@@ -163,7 +163,9 @@ import Layout from "../layouts/Layout.astro";
                 // 主页的特征：URL 是 / 或 /index
                 const isHomePage = normalizedUrl === '/' || normalizedUrl === '/index';
                 // 目录页面的特征：URL 是 /categories、/archives 等列表页，不应出现在文章搜索结果里
-                const isDirectoryPage = /^\/(categories|archives|search|about|tags)\/?$/.test(normalizedUrl);
+                const isDirectoryPage = /^\/(categories|archives|search|about|tags|statistics)\/?$/.test(
+                  normalizedUrl
+                );
                 if (isHomePage || isDirectoryPage) {
                   return null; // 返回 null，后续过滤掉
                 }

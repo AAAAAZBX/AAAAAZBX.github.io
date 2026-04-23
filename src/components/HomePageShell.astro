@@ -11,11 +11,10 @@ interface Props {
 
 const { recentPosts, currentPage, totalPages } = Astro.props;
 
-const siteTitle = "B.X.Zhang Blog";
-const heroTypedText = "Algorithms, Systems, and AI for Finance";
-/** Hero 下静态开头语：与 content 里「基础与赛场为主、方向在摸索」的现状一致，避免把副标题也塞进 Typed 以免过长。 */
+const heroTypedText = "Algorithms, Systems, and Machine Learning";
+/** Hero 下静态开头语。 */
 const heroIntro =
-  "Trying to build things that are rigorous, useful, and worth remembering.";
+  "Rigorous notes, small experiments, and things worth coming back to.";
 const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
 const folderDisplayMap = buildContentFolderDisplayMap();
 

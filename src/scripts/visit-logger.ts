@@ -5,6 +5,7 @@ import {
   fetchAmapV3IpByJsonp,
   isAmapIpSuccess,
 } from "../lib/amap-ip";
+import { siteRelativePathname } from "../lib/site-path";
 
 const TABLE = "blog_visits";
 
@@ -44,6 +45,25 @@ async function fetchIpapi(): Promise<IpApi | null> {
   return j;
 }
 
+async function fetchIpOnly(): Promise<string | null> {
+  const providers = [
+    "https://api64.ipify.org?format=json",
+    "https://api.ip.sb/geoip",
+  ];
+  for (const u of providers) {
+    try {
+      const r = await fetch(u, { mode: "cors", credentials: "omit" });
+      if (!r.ok) continue;
+      const j = (await r.json()) as { ip?: string };
+      const ip = String(j?.ip || "").trim();
+      if (ip) return ip;
+    } catch {
+      // try next provider
+    }
+  }
+  return null;
+}
+
 type VisitRow = {
   ip: string;
   city: string | null;
@@ -53,6 +73,22 @@ type VisitRow = {
   lon: number | null;
   user_agent: string;
 };
+
+function fallbackClientIpLikeId(): string {
+  const key = "__visit_fallback_client_id__";
+  try {
+    if (typeof localStorage !== "undefined") {
+      const cached = String(localStorage.getItem(key) || "").trim();
+      if (cached) return `local-${cached}`;
+      const next = Math.random().toString(36).slice(2, 10);
+      localStorage.setItem(key, next);
+      return `local-${next}`;
+    }
+  } catch {
+    // ignore localStorage access errors
+  }
+  return `local-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function toRowFromIpapi(data: IpApi): VisitRow {
   return {
@@ -72,7 +108,20 @@ function toRowFromIpapi(data: IpApi): VisitRow {
 async function buildVisitRow(): Promise<VisitRow | null> {
   const data = await fetchIpapi();
   if (!data || !data.ip) {
-    return null;
+    // 某些设备/网络会拦截 ipapi；退化为仅拿 IP，也拿不到就用本机稳定标识，确保仍能记访问。
+    const ip = (await fetchIpOnly()) || fallbackClientIpLikeId();
+    return {
+      ip,
+      city: null,
+      region: null,
+      country: null,
+      lat: null,
+      lon: null,
+      user_agent:
+        typeof navigator !== "undefined" && navigator.userAgent
+          ? navigator.userAgent.slice(0, 1024)
+          : "",
+    };
   }
   const base = toRowFromIpapi(data);
   const isCn = (data.country_code || "").toUpperCase() === "CN" || /中国/i.test(String(data.country_name || ""));
@@ -117,7 +166,7 @@ async function buildVisitRow(): Promise<VisitRow | null> {
   }
 }
 
-export async function runVisitLog(): Promise<void> {
+export async function runVisitLog(options?: { siteBasePath?: string }): Promise<void> {
   const url = import.meta.env.PUBLIC_SUPABASE_URL;
   const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) {
@@ -140,7 +189,13 @@ export async function runVisitLog(): Promise<void> {
     return;
   }
 
-  const { error } = await supabase.from(TABLE).insert({
+  const siteBase = options?.siteBasePath ?? "/";
+  const pagePath =
+    typeof window !== "undefined" && window.location?.pathname
+      ? siteRelativePathname(window.location.pathname, siteBase)
+      : null;
+
+  const basePayload = {
     ip: row.ip,
     city: row.city,
     region: row.region,
@@ -148,8 +203,23 @@ export async function runVisitLog(): Promise<void> {
     lat: row.lat,
     lon: row.lon,
     user_agent: row.user_agent,
+  };
+
+  let { error } = await supabase.from(TABLE).insert({
+    ...basePayload,
+    page_path: pagePath,
   });
   if (error) {
-    console.warn("[visit-log]", error.message);
+    const msg = String(error.message || "");
+    // 兼容旧表：尚未执行 page_path 迁移时，退回旧字段写入，避免统计全停。
+    if (/page_path/i.test(msg) || /PGRST204/i.test(msg)) {
+      const retry = await supabase.from(TABLE).insert(basePayload);
+      error = retry.error;
+      if (!error) {
+        console.warn("[visit-log] page_path column missing, inserted without page_path");
+        return;
+      }
+    }
+    console.warn("[visit-log]", msg);
   }
 }

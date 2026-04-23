@@ -1,6 +1,16 @@
 {
   "commits": [
     {
+      "hash": "c4df5f128652b10d553336627045cb56bd46f399",
+      "date": "2026-04-23 11:03:11 +0800",
+      "message": "refactor(about): move Education to main column; show pie legend to the right"
+    },
+    {
+      "hash": "4f04713739870d1961390b7b5a6a2760ec99c3be",
+      "date": "2026-04-23 10:49:27 +0800",
+      "message": "feat: domestic IP via Amap Web v3 (JSONP), optional PUBLIC_AMAP_WEB_KEY"
+    },
+    {
       "hash": "15786437bb796f6ce2b9962e39d0ca289c51df05",
       "date": "2026-04-23 00:42:55 +0800",
       "message": "ci: pass Supabase env to GitHub Pages build; trim visitor env values"
@@ -39,17 +49,7 @@
       "hash": "f85346c01af829ecb1b27c99ab7370bf17ef17bd",
       "date": "2026-04-19 17:22:23 +0800",
       "message": "Add service worker and preload for cached hero images"
-    },
-    {
-      "hash": "1c26d6991e2f4ef522fb7e94973a987ce4bfa1a2",
-      "date": "2026-04-18 14:06:06 +0800",
-      "message": "Add home feed pagination (10 posts per page) and pagination styles"
-    },
-    {
-      "hash": "8a3a3e1570b5c90e452e53658f663c86ae592fb3",
-      "date": "2026-04-18 12:51:07 +0800",
-      "message": "Adjust post page hero height and fix min-height override for article layout"
     }
   ],
-  "timestamp": "2026-04-23T02:37:01.263Z"
+  "timestamp": "2026-04-23T04:43:49.596Z"
 }
