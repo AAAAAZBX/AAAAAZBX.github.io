@@ -168,7 +168,7 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
       border-radius: 0;
       background: transparent;
       box-shadow: none;
-      overflow: auto;
+      overflow: visible;
       min-height: 0;
       padding: 6px;
     }
@@ -310,7 +310,7 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
 
     .stats-console-main .stat-scope .stat-panel--bars .stat-bar-chart {
       flex: 0 0 auto;
-      max-height: 300px;
+      max-height: none;
       min-height: 0;
     }
 
@@ -389,8 +389,8 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
     }
 
     .stats-console-main .visitor-insights--embed .visitor-insights__table-wrap {
-      height: 300px;
-      overflow: auto;
+      height: auto;
+      overflow: visible;
     }
 
     .stats-console-main .visitor-insights--embed .visitor-insights__table--wide {
@@ -401,14 +401,14 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
       .visitor-insights--embed
       .visitor-insights__section[aria-label="By city"]
       .visitor-insights__table-wrap {
-      height: 220px;
+      height: auto;
     }
 
     .stats-console-main
       .visitor-insights--embed
       .visitor-insights__section[aria-label="Raw visits"]
       .visitor-insights__table-wrap {
-      height: clamp(340px, 46vh, 640px);
+      height: auto;
     }
 
     @media (max-width: 1280px) {

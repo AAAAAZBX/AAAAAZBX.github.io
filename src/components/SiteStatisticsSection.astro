@@ -420,28 +420,9 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
   }
 
   .stat-scope .stat-bar-chart {
-    max-height: 320px;
-    overflow: auto;
+    max-height: none;
+    overflow: visible;
     padding-right: 2px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
-  }
-
-  .stat-scope .stat-bar-chart::-webkit-scrollbar {
-    width: 7px;
-  }
-
-  .stat-scope .stat-bar-chart::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .stat-scope .stat-bar-chart::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.45);
-    border-radius: 999px;
-  }
-
-  .stat-scope .stat-bar-chart::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.65);
   }
 
   .stat-scope .stat-rank-wrap {
