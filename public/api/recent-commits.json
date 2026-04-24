@@ -1,6 +1,11 @@
 {
   "commits": [
     {
+      "hash": "b127fc3cfd274c260f7ac17acedf3f2e19a74659",
+      "date": "2026-04-24 16:39:36 +0800",
+      "message": "refactor(home): align tags and archive navigation layout"
+    },
+    {
       "hash": "cd5fcbc9ead1b1bb6e1e3110ab53b867a84d977e",
       "date": "2026-04-24 13:21:03 +0800",
       "message": "feat: dashboard theme lock, stats merge, security & admin surfaces"
@@ -44,12 +49,7 @@
       "hash": "a228399f316b315e3abef53ba16ed6f43d8b5ae5",
       "date": "2026-04-23 13:29:46 +0800",
       "message": "fix(visit-log): add request timeouts and local fallback resilience"
-    },
-    {
-      "hash": "a1ad3dbc5a5fc10c7204a2676dfb420975fa2a49",
-      "date": "2026-04-23 12:49:22 +0800",
-      "message": "feat(statistics): add path-based visit aggregation and stabilize client stats"
     }
   ],
-  "timestamp": "2026-04-24T08:31:47.183Z"
+  "timestamp": "2026-04-24T09:12:04.888Z"
 }

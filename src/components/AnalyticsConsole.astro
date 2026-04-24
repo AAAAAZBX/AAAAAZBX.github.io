@@ -90,6 +90,16 @@
     </div>
     <div class="analytics-console__table-wrap">
       <table class="analytics-console__table" id="table-ip">
+        <colgroup>
+          <col class="analytics-console__col-ip" />
+          <col class="analytics-console__col-profile" />
+          <col class="analytics-console__col-visits" />
+          <col class="analytics-console__col-sessions" />
+          <col class="analytics-console__col-isp" />
+          <col class="analytics-console__col-location" />
+          <col class="analytics-console__col-path" />
+          <col class="analytics-console__col-seen" />
+        </colgroup>
         <thead>
           <tr>
             <th>IP</th>
@@ -256,6 +266,24 @@
   .analytics-console__table-wrap {
     overflow-x: auto;
     margin-bottom: 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(56, 189, 248, 0.5) rgba(15, 23, 42, 0.38);
+    scrollbar-gutter: stable;
+  }
+  .analytics-console__table-wrap::-webkit-scrollbar {
+    height: 10px;
+  }
+  .analytics-console__table-wrap::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.42);
+  }
+  .analytics-console__table-wrap::-webkit-scrollbar-thumb {
+    border: 2px solid rgba(15, 23, 42, 0.42);
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.75), rgba(244, 114, 182, 0.7));
+  }
+  .analytics-console__table-wrap::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(90deg, rgba(125, 211, 252, 0.95), rgba(249, 168, 212, 0.92));
   }
   .analytics-console__lock {
     display: flex;
@@ -298,7 +326,8 @@
     font-size: 0.84rem;
   }
   .analytics-console__profile-input {
-    width: 170px;
+    width: min(100%, 150px);
+    text-align: center;
   }
   .analytics-console__btn {
     border: 1px solid rgba(56, 189, 248, 0.32);
@@ -319,78 +348,60 @@
     color: #cbd5e1;
   }
   .analytics-console__profile-actions {
-    display: flex;
-    flex-wrap: wrap;
+    display: inline-flex;
+    flex-wrap: nowrap;
     gap: 0.35rem;
     margin-top: 0.35rem;
+    justify-content: center;
   }
   .analytics-console__profile-readonly {
     color: #cbd5e1;
   }
   .analytics-console__table {
-    width: max-content;
-    min-width: 100%;
+    width: 100%;
+    min-width: 1120px;
     border-collapse: collapse;
     font-size: 0.84rem;
     color: var(--text);
-    table-layout: fixed;
+    table-layout: auto;
   }
   .analytics-console__table th,
   .analytics-console__table td {
-    padding: 0.5rem 0.62rem;
-    text-align: left;
+    padding: 0.5rem 0.55rem;
+    text-align: center;
     border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-    vertical-align: top;
+    vertical-align: middle;
   }
   .analytics-console__table th {
     color: var(--muted);
     font-weight: 700;
   }
-  .analytics-console__table th:nth-child(1),
-  .analytics-console__table td:nth-child(1) {
-    width: 250px;
-  }
-  .analytics-console__table th:nth-child(2),
-  .analytics-console__table td:nth-child(2) {
-    width: 230px;
-  }
-  .analytics-console__table th:nth-child(3),
-  .analytics-console__table td:nth-child(3) {
-    width: 80px;
-  }
-  .analytics-console__table th:nth-child(4),
-  .analytics-console__table td:nth-child(4) {
-    width: 80px;
-  }
-  .analytics-console__table th:nth-child(5),
-  .analytics-console__table td:nth-child(5) {
-    width: 190px;
-  }
-  .analytics-console__table th:nth-child(6),
-  .analytics-console__table td:nth-child(6) {
-    width: 280px;
-    min-width: 280px;
-  }
-  .analytics-console__table th:nth-child(7),
-  .analytics-console__table td:nth-child(7) {
-    width: 420px;
-    min-width: 420px;
-  }
-  .analytics-console__table th:nth-child(8),
-  .analytics-console__table td:nth-child(8) {
-    width: 180px;
-  }
+  .analytics-console__col-ip { width: 18%; }
+  .analytics-console__col-profile { width: 13%; }
+  .analytics-console__col-visits { width: 5%; }
+  .analytics-console__col-sessions { width: 6%; }
+  .analytics-console__col-isp { width: 16%; }
+  .analytics-console__col-location { width: 18%; }
+  .analytics-console__col-path { width: 14%; }
+  .analytics-console__col-seen { width: 10%; }
   .analytics-console__ip-cell,
   .analytics-console__path-cell {
     color: #f472b6;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .analytics-console__ip-cell {
     overflow-wrap: anywhere;
-    word-break: break-word;
     white-space: normal;
   }
   .analytics-console__location-cell {
     display: inline-block;
-    max-width: 280px;
+    max-width: 100%;
     line-height: 1.45;
     white-space: normal;
     overflow-wrap: anywhere;
@@ -447,8 +458,13 @@
   type ProfileNotes = Record<string, string>;
 
   type ChartApi = {
-    init: (el: HTMLElement | null) => { setOption: (o: unknown) => void };
+    init: (el: HTMLElement | null) => {
+      setOption: (o: unknown) => void;
+      resize: () => void;
+    };
   };
+
+  type ChartInstance = ReturnType<ChartApi["init"]>;
 
   function loadEcharts(): Promise<ChartApi> {
     return new Promise((resolve, reject) => {
@@ -485,8 +501,11 @@
 
   const PROFILE_NOTES_KEY = "analytics.ipProfileNotes.v1";
   const PROFILE_PASSWORD_HASH_KEY = "analytics.ipProfilePasswordHash.v1";
+  const PROFILE_TABLE = "blog_visit_ip_profiles";
   let portraitUnlocked = false;
   let latestIpRows: IpPortrait[] = [];
+  let remoteProfileNotes: ProfileNotes = {};
+  let analyticsSupabase: ReturnType<typeof createClient> | null = null;
 
   async function sha256(input: string): Promise<string> {
     const bytes = new TextEncoder().encode(input);
@@ -498,14 +517,57 @@
     try {
       const raw = localStorage.getItem(PROFILE_NOTES_KEY);
       const parsed = raw ? JSON.parse(raw) : {};
-      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as ProfileNotes : {};
+      const local = parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as ProfileNotes : {};
+      return { ...local, ...remoteProfileNotes };
     } catch {
-      return {};
+      return { ...remoteProfileNotes };
     }
   }
 
   function writeProfileNotes(notes: ProfileNotes): void {
     localStorage.setItem(PROFILE_NOTES_KEY, JSON.stringify(notes));
+  }
+
+  async function loadRemoteProfileNotes(): Promise<void> {
+    if (!analyticsSupabase) return;
+    const res = await analyticsSupabase
+      .from(PROFILE_TABLE)
+      .select("ip,profile_name");
+    if (res.error) {
+      console.warn("[analytics] profile notes table unavailable", res.error);
+      return;
+    }
+    remoteProfileNotes = Object.fromEntries(
+      ((res.data || []) as Array<{ ip: string | null; profile_name: string | null }>)
+        .map((row) => [String(row.ip || ""), String(row.profile_name || "").trim()] as const)
+        .filter(([ip, profileName]) => ip && profileName)
+    );
+  }
+
+  async function saveRemoteProfileNote(ip: string, profileName: string): Promise<void> {
+    if (!analyticsSupabase) return;
+    const res = await analyticsSupabase
+      .from(PROFILE_TABLE)
+      .upsert(
+        {
+          ip,
+          profile_name: profileName,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "ip" }
+      );
+    if (res.error) throw res.error;
+    remoteProfileNotes[ip] = profileName;
+  }
+
+  async function deleteRemoteProfileNote(ip: string): Promise<void> {
+    if (!analyticsSupabase) return;
+    const res = await analyticsSupabase
+      .from(PROFILE_TABLE)
+      .delete()
+      .eq("ip", ip);
+    if (res.error) throw res.error;
+    delete remoteProfileNotes[ip];
   }
 
   function setLockStatus(message: string): void {
@@ -580,6 +642,18 @@
     return `${Math.round(value * 100)}%`;
   }
 
+  function fitCharts(charts: ChartInstance[]): void {
+    const resizeAll = () => charts.forEach((chart) => chart.resize());
+    requestAnimationFrame(resizeAll);
+    setTimeout(resizeAll, 80);
+    setTimeout(resizeAll, 260);
+    window.addEventListener("resize", resizeAll, { passive: true });
+    if ("ResizeObserver" in window) {
+      const ro = new ResizeObserver(resizeAll);
+      document.querySelectorAll<HTMLElement>(".analytics-console__chart").forEach((el) => ro.observe(el));
+    }
+  }
+
   function buildLocation(row: VisitRow): string {
     const parts = [row.city, row.region, row.country]
       .map((x) => String(x || "").trim())
@@ -651,13 +725,13 @@
     if (!stored) {
       localStorage.setItem(PROFILE_PASSWORD_HASH_KEY, hash);
       portraitUnlocked = true;
-      setLockStatus("Unlocked. Local password initialized on this browser.");
+      setLockStatus("Unlocked. Local password initialized; profile names sync to Supabase when saved.");
       renderIpTable();
       return;
     }
     if (stored === hash) {
       portraitUnlocked = true;
-      setLockStatus("Unlocked. Profile names are stored only in this browser.");
+      setLockStatus("Unlocked. Profile names sync to Supabase when saved.");
       renderIpTable();
       return;
     }
@@ -689,14 +763,37 @@
         if (value) notes[saveIp] = value;
         else delete notes[saveIp];
         writeProfileNotes(notes);
-        setLockStatus(`Saved profile name for ${saveIp}.`);
+        setLockStatus(`Saving profile name for ${saveIp}...`);
+        renderIpTable();
+        void (value
+          ? saveRemoteProfileNote(saveIp, value)
+          : deleteRemoteProfileNote(saveIp)
+        )
+          .then(() => {
+            setLockStatus(`Saved profile name for ${saveIp}.`);
+            renderIpTable();
+          })
+          .catch((err) => {
+            setLockStatus(`Saved locally, but Supabase sync failed: ${String(err?.message || err)}.`);
+          });
+        return;
       }
       if (deleteIp) {
         delete notes[deleteIp];
         writeProfileNotes(notes);
-        setLockStatus(`Deleted profile name for ${deleteIp}.`);
+        delete remoteProfileNotes[deleteIp];
+        setLockStatus(`Deleting profile name for ${deleteIp}...`);
+        renderIpTable();
+        void deleteRemoteProfileNote(deleteIp)
+          .then(() => {
+            setLockStatus(`Deleted profile name for ${deleteIp}.`);
+            renderIpTable();
+          })
+          .catch((err) => {
+            setLockStatus(`Deleted locally, but Supabase sync failed: ${String(err?.message || err)}.`);
+          });
+        return;
       }
-      renderIpTable();
     });
   }
 
@@ -714,6 +811,8 @@
     }
 
     const supabase = createClient(cfg.url, cfg.anonKey);
+    analyticsSupabase = supabase;
+    await loadRemoteProfileNotes();
     const selectCols = "ip,city,region,country,visitor_kind,page_path,created_at,session_id,net_isp";
     const raw = await supabase
       .from("blog_visits")
@@ -826,11 +925,12 @@
     const textColor = "#e2e8f0";
     const gridLine = "#334155";
 
-    ec.init(document.getElementById("chart-traffic-line")).setOption({
+    const chartTraffic = ec.init(document.getElementById("chart-traffic-line"));
+    chartTraffic.setOption({
       textStyle: { color: textColor },
       tooltip: { trigger: "axis" },
       legend: { textStyle: { color: axis } },
-      grid: { left: 42, right: 24, top: 32, bottom: 38 },
+      grid: { left: 12, right: 18, top: 38, bottom: 30, containLabel: true },
       xAxis: { type: "category", data: hourlyPairs.map(([h]) => h), axisLabel: { color: axis } },
       yAxis: { type: "value", axisLabel: { color: axis }, splitLine: { lineStyle: { color: gridLine } } },
       series: [
@@ -857,31 +957,35 @@
       ],
     });
 
-    ec.init(document.getElementById("chart-paths")).setOption({
+    const chartPaths = ec.init(document.getElementById("chart-paths"));
+    chartPaths.setOption({
       textStyle: { color: textColor },
       tooltip: { trigger: "axis" },
-      grid: { left: 150, right: 16, top: 8, bottom: 24 },
+      grid: { left: 12, right: 18, top: 10, bottom: 30, containLabel: true },
       xAxis: { type: "value", axisLabel: { color: axis }, splitLine: { lineStyle: { color: gridLine } } },
       yAxis: {
         type: "category",
         data: topPaths.map((h) => h.page_path).reverse(),
-        axisLabel: { color: axis, width: 140, overflow: "truncate" },
+        axisLabel: { color: axis, width: 180, overflow: "truncate" },
       },
       series: [{ type: "bar", data: topPaths.map((h) => h.views).reverse(), itemStyle: { color: "#a78bfa" } }],
     });
 
-    ec.init(document.getElementById("chart-cities")).setOption({
+    const chartCities = ec.init(document.getElementById("chart-cities"));
+    chartCities.setOption({
       textStyle: { color: textColor },
       tooltip: { trigger: "axis" },
-      grid: { left: 160, right: 16, top: 8, bottom: 24 },
+      grid: { left: 12, right: 18, top: 10, bottom: 30, containLabel: true },
       xAxis: { type: "value", axisLabel: { color: axis }, splitLine: { lineStyle: { color: gridLine } } },
       yAxis: {
         type: "category",
         data: cityRows.map(([c]) => c).reverse(),
-        axisLabel: { color: axis, width: 150, overflow: "truncate" },
+        axisLabel: { color: axis, width: 180, overflow: "truncate" },
       },
       series: [{ type: "bar", data: cityRows.map(([, n]) => n).reverse(), itemStyle: { color: "#34d399" } }],
     });
+
+    fitCharts([chartTraffic, chartPaths, chartCities]);
 
     renderIpTable();
   }
