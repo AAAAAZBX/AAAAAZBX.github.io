@@ -1,17 +1,8 @@
 ﻿---
 import Layout from "../layouts/Layout.astro";
-import { getMergedPosts } from "../lib/content-posts";
+import { formatDateIso, getMergedPosts } from "../lib/content-posts";
 
 const merged = await getMergedPosts();
-
-function formatDateMd(dateString: string | undefined): string {
-  if (!dateString) return "";
-  const d = new Date(dateString);
-  if (Number.isNaN(d.getTime())) return "";
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${m}-${day}`;
-}
 
 /** 鎸夊勾浠藉垎缁勶紙鏂板湪鍓嶏級锛涙棤鏃ユ湡鐨勫綊鍏ュ崟鐙竴缁?*/
 const undated: typeof merged = [];
@@ -95,7 +86,7 @@ const bannerTypedText = "Archives";
                     <p class="fluid-archives-year fluid-archives-year-heading" id={`y-${year}`}>{year}</p>
                     {byYear.get(year)!.map((p) => (
                       <a class="fluid-list-group-item list-group-item-action" href={p.href}>
-                        <time datetime={p.date ?? ""}>{formatDateMd(p.date)}</time>
+                        <time datetime={p.date ?? ""}>{formatDateIso(p.date)}</time>
                         <div class="list-group-item-title">{p.title}</div>
                       </a>
                     ))}

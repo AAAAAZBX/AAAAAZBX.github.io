@@ -1829,6 +1829,19 @@ main.fluid-board-page .home-post-link {
   color: var(--fluid-text-color);
 }
 
+main.fluid-board-page .home-post-excerpt-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+main.fluid-board-page .home-post-excerpt-link:visited,
+main.fluid-board-page .home-post-excerpt-link:hover,
+main.fluid-board-page .home-post-excerpt-link:active {
+  text-decoration: none;
+  color: inherit;
+}
+
 main.fluid-board-page .home-post-link:hover .home-post-title {
   color: var(--fluid-link-hover-color);
 }
@@ -1893,6 +1906,33 @@ main.fluid-board-page .home-post-meta-item .iconfont {
 main.fluid-board-page .home-post-meta a,
 main.fluid-board-page .home-post-cat {
   color: inherit;
+}
+
+main.fluid-board-page .home-post-cat {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 0.25rem;
+  min-width: 0;
+}
+
+main.fluid-board-page .home-post-cat-separator {
+  color: var(--fluid-sec-text-color);
+}
+
+main.fluid-board-page .home-post-meta-link {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--fluid-link-hover-color) 45%, var(--fluid-sec-text-color));
+}
+
+main.fluid-board-page .home-post-meta-link:hover {
+  color: var(--fluid-link-hover-color);
+}
+
+main.fluid-board-page .home-post-tag-link {
+  text-underline-offset: 2px;
 }
 
 main.fluid-board-page .home-post-tags {
@@ -2015,7 +2055,8 @@ main.fluid-board-page .fluid-list-group-item {
 }
 
 main.fluid-board-page .fluid-list-group-item time {
-  flex: 0 0 5rem;
+  flex: 0 0 6.9rem;
+  white-space: nowrap;
   color: var(--fluid-sec-text-color);
   font-variant-numeric: tabular-nums;
 }
@@ -2043,7 +2084,7 @@ main.fluid-board-page .fluid-list-group-item:focus-visible {
   }
 
   main.fluid-board-page .fluid-list-group-item time {
-    flex: 0 0 4rem;
+    flex: 0 0 6.9rem;
   }
 }
 
@@ -2235,6 +2276,16 @@ main.fluid-board-page .category-list .category-count {
   color: var(--fluid-sec-text-color);
 }
 
+main.fluid-board-page .category-list a.category-count {
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+main.fluid-board-page .category-list a.category-count:hover,
+main.fluid-board-page .category-list a.category-count:focus {
+  color: var(--fluid-link-hover-color);
+}
+
 main.fluid-board-page .category-list .category-count i {
   padding-right: 0.25rem;
 }
@@ -2313,6 +2364,35 @@ main.fluid-board-page .cat-sub.fluid-cat-sub a:hover {
   color: var(--fluid-link-hover-color);
 }
 
+main.fluid-category-index-main .category-index-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  margin: 0 0 1rem;
+  color: var(--fluid-sec-text-color);
+  font-size: 0.95rem;
+}
+
+main.fluid-category-index-main .category-index-breadcrumb a {
+  color: var(--fluid-post-text-color);
+  text-decoration: none;
+}
+
+main.fluid-category-index-main .category-index-breadcrumb a:hover,
+main.fluid-category-index-main .category-index-breadcrumb a:focus {
+  color: var(--fluid-link-hover-color);
+  text-decoration: underline;
+}
+
+main.fluid-category-index-main .category-index-head {
+  margin-bottom: 1.1rem;
+}
+
+main.fluid-category-index-main .category-index-posts {
+  margin-top: 0.4rem;
+}
+
 /* Fluid main.css .category .category-post */
 main.fluid-board-page .category-list .category-post {
   white-space: nowrap;
@@ -2378,4 +2458,3 @@ body.page-theme-lock-dark.home-fluid-index footer {
   background-color: #181c27 !important;
   color: var(--text-secondary);
 }
-

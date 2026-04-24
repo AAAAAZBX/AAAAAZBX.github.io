@@ -1,0 +1,216 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getMergedPosts } from "../../lib/content-posts";
+
+function tagSlug(tag: string): string {
+  return tag.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\u4e00-\u9fff_-]/g, "");
+}
+
+const merged = await getMergedPosts();
+const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
+const byTag = new Map<string, typeof merged>();
+for (const p of merged) {
+  for (const raw of p.tags || []) {
+    const t = String(raw || "").trim();
+    if (!t) continue;
+    if (!byTag.has(t)) byTag.set(t, []);
+    byTag.get(t)!.push(p);
+  }
+}
+
+export async function getStaticPaths() {
+  const toSlug = (tag: string): string =>
+    tag.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\u4e00-\u9fff_-]/g, "");
+  const all = await getMergedPosts();
+  const map = new Map<string, typeof all>();
+  for (const p of all) {
+    for (const raw of p.tags || []) {
+      const t = String(raw || "").trim();
+      if (!t) continue;
+      if (!map.has(t)) map.set(t, []);
+      map.get(t)!.push(p);
+    }
+  }
+  const entries = Array.from(map.entries()).sort((a, b) => {
+    const c = b[1].length - a[1].length;
+    if (c !== 0) return c;
+    return a[0].localeCompare(b[0], "zh-CN");
+  });
+  return entries.map(([tag, posts]) => ({
+    params: { tag: toSlug(tag) },
+    props: { tag, posts },
+  }));
+}
+
+type TagPageProps = {
+  tag: string;
+  posts: typeof merged;
+};
+
+const { tag, posts } = Astro.props as TagPageProps;
+const bannerTypedText = `Tags - ${tag}`;
+
+function formatDateMd(dateString: string | undefined): string {
+  if (!dateString) return "";
+  const d = new Date(dateString);
+  if (Number.isNaN(d.getTime())) return "";
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${m}-${day}`;
+}
+
+const undated: typeof posts = [];
+const byYear = new Map<number, typeof posts>();
+for (const p of posts) {
+  if (!p.date) {
+    undated.push(p);
+    continue;
+  }
+  const d = new Date(p.date);
+  if (Number.isNaN(d.getTime())) {
+    undated.push(p);
+    continue;
+  }
+  const y = d.getFullYear();
+  if (!byYear.has(y)) byYear.set(y, []);
+  byYear.get(y)!.push(p);
+}
+const yearsDesc = Array.from(byYear.keys()).sort((a, b) => b - a);
+---
+
+<Layout title={`Tag: ${tag} - Boxuan Zhang`} overlayNav>
+  <div class="fluid-index-header-inner fluid-header-inner-compact">
+    <div
+      id="banner"
+      class="fluid-banner"
+      style={{
+        backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
+      }}
+    >
+      <div class="fluid-banner-inner">
+        <div class="fluid-banner-mask">
+          <div class="fluid-banner-text">
+            <h1 class="fluid-banner-title" lang="en" aria-label={bannerTypedText}>
+              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}></span>
+            </h1>
+          </div>
+          <a href="#fluid-board" class="fluid-scroll-down" aria-label="Scroll to tag posts">
+            <i class="iconfont icon-arrowdown" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main id="fluid-board" class="fluid-index-main fluid-board-page fluid-archives-main">
+    <div class="fluid-container fluid-nopadding-x-md">
+      <div id="board" class="fluid-board-surface">
+        <div class="fluid-container">
+          <div class="fluid-row">
+            <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
+              <div class="fluid-list-group list-group">
+                <p class="fluid-archives-stat">{posts.length} post{posts.length === 1 ? "" : "s"} in total</p>
+                <hr class="fluid-list-hr" />
+                {yearsDesc.map((year) => (
+                  <>
+                    <p class="fluid-archives-year fluid-archives-year-heading" id={`y-${year}`}>{year}</p>
+                    {byYear.get(year)!.map((p) => (
+                      <a class="fluid-list-group-item list-group-item-action" href={p.href}>
+                        <time datetime={p.date ?? ""}>{formatDateMd(p.date)}</time>
+                        <div class="list-group-item-title">{p.title}</div>
+                      </a>
+                    ))}
+                  </>
+                ))}
+                {undated.length > 0 && (
+                  <>
+                    <p class="fluid-archives-year fluid-archives-year-heading" id="y-undated">Undated</p>
+                    {undated.map((p) => (
+                      <a class="fluid-list-group-item list-group-item-action" href={p.href}>
+                        <time datetime={p.date ?? ""}>-</time>
+                        <div class="list-group-item-title">{p.title}</div>
+                      </a>
+                    ))}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
+<script is:inline>
+  (function () {
+    function fluidHeroTyping() {
+      if (typeof window.Typed === "undefined") return;
+      var el = document.getElementById("fluid-hero-typed");
+      if (!el) return;
+      var text = el.getAttribute("data-typed-text");
+      if (!text) return;
+      el.textContent = "";
+      new window.Typed("#fluid-hero-typed", {
+        strings: ["  ", text],
+        typeSpeed: 50,
+        cursorChar: "_",
+        loop: false,
+        showCursor: true,
+      });
+    }
+
+    function fluidBoardScrollLiftTags() {
+      var hero = document.querySelector(
+        ".fluid-index-header-inner.fluid-header-inner-compact"
+      );
+      var board = document.querySelector(
+        "main.fluid-archives-main #board.fluid-board-surface"
+      );
+      if (!hero || !board) return;
+
+      var maxExtraPx = 112;
+      var ticking = false;
+
+      function scrollBlendSpan() {
+        var h = hero.clientHeight || 1;
+        return Math.max(h * 0.85, 120);
+      }
+
+      function update() {
+        var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+        var span = scrollBlendSpan();
+        var t = span > 0 ? y / span : 0;
+        if (t > 1) t = 1;
+        if (t < 0) t = 0;
+        var u = t * t * (3 - 2 * t);
+        var lift = Math.round(u * maxExtraPx);
+        board.style.transform = "translate3d(0," + -lift + "px,0)";
+        ticking = false;
+      }
+
+      function requestUpdate() {
+        if (!ticking) {
+          ticking = true;
+          window.requestAnimationFrame(update);
+        }
+      }
+
+      window.addEventListener("scroll", requestUpdate, { passive: true });
+      window.addEventListener("resize", requestUpdate);
+      update();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        fluidHeroTyping();
+        fluidBoardScrollLiftTags();
+      });
+    } else {
+      fluidHeroTyping();
+      fluidBoardScrollLiftTags();
+    }
+  })();
+</script>
+

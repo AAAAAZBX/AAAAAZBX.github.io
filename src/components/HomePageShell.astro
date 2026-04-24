@@ -1,7 +1,11 @@
 ---
 import type { MergedPost } from "../lib/content-posts";
 import { formatDateIso } from "../lib/content-posts";
-import { buildContentFolderDisplayMap } from "../lib/category-tree";
+import {
+  buildContentFolderDisplayMap,
+  categoryIndexHref,
+  normSeg,
+} from "../lib/category-tree";
 
 interface Props {
   recentPosts: MergedPost[];
@@ -23,6 +27,35 @@ function homePageHref(page: number): string {
   if (page <= 1) return baseUrl;
   const path = `page/${page}`;
   return baseUrl.endsWith("/") ? `${baseUrl}${path}` : `${baseUrl}/${path}`;
+}
+
+function baseJoin(path: string): string {
+  const clean = path.replace(/^\/+/, "");
+  return baseUrl.endsWith("/") ? `${baseUrl}${clean}` : `${baseUrl}/${clean}`;
+}
+
+function tagSlug(tag: string): string {
+  return tag.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\u4e00-\u9fff_-]/g, "");
+}
+
+function categoryArchiveCrumbs(collection: string, slug: string): Array<{ label: string; href: string }> {
+  const dirs = slug.split("/").filter(Boolean).slice(0, -1);
+  const crumbs = [
+    {
+      label: collection,
+      href: categoryIndexHref(baseUrl, collection),
+    },
+  ];
+
+  dirs.forEach((seg, idx) => {
+    const pathKey = `${collection}/${dirs.slice(0, idx + 1).map(normSeg).join("/")}`;
+    crumbs.push({
+      label: folderDisplayMap.get(pathKey) ?? seg,
+      href: categoryIndexHref(baseUrl, pathKey),
+    });
+  });
+
+  return crumbs;
 }
 
 function stripMd(text: string): string {
@@ -49,19 +82,6 @@ function excerptFromPost(body: string | undefined, maxLen = 260): string {
   const singleLine = stripMd(noCode.replace(/\r?\n+/g, " "));
   if (singleLine.length <= maxLen) return singleLine;
   return `${singleLine.slice(0, maxLen)}…`;
-}
-
-function normSeg(seg: string): string {
-  return seg.trim().replace(/\s/g, "-").replace(/[A-Z]/g, (c) => c.toLowerCase());
-}
-
-function archiveHierarchyLabel(collection: string, slug: string): string {
-  const dirs = slug.split("/").filter(Boolean).slice(0, -1);
-  const displayDirs = dirs.map((seg, idx) => {
-    const pathKey = `${collection}/${dirs.slice(0, idx + 1).map(normSeg).join("/")}`;
-    return folderDisplayMap.get(pathKey) ?? seg;
-  });
-  return [collection, ...displayDirs].join(" > ");
 }
 
 const showPagination = totalPages > 1;
@@ -135,10 +155,9 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
                     <a class="home-post-link" href={item.href}>
                       <span class="home-post-title">{item.title}</span>
                     </a>
-                    {item.description?.trim() && (
-                      <p class="home-post-subtitle">{item.description.trim()}</p>
-                    )}
-                    <p class="home-post-excerpt">{excerptFromPost(item.body)}</p>
+                    <a class="home-post-excerpt-link" href={item.href}>
+                      <p class="home-post-excerpt">{excerptFromPost(item.body)}</p>
+                    </a>
                     <div class="home-post-meta">
                       <span class="home-post-meta-item">
                         <i class="iconfont icon-date" aria-hidden="true"></i>
@@ -149,14 +168,31 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
                       <span class="home-post-meta-item">
                         <i class="iconfont icon-category-fill" aria-hidden="true"></i>
                         <span class="home-post-cat">
-                          {archiveHierarchyLabel(item.collection, item.slug)}
+                          {categoryArchiveCrumbs(item.collection, item.slug).map((crumb, idx) => (
+                            <>
+                              {idx > 0 && <span class="home-post-cat-separator"> &gt; </span>}
+                              <a class="home-post-meta-link" href={crumb.href}>
+                                {crumb.label}
+                              </a>
+                            </>
+                          ))}
                         </span>
                       </span>
                       {item.tags.length > 0 && (
                         <span class="home-post-meta-item">
                           <i class="iconfont icon-tags-fill" aria-hidden="true"></i>
                           <span class="home-post-tags">
-                            {item.tags.map((tag) => `#${tag}`).join("  ")}
+                            {item.tags.map((tag, idx) => (
+                              <>
+                                {idx > 0 && "  "}
+                                <a
+                                  class="home-post-meta-link home-post-tag-link"
+                                  href={`${baseJoin("tags")}/${encodeURIComponent(tagSlug(tag))}`}
+                                >
+                                  #{tag}
+                                </a>
+                              </>
+                            ))}
                           </span>
                         </span>
                       )}

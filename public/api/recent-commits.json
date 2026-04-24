@@ -1,6 +1,11 @@
 {
   "commits": [
     {
+      "hash": "cd5fcbc9ead1b1bb6e1e3110ab53b867a84d977e",
+      "date": "2026-04-24 13:21:03 +0800",
+      "message": "feat: dashboard theme lock, stats merge, security & admin surfaces"
+    },
+    {
       "hash": "39a27a8029b40d016348b3e8106fabe9364afa62",
       "date": "2026-04-24 09:26:57 +0800",
       "message": "feat: visitor insights, analytics, and visit logging updates"
@@ -44,12 +49,7 @@
       "hash": "a1ad3dbc5a5fc10c7204a2676dfb420975fa2a49",
       "date": "2026-04-23 12:49:22 +0800",
       "message": "feat(statistics): add path-based visit aggregation and stabilize client stats"
-    },
-    {
-      "hash": "c4df5f128652b10d553336627045cb56bd46f399",
-      "date": "2026-04-23 11:03:11 +0800",
-      "message": "refactor(about): move Education to main column; show pie legend to the right"
     }
   ],
-  "timestamp": "2026-04-24T04:31:49.819Z"
+  "timestamp": "2026-04-24T08:31:47.183Z"
 }

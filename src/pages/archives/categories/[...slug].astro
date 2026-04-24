@@ -1,0 +1,189 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { formatDateIso } from "../../../lib/content-posts";
+import {
+  buildAllCategoryPathEntries,
+  categoryIndexHref,
+  postsInSubtree,
+} from "../../../lib/category-tree";
+
+type RouteProps = {
+  pathKey: string;
+};
+
+export async function getStaticPaths() {
+  const entries = await buildAllCategoryPathEntries();
+  return entries.map((entry) => ({
+    params: { slug: entry.pathKey },
+    props: { pathKey: entry.pathKey } satisfies RouteProps,
+  }));
+}
+
+const { pathKey } = Astro.props as RouteProps;
+const entries = await buildAllCategoryPathEntries();
+const entryMap = new Map(entries.map((entry) => [entry.pathKey, entry]));
+const current = entryMap.get(pathKey);
+
+if (!current) {
+  return new Response(null, {
+    status: 404,
+    statusText: "Not found",
+  });
+}
+
+const baseUrl = import.meta.env.BASE_URL;
+const posts = postsInSubtree(current.node);
+const segments = current.pathKey.split("/").filter(Boolean);
+const breadcrumb = segments.map((_, idx) => {
+  const crumbKey = segments.slice(0, idx + 1).join("/");
+  const crumb = entryMap.get(crumbKey);
+  return {
+    label: crumb?.displayName ?? segments[idx],
+    href: categoryIndexHref(baseUrl, crumbKey),
+  };
+});
+
+const pageTitle = `${current.displayName} Archives`;
+const heroImageUrl = `${baseUrl}site-profile.png`;
+const bannerTypedText = current.displayName;
+---
+
+<Layout title={`${pageTitle} - Boxuan Zhang`} overlayNav>
+  <div class="fluid-index-header-inner fluid-header-inner-compact">
+    <div
+      id="banner"
+      class="fluid-banner"
+      style={{
+        backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
+      }}
+    >
+      <div class="fluid-banner-inner">
+        <div class="fluid-banner-mask">
+          <div class="fluid-banner-text">
+            <h1 class="fluid-banner-title" aria-label={bannerTypedText}>
+              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}></span>
+            </h1>
+          </div>
+          <a href="#fluid-board" class="fluid-scroll-down" aria-label="Scroll to category archive">
+            <i class="iconfont icon-arrowdown" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main id="fluid-board" class="fluid-index-main fluid-board-page fluid-archives-main fluid-category-index-main">
+    <div class="fluid-container fluid-nopadding-x-md">
+      <div id="board" class="fluid-board-surface">
+        <div class="fluid-container">
+          <div class="fluid-row">
+            <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
+              <nav class="category-index-breadcrumb" aria-label="Category breadcrumb">
+                <a href={`${baseUrl}categories`}>Categories</a>
+                {breadcrumb.map((crumb, idx) => (
+                  <>
+                    <span aria-hidden="true">/</span>
+                    {idx === breadcrumb.length - 1 ? (
+                      <span aria-current="page">{crumb.label}</span>
+                    ) : (
+                      <a href={crumb.href}>{crumb.label}</a>
+                    )}
+                  </>
+                ))}
+              </nav>
+
+              <div class="category-index-head">
+                <p class="fluid-archives-stat">
+                  {posts.length} post{posts.length === 1 ? "" : "s"} in total
+                </p>
+              </div>
+
+              <div class="fluid-list-group list-group category-index-posts">
+                <hr class="fluid-list-hr" />
+                {posts.map((post) => (
+                  <a class="fluid-list-group-item list-group-item-action" href={post.href}>
+                    <time datetime={post.date ?? ""}>{formatDateIso(post.date)}</time>
+                    <div class="list-group-item-title">{post.title}</div>
+                  </a>
+                ))}
+                {posts.length === 0 && <p class="fluid-archives-empty">No posts in this archive.</p>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
+  <script is:inline>
+    (function () {
+      function fluidHeroTyping() {
+        if (typeof window.Typed === "undefined") return;
+        var el = document.getElementById("fluid-hero-typed");
+        if (!el) return;
+        var text = el.getAttribute("data-typed-text");
+        if (!text) return;
+        el.textContent = "";
+        new window.Typed("#fluid-hero-typed", {
+          strings: ["  ", text],
+          typeSpeed: 50,
+          cursorChar: "_",
+          loop: false,
+          showCursor: true,
+        });
+      }
+
+      function fluidBoardScrollLiftCategoryIndex() {
+        var hero = document.querySelector(
+          ".fluid-index-header-inner.fluid-header-inner-compact"
+        );
+        var board = document.querySelector(
+          "main.fluid-category-index-main #board.fluid-board-surface"
+        );
+        if (!hero || !board) return;
+
+        var maxExtraPx = 88;
+        var ticking = false;
+
+        function scrollBlendSpan() {
+          var h = hero.clientHeight || 1;
+          return Math.max(h * 0.85, 120);
+        }
+
+        function update() {
+          var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+          var span = scrollBlendSpan();
+          var t = span > 0 ? y / span : 0;
+          if (t > 1) t = 1;
+          if (t < 0) t = 0;
+          var u = t * t * (3 - 2 * t);
+          var lift = Math.round(u * maxExtraPx);
+          board.style.transform = "translate3d(0," + -lift + "px,0)";
+          ticking = false;
+        }
+
+        function requestUpdate() {
+          if (!ticking) {
+            ticking = true;
+            window.requestAnimationFrame(update);
+          }
+        }
+
+        window.addEventListener("scroll", requestUpdate, { passive: true });
+        window.addEventListener("resize", requestUpdate);
+        update();
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () {
+          fluidHeroTyping();
+          fluidBoardScrollLiftCategoryIndex();
+        });
+      } else {
+        fluidHeroTyping();
+        fluidBoardScrollLiftCategoryIndex();
+      }
+    })();
+  </script>
+</Layout>

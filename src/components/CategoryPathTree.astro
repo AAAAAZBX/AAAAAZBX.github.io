@@ -1,6 +1,6 @@
 ---
 import type { CatPathNode } from "../lib/category-tree";
-import { totalInSubtree } from "../lib/category-tree";
+import { categoryIndexHref, totalInSubtree } from "../lib/category-tree";
 import CategoryPathTree from "./CategoryPathTree.astro";
 
 function collapseIdFromPath(pathKey: string): string {
@@ -19,9 +19,15 @@ interface Props {
    * 若下一层只有文章、没有子文件夹，则不展开，避免一打开就列出全部文章。
    */
   autoExpandFolderBranches?: boolean;
+  categoryIndexBaseUrl?: string;
 }
 
-const { node, depth = 0, autoExpandFolderBranches = false } = Astro.props;
+const {
+  node,
+  depth = 0,
+  autoExpandFolderBranches = false,
+  categoryIndexBaseUrl = import.meta.env.BASE_URL,
+} = Astro.props;
 
 const isVirtualRoot = depth === 0 && !node.name;
 const nestCollapseId = !isVirtualRoot ? collapseIdFromPath(node.pathKey) : "";
@@ -41,6 +47,9 @@ const nestedPanelExpanded = Boolean(
     !isVirtualRoot &&
     node.children.length > 0
 );
+const nodeIndexHref = !isVirtualRoot
+  ? categoryIndexHref(categoryIndexBaseUrl, node.pathKey)
+  : "";
 ---
 
 {
@@ -65,6 +74,7 @@ const nestedPanelExpanded = Boolean(
             node={c}
             depth={1}
             autoExpandFolderBranches={autoExpandFolderBranches}
+            categoryIndexBaseUrl={categoryIndexBaseUrl}
           />
         ))}
       </div>
@@ -92,10 +102,14 @@ const nestedPanelExpanded = Boolean(
         <span class="list-group-count"></span>
         <i class="iconfont icon-arrowright" aria-hidden="true" />
       </a>
-      <span class="category-count col-2 col-md-1 col-xm-1">
+      <a
+        href={nodeIndexHref}
+        class="category-count col-2 col-md-1 col-xm-1"
+        aria-label={`View ${node.name} archive index`}
+      >
         <i class="iconfont icon-articles" aria-hidden="true" />
         <span>{totalInSubtree(node)}</span>
-      </span>
+      </a>
       <div
         class:list={[
           "category-collapse",
@@ -125,6 +139,7 @@ const nestedPanelExpanded = Boolean(
             node={c}
             depth={depth + 1}
             autoExpandFolderBranches={autoExpandFolderBranches}
+            categoryIndexBaseUrl={categoryIndexBaseUrl}
           />
         ))}
       </div>

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { MergedPost } from "./content-posts";
-import { getCollectionKeys } from "./content-posts";
+import { getCollectionKeys, getMergedPosts } from "./content-posts";
 
 export type CatPathNode = {
   name: string;
@@ -37,7 +37,7 @@ function byDateDesc(a: MergedPost, b: MergedPost): number {
  * 例如：`Neural Networks Zero to Hero - Andrej Karpathy`
  * -> `neural-networks-zero-to-hero---andrej-karpathy`
  */
-function normSeg(seg: string): string {
+export function normSeg(seg: string): string {
   return seg.trim().replace(/\s/g, "-").replace(/[A-Z]/g, (c) => c.toLowerCase());
 }
 
@@ -161,4 +161,76 @@ export function totalInSubtree(node: CatPathNode): number {
     node.posts.length +
     node.children.reduce((sum, c) => sum + totalInSubtree(c), 0)
   );
+}
+
+export function postsInSubtree(node: CatPathNode): MergedPost[] {
+  return [
+    ...node.posts,
+    ...node.children.flatMap((child) => postsInSubtree(child)),
+  ].sort((a, b) => {
+    const byDate = byDateDesc(a, b);
+    if (byDate !== 0) return byDate;
+    return byIdLexDesc(a, b);
+  });
+}
+
+export type CategoryPathEntry = {
+  collection: string;
+  pathKey: string;
+  displayName: string;
+  depth: number;
+  node: CatPathNode;
+};
+
+export function collectCategoryPathEntries(
+  collection: string,
+  root: CatPathNode
+): CategoryPathEntry[] {
+  const entries: CategoryPathEntry[] = [
+    {
+      collection,
+      pathKey: collection,
+      displayName: collection,
+      depth: 0,
+      node: root,
+    },
+  ];
+
+  const walk = (node: CatPathNode, depth: number) => {
+    entries.push({
+      collection,
+      pathKey: node.pathKey,
+      displayName: node.name,
+      depth,
+      node,
+    });
+    for (const child of node.children) walk(child, depth + 1);
+  };
+
+  for (const child of root.children) walk(child, 1);
+  return entries;
+}
+
+export function categoryIndexHref(baseUrl: string, pathKey: string): string {
+  const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  const encodedPath = pathKey
+    .split("/")
+    .filter(Boolean)
+    .map((seg) => encodeURIComponent(seg))
+    .join("/");
+  return `${base}archives/categories/${encodedPath}/`;
+}
+
+export async function buildAllCategoryPathEntries(): Promise<CategoryPathEntry[]> {
+  const folderDisplayMap = buildContentFolderDisplayMap();
+  const allPosts = await getMergedPosts();
+  const collections = [...new Set(allPosts.map((post) => post.collection))].sort(
+    (a, b) => a.localeCompare(b, "zh-CN")
+  );
+
+  return collections.flatMap((collection) => {
+    const posts = allPosts.filter((post) => post.collection === collection);
+    const tree = buildCategoryPathTree(posts, { folderDisplayMap, collection });
+    return collectCategoryPathEntries(collection, tree);
+  });
 }

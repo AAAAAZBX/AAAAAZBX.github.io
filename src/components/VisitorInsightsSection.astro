@@ -450,6 +450,15 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
       .replaceAll("<", "&lt;");
   }
 
+  function escapeHtml(s: string): string {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
   /** 表格/气泡内：国旗 SVG + 国名；无 ISO 时仅文字 */
   function countryCell(country: string | null, countryCode: string | null | undefined): string {
     const name = country?.trim() || "";
@@ -1085,15 +1094,6 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
         note,
       );
     }
-  }
-
-  function escapeHtml(s: string): string {
-    return s
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
   }
 
   const bootCfg = getVisitorSupabaseConfig();

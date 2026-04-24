@@ -4,6 +4,7 @@ import { getCollectionKeys, getCollectionLabel, getMergedPosts } from "../lib/co
 import {
   buildCategoryPathTree,
   buildContentFolderDisplayMap,
+  categoryIndexHref,
 } from "../lib/category-tree";
 import CategoryPathTree from "../components/CategoryPathTree.astro";
 
@@ -99,10 +100,14 @@ const bannerTypedText = "Categories";
                         <span class="list-group-count"></span>
                         <i class="iconfont icon-arrowright" aria-hidden="true"></i>
                       </a>
-                      <span class="category-count col-2 col-md-1 col-xm-1">
+                      <a
+                        href={categoryIndexHref(import.meta.env.BASE_URL, section.collection)}
+                        class="category-count col-2 col-md-1 col-xm-1"
+                        aria-label={`View ${section.heading} archive index`}
+                      >
                         <i class="iconfont icon-articles" aria-hidden="true"></i>
                         <span>{section.posts.length}</span>
-                      </span>
+                      </a>
                       <div
                         class:list={[
                           "category-collapse",
@@ -296,4 +301,3 @@ const bannerTypedText = "Categories";
     }
   </style>
 </Layout>
-
