@@ -1,0 +1,392 @@
+---
+/** 访客画像可视化：依赖 Supabase blog_visits 及可选视图 blog_visit_hot_paths / blog_visit_risk_summary */
+---
+
+<div class="analytics-console" id="analytics-console">
+  <p class="analytics-console__note" id="analytics-note">Loading…</p>
+
+  <div class="analytics-console__grid">
+    <section class="analytics-console__card" aria-label="Visitor kind">
+      <h2 class="analytics-console__h">Visitor kind</h2>
+      <div id="chart-kind" class="analytics-console__chart"></div>
+    </section>
+    <section class="analytics-console__card" aria-label="Risk score distribution">
+      <h2 class="analytics-console__h">Risk score (sample)</h2>
+      <div id="chart-risk" class="analytics-console__chart"></div>
+    </section>
+    <section class="analytics-console__card analytics-console__card--wide" aria-label="Hot paths">
+      <h2 class="analytics-console__h">Hot paths</h2>
+      <div id="chart-paths" class="analytics-console__chart analytics-console__chart--tall"></div>
+    </section>
+    <section class="analytics-console__card analytics-console__card--wide" aria-label="Top cities">
+      <h2 class="analytics-console__h">Top cities</h2>
+      <div id="chart-cities" class="analytics-console__chart"></div>
+    </section>
+  </div>
+
+  <section class="analytics-console__card analytics-console__card--alert" aria-label="Risk alerts">
+    <h2 class="analytics-console__h">Risk IP alerts</h2>
+    <p class="analytics-console__hint">
+      Rule-based labels: <code>normal</code>, <code>suspect</code>, <code>scan</code>, <code>crawler</code>. Not a guarantee of malice.
+    </p>
+    <div class="analytics-console__table-wrap">
+      <table class="analytics-console__table" id="table-risk">
+        <thead>
+          <tr>
+            <th>IP</th>
+            <th>Max risk</th>
+            <th>Kind</th>
+            <th>Events</th>
+            <th>Last path</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<style>
+  .analytics-console {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .analytics-console__note {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: #9fb0d0;
+  }
+  .analytics-console__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .analytics-console__card {
+    background: rgba(15, 23, 42, 0.55);
+    border-radius: 12px;
+    padding: 1rem 1rem 0.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+  }
+  .analytics-console__card--wide {
+    grid-column: 1 / -1;
+  }
+  .analytics-console__card--alert {
+    margin-top: 0.5rem;
+  }
+  .analytics-console__h {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .analytics-console__hint {
+    margin: 0 0 0.75rem;
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+  .analytics-console__hint code {
+    color: #7dd3fc;
+    font-size: 0.85em;
+  }
+  .analytics-console__chart {
+    width: 100%;
+    height: 260px;
+  }
+  .analytics-console__chart--tall {
+    height: 320px;
+  }
+  .analytics-console__table-wrap {
+    overflow-x: auto;
+    margin-bottom: 0.75rem;
+  }
+  .analytics-console__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    color: #e7eefb;
+  }
+  .analytics-console__table th,
+  .analytics-console__table td {
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    white-space: nowrap;
+  }
+  .analytics-console__table th {
+    color: #94a3b8;
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  import { createClient } from "@supabase/supabase-js";
+  import { getSupabaseClientConfig } from "../lib/visitor-env";
+
+  type VisitRow = {
+    ip: string | null;
+    city: string | null;
+    country: string | null;
+    visitor_kind: string | null;
+    risk_score: number | null;
+    page_path: string | null;
+    created_at: string;
+  };
+
+  function loadEcharts(): Promise<NonNullable<(Window & { echarts?: { init: (el: HTMLElement | null) => { setOption: (o: unknown) => void } } }).echarts>> {
+    return new Promise((resolve, reject) => {
+      const w = window as Window & { echarts?: { init: (el: HTMLElement | null) => { setOption: (o: unknown) => void } } };
+      if (w.echarts) {
+        resolve(w.echarts);
+        return;
+      }
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js";
+      s.async = true;
+      s.onload = () => {
+        const g = window as Window & { echarts?: typeof w.echarts };
+        if (g.echarts) resolve(g.echarts);
+        else reject(new Error("echarts missing"));
+      };
+      s.onerror = () => reject(new Error("echarts load failed"));
+      document.head.appendChild(s);
+    });
+  }
+
+  function esc(s: string): string {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  }
+
+  async function main(): Promise<void> {
+    const note = document.getElementById("analytics-note");
+    const cfg = getSupabaseClientConfig();
+    if (!cfg) {
+      if (note) note.textContent = "Supabase 未配置（需要 PUBLIC_SUPABASE_URL + PUBLIC_SUPABASE_ANON_KEY）。";
+      return;
+    }
+    if (cfg.anonKey.trim().startsWith("sb_secret_")) {
+      if (note) {
+        note.textContent =
+          "不能使用 Secret 密钥作为公网页面的 anon。请在 Supabase 使用 Publishable / legacy anon（eyJ 开头）。";
+      }
+      return;
+    }
+
+    const selectCols =
+      "ip,city,country,visitor_kind,risk_score,page_path,created_at,session_id,path_chain,referrer,net_isp";
+
+    const supabase = createClient(cfg.url, cfg.anonKey);
+    let rows: VisitRow[] = [];
+    let hotErr = false;
+    let riskViewErr = false;
+
+    const raw = await supabase
+      .from("blog_visits")
+      .select(selectCols)
+      .order("created_at", { ascending: false })
+      .limit(4500);
+
+    if (raw.error) {
+      const msg = String(raw.error.message || "");
+      if (/column|schema|PGRST204/i.test(msg)) {
+        const legacy = await supabase
+          .from("blog_visits")
+          .select("ip,city,country,page_path,created_at")
+          .order("created_at", { ascending: false })
+          .limit(4500);
+        if (legacy.error) {
+          if (note) note.textContent = "读取失败: " + legacy.error.message;
+          return;
+        }
+        rows = (legacy.data || []) as VisitRow[];
+        if (note) {
+          note.textContent =
+            `${rows.length} events（旧表无画像字段）。请在 Supabase 执行 supabase/blog_visit_intel.sql 后重新部署。`;
+        }
+      } else {
+        if (note) note.textContent = "读取失败: " + msg;
+        return;
+      }
+    } else {
+      rows = (raw.data || []) as VisitRow[];
+      if (note) {
+        note.textContent = `${rows.length} recent events loaded. Rule-based risk; refine in visit-behavior.ts.`;
+      }
+    }
+
+    let hotPaths: { page_path: string; views: number; visitors: number }[] = [];
+    const hotRes = await supabase.from("blog_visit_hot_paths").select("*").order("views", { ascending: false }).limit(14);
+    if (!hotRes.error && Array.isArray(hotRes.data)) {
+      hotPaths = hotRes.data as typeof hotPaths;
+    } else {
+      hotErr = true;
+      const m = new Map<string, { views: number; ips: Set<string> }>();
+      for (const r of rows) {
+        const p = String(r.page_path || "").trim();
+        if (!p) continue;
+        if (!m.has(p)) m.set(p, { views: 0, ips: new Set() });
+        const e = m.get(p)!;
+        e.views += 1;
+        if (r.ip) e.ips.add(r.ip);
+      }
+      hotPaths = [...m.entries()]
+        .map(([page_path, v]) => ({ page_path, views: v.views, visitors: v.ips.size }))
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 14);
+    }
+
+    let riskRows: {
+      ip: string;
+      max_risk: number;
+      total_events: number;
+      crawler_events?: number;
+      scan_events?: number;
+    }[] = [];
+    const rr = await supabase
+      .from("blog_visit_risk_summary")
+      .select("*")
+      .order("max_risk", { ascending: false })
+      .limit(20);
+    if (!rr.error && Array.isArray(rr.data)) {
+      riskRows = rr.data as typeof riskRows;
+    } else {
+      riskViewErr = true;
+      const byIp = new Map<
+        string,
+        { maxR: number; n: number; kind: string; lastPath: string }
+      >();
+      for (const r of rows) {
+        const ip = String(r.ip || "");
+        if (!ip || /^local-/i.test(ip)) continue;
+        const score = typeof r.risk_score === "number" ? r.risk_score : 0;
+        const prev = byIp.get(ip) || { maxR: 0, n: 0, kind: "normal", lastPath: "" };
+        prev.maxR = Math.max(prev.maxR, score);
+        prev.n += 1;
+        const k = String(r.visitor_kind || "normal");
+        if (k === "crawler" || (prev.kind !== "crawler" && k === "scan")) prev.kind = k;
+        else if (prev.kind === "normal" && k === "suspect") prev.kind = "suspect";
+        prev.lastPath = String(r.page_path || prev.lastPath);
+        byIp.set(ip, prev);
+      }
+      riskRows = [...byIp.entries()]
+        .map(([ip, v]) => ({
+          ip,
+          max_risk: v.maxR,
+          total_events: v.n,
+          crawler_events: v.kind === "crawler" ? v.n : 0,
+          scan_events: v.kind === "scan" ? v.n : 0,
+        }))
+        .sort((a, b) => b.max_risk - a.max_risk)
+        .slice(0, 20);
+    }
+
+    const kindCount: Record<string, number> = {};
+    const riskBuckets = [0, 0, 0, 0, 0];
+    const cityCount: Record<string, number> = {};
+    for (const r of rows) {
+      const k = String(r.visitor_kind || "unknown");
+      kindCount[k] = (kindCount[k] || 0) + 1;
+      const s = typeof r.risk_score === "number" ? r.risk_score : 0;
+      const b = Math.min(4, Math.floor(s / 20));
+      riskBuckets[b] += 1;
+      const city = [r.city, r.country].filter(Boolean).join(", ") || "—";
+      cityCount[city] = (cityCount[city] || 0) + 1;
+    }
+
+    const topCities = Object.entries(cityCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12);
+
+    const ec = await loadEcharts();
+    const dark = "#94a3b8";
+    const text = "#e2e8f0";
+
+    ec.init(document.getElementById("chart-kind")!).setOption({
+      textStyle: { color: text },
+      tooltip: { trigger: "item" },
+      series: [
+        {
+          type: "pie",
+          radius: ["36%", "68%"],
+          data: Object.entries(kindCount).map(([name, value]) => ({ name, value })),
+          label: { color: text },
+        },
+      ],
+    });
+
+    ec.init(document.getElementById("chart-risk")!).setOption({
+      textStyle: { color: text },
+      tooltip: { trigger: "axis" },
+      xAxis: {
+        type: "category",
+        data: ["0–19", "20–39", "40–59", "60–79", "80–100"],
+        axisLabel: { color: dark },
+      },
+      yAxis: { type: "value", axisLabel: { color: dark }, splitLine: { lineStyle: { color: "#334155" } } },
+      series: [{ type: "bar", data: riskBuckets, itemStyle: { color: "#38bdf8" } }],
+    });
+
+    ec.init(document.getElementById("chart-paths")!).setOption({
+      textStyle: { color: text },
+      tooltip: { trigger: "axis" },
+      grid: { left: 120, right: 16, top: 8, bottom: 24 },
+      xAxis: { type: "value", axisLabel: { color: dark }, splitLine: { lineStyle: { color: "#334155" } } },
+      yAxis: {
+        type: "category",
+        data: hotPaths.map((h) => h.page_path).reverse(),
+        axisLabel: { color: dark, width: 110, overflow: "truncate" },
+      },
+      series: [{ type: "bar", data: hotPaths.map((h) => h.views).reverse(), itemStyle: { color: "#a78bfa" } }],
+    });
+
+    ec.init(document.getElementById("chart-cities")!).setOption({
+      textStyle: { color: text },
+      tooltip: { trigger: "axis" },
+      grid: { left: 120, right: 16, top: 8, bottom: 24 },
+      xAxis: { type: "value", axisLabel: { color: dark }, splitLine: { lineStyle: { color: "#334155" } } },
+      yAxis: {
+        type: "category",
+        data: topCities.map(([c]) => c).reverse(),
+        axisLabel: { color: dark, width: 100, overflow: "truncate" },
+      },
+      series: [{ type: "bar", data: topCities.map(([, n]) => n).reverse(), itemStyle: { color: "#34d399" } }],
+    });
+
+    const lastPathByIp = new Map<string, string>();
+    for (const r of rows) {
+      if (r.ip && r.page_path) lastPathByIp.set(r.ip, r.page_path);
+    }
+
+    const tbody = document.querySelector("#table-risk tbody");
+    if (tbody) {
+      const alerts = riskRows.filter((x) => x.max_risk >= 40 || (x.crawler_events ?? 0) > 0);
+      const show = alerts.length ? alerts : riskRows.slice(0, 12);
+      tbody.innerHTML = show
+        .map((x) => {
+          const kind =
+            (x.crawler_events ?? 0) > 0
+              ? "crawler"
+              : (x.scan_events ?? 0) > 0
+                ? "scan"
+                : x.max_risk >= 55
+                  ? "scan?"
+                  : "suspect";
+          const lp = lastPathByIp.get(x.ip) || "—";
+          return `<tr><td><code>${esc(x.ip)}</code></td><td>${x.max_risk}</td><td>${esc(
+            kind,
+          )}</td><td>${x.total_events}</td><td><code>${esc(lp)}</code></td></tr>`;
+        })
+        .join("");
+    }
+
+    if (note && (hotErr || riskViewErr)) {
+      note.textContent += "（部分聚合走浏览器回退：请在 Supabase 执行 blog_visit_intel.sql 以启用视图。）";
+    }
+  }
+
+  main().catch((e) => {
+    const note = document.getElementById("analytics-note");
+    if (note) note.textContent = "Error: " + String((e as Error)?.message || e);
+  });
+</script>

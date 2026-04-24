@@ -63,6 +63,12 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
           <span class="stats-console__pill">
             Source {useSupabaseArticleStats ? "Supabase" : "CountAPI"}
           </span>
+          <a
+            class="stats-console__pill stats-console__pill--link"
+            href={`${import.meta.env.BASE_URL}analytics`.replace(/([^:]\/)\/+/g, "$1")}
+          >
+            Analytics
+          </a>
         </div>
       </div>
 
@@ -154,6 +160,18 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
       letter-spacing: 0.04em;
       text-transform: uppercase;
       opacity: 0.82;
+    }
+
+    a.stats-console__pill--link {
+      text-decoration: none;
+      border: 1px solid rgba(125, 211, 252, 0.35);
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      opacity: 1;
+      color: #7dd3fc;
+    }
+    a.stats-console__pill--link:hover {
+      background: rgba(56, 189, 248, 0.12);
     }
 
     .stats-console__grid {

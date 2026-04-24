@@ -1,6 +1,36 @@
 {
   "commits": [
     {
+      "hash": "fccd8454f6c7c49d08cf8a3c5ffd60980719dee9",
+      "date": "2026-04-23 23:20:38 +0800",
+      "message": "refactor(statistics): polish labels and table scrollbar style"
+    },
+    {
+      "hash": "4926fdaae5c1954a9dc093aadaacc3ee60488aaf",
+      "date": "2026-04-23 17:42:27 +0800",
+      "message": "refactor(statistics): remove inner scrollbars in dashboard panels"
+    },
+    {
+      "hash": "f86d5c762223a2915b3c709249c1a3e15fdf8c09",
+      "date": "2026-04-23 17:37:34 +0800",
+      "message": "refactor(statistics): simplify rankings and remove tags route"
+    },
+    {
+      "hash": "c017bcff03e83b1f6cef439a9ebcccea25b51a73",
+      "date": "2026-04-23 16:48:04 +0800",
+      "message": "refactor(statistics): swap visitor table order"
+    },
+    {
+      "hash": "9b359d5a0aaa58cc7b7c6b8cf359d72b68c60210",
+      "date": "2026-04-23 15:57:46 +0800",
+      "message": "feat(statistics): polish dashboard layout and visitor insights"
+    },
+    {
+      "hash": "a9e7cf7bf2c04c43172cd037890133bc056dae98",
+      "date": "2026-04-23 14:40:57 +0800",
+      "message": "refactor(statistics): redesign console layout and stabilize article view matching"
+    },
+    {
       "hash": "a228399f316b315e3abef53ba16ed6f43d8b5ae5",
       "date": "2026-04-23 13:29:46 +0800",
       "message": "fix(visit-log): add request timeouts and local fallback resilience"
@@ -19,37 +49,7 @@
       "hash": "4f04713739870d1961390b7b5a6a2760ec99c3be",
       "date": "2026-04-23 10:49:27 +0800",
       "message": "feat: domestic IP via Amap Web v3 (JSONP), optional PUBLIC_AMAP_WEB_KEY"
-    },
-    {
-      "hash": "15786437bb796f6ce2b9962e39d0ca289c51df05",
-      "date": "2026-04-23 00:42:55 +0800",
-      "message": "ci: pass Supabase env to GitHub Pages build; trim visitor env values"
-    },
-    {
-      "hash": "d55999329e09c0def21f0ca84257e5d61df70b0a",
-      "date": "2026-04-23 00:27:27 +0800",
-      "message": "feat: Supabase visit logging, visitor map on Tags, city labels"
-    },
-    {
-      "hash": "5b9055847afa814fb766c64fe5343a0f509b1fd7",
-      "date": "2026-04-22 23:18:31 +0800",
-      "message": "Site: tags page (unlisted in nav), statistics section, nav and layout tweaks; sync built API JSON."
-    },
-    {
-      "hash": "cb98d7d74eae49d196f0535f684e3385355f5ea6",
-      "date": "2026-04-20 15:44:03 +0800",
-      "message": "chore: update deploy workflow, package, contrib script, readme; remove stray pages/_image.png"
-    },
-    {
-      "hash": "1e1a3a4adaffa105c8ce4bad897ceca46d9b7a50",
-      "date": "2026-04-20 15:26:48 +0800",
-      "message": "chore: remove github-contrib-test.html (local HTML scrape used for parser dev)"
-    },
-    {
-      "hash": "2643462397fab47b27cb489f8201ae938b376c1b",
-      "date": "2026-04-20 08:51:22 +0800",
-      "message": "content: move PyTorch notes from src/content/PyTorch to src/content/LLM/PyTorch"
     }
   ],
-  "timestamp": "2026-04-23T06:29:10.562Z"
+  "timestamp": "2026-04-23T19:31:31.445Z"
 }

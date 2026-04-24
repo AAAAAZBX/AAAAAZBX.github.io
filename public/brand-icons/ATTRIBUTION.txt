@@ -1,0 +1,9 @@
+Browser logos (microsoft-edge, google-chrome, firefox, safari, opera, samsung-internet):
+  npm packages @browser-logos/* — https://github.com/alrra/browser-logos
+
+windows.svg:
+  Wikimedia Commons — Windows logo (2021), four-pane mark.
+
+android.svg, apple.svg, linux.svg:
+  Simple Icons (MIT) — https://github.com/simple-icons/simple-icons
+  (standardized marks; follow each vendor’s trademark guidelines for use.)

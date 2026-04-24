@@ -3,9 +3,20 @@ import "leaflet/dist/leaflet.css";
 import { isVisitorLogConfigured } from "../lib/visitor-env";
 
 const configured = isVisitorLogConfigured();
+/** 写在根节点 data-* 上，由打包后的 type=module 脚本读取（勿用 define:vars，否则会打成非法内联脚本） */
+const visitorSupabaseUrl = String(import.meta.env.PUBLIC_SUPABASE_URL ?? "");
+const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "");
 ---
 
-<section class="visitor-insights visitor-insights--embed" data-pagefind-ignore aria-label="Visitor map and tables">
+<section
+  id="visitor-insights-root"
+  class="visitor-insights visitor-insights--embed"
+  data-pagefind-ignore
+  aria-label="Visitor map and tables"
+  data-visitor-configured={configured ? "1" : "0"}
+  data-visitor-supabase-url={configured ? visitorSupabaseUrl : ""}
+  data-visitor-supabase-anon={configured ? visitorSupabaseAnon : ""}
+>
   <div class="visitor-insights__inner">
     <h2 class="visitor-insights__h1">Visitors & Geographic Distribution</h2>
     <p class="visitor-insights__lead">
@@ -47,7 +58,7 @@ const configured = isVisitorLogConfigured();
     </div>
 
     <div class="visitor-insights__section" aria-label="By city">
-      <h3 class="visitor-insights__h2">By City / Region (Visits)</h3>
+      <h3 class="visitor-insights__h2">By City / Region (Visits, 10 per page)</h3>
       <div class="visitor-insights__table-wrap">
         <table class="visitor-insights__table" id="visit-by-city">
           <thead>
@@ -71,15 +82,16 @@ const configured = isVisitorLogConfigured();
           </tbody>
         </table>
       </div>
+      {configured && <div id="visit-city-pager" class="visitor-insights__pager" hidden aria-label="City table pagination" />}
     </div>
 
     <div class="visitor-insights__section" aria-label="Raw visits">
-      <h3 class="visitor-insights__h2">Recent Visits (one page-open per row, 20 per page)</h3>
+      <h3 class="visitor-insights__h2">Recent Visits (one page-open per row, 10 per page)</h3>
       <div class="visitor-insights__table-wrap">
         <table class="visitor-insights__table visitor-insights__table--wide" id="visit-raw">
           <thead>
             <tr>
-              <th>UTC+8</th>
+              <th>Time(UTC+8)</th>
               <th>OS</th>
               <th>Browser</th>
               <th>Device</th>
@@ -280,17 +292,120 @@ const configured = isVisitorLogConfigured();
     opacity: 0.45;
     cursor: not-allowed;
   }
+
+  .visitor-insights--embed .visitor-insights__client-icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    min-height: 26px;
+    vertical-align: middle;
+  }
+  .visitor-insights--embed .visitor-insights__brand-icon {
+    width: 22px;
+    height: 22px;
+    display: block;
+    border-radius: 5px;
+    object-fit: contain;
+  }
+  /** Simple Icons 版 Android：品牌绿 + 更强柔光，深色底上更跳 */
+  .visitor-insights--embed .visitor-insights__brand-icon[src*="android.svg"] {
+    filter: brightness(1.15) drop-shadow(0 0 4px rgba(61, 220, 132, 0.72))
+      drop-shadow(0 0 1px rgba(255, 255, 255, 0.18));
+  }
+  /** Apple / Linux：黑剪影在深色底上发闷 → 反相浅色 + 双层高光边，略提对比 */
+  .visitor-insights--embed .visitor-insights__brand-icon[src*="apple.svg"],
+  .visitor-insights--embed .visitor-insights__brand-icon[src*="linux.svg"] {
+    filter: brightness(0) invert(1) drop-shadow(0 0 3px rgba(255, 255, 255, 0.38))
+      drop-shadow(0 0 6px rgba(255, 255, 255, 0.12));
+    opacity: 0.97;
+  }
+  .visitor-insights--embed .visitor-insights__device-svg {
+    width: 22px;
+    height: 22px;
+    color: var(--text-secondary, #64748b);
+    flex-shrink: 0;
+  }
+  .visitor-insights--embed .visitor-insights__icon-fallback {
+    display: inline-flex;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    background: rgba(100, 116, 139, 0.45);
+    color: var(--text-primary, #e2e8f0);
+    font-size: 11px;
+    font-weight: 700;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .visitor-insights--embed .visitor-insights__country-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    vertical-align: middle;
+  }
+  .visitor-insights--embed .visitor-insights__flag-wrap {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .visitor-insights--embed .visitor-insights__flag-img {
+    width: 30px;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    max-height: 24px;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 3px;
+    vertical-align: middle;
+    box-shadow: 0 0 0 1px rgba(127, 127, 127, 0.22);
+    flex-shrink: 0;
+  }
+  .visitor-insights--embed .visitor-insights__marker-tt .visitor-insights__country-cell {
+    gap: 0.28em;
+  }
 </style>
 
 <script>
   import { createClient } from "@supabase/supabase-js";
   import L from "leaflet";
   import { formatCityPair, resolveCityBilingual } from "../lib/city-bilingual";
-  import { getSupabaseClientConfig } from "../lib/visitor-env";
+  import { flagImgHtml, resolveCountryAlpha2 } from "../lib/country-flag";
+
+  /** 与 define:vars 分离：define:vars 会把脚本打成非 module 内联 IIFE，内仍含 import → 浏览器直接语法错误，整段不执行 */
+  const visitorBrandBase = import.meta.env.BASE_URL;
 
   const TABLE = "blog_visits";
   const IP_CACHE_TABLE = "blog_visit_ip_cache";
-  const RAW_PER_PAGE = 20;
+  /** IP 缓存表按批查询超时，避免单批挂起过久 */
+  const CACHE_CHUNK_TIMEOUT_MS = 8000;
+  /** 补全地理缓存全程时间上限（否则数千待补 IP 会串行多批，表格长时间不出） */
+  const HYDRATE_TOTAL_BUDGET_MS = 12000;
+  const TABLE_ROWS_PER_PAGE = 10;
+  const RAW_PER_PAGE = TABLE_ROWS_PER_PAGE;
+  const CITY_PER_PAGE = TABLE_ROWS_PER_PAGE;
+
+  function getVisitorSupabaseConfig(): { url: string; anonKey: string } | null {
+    const root = document.getElementById("visitor-insights-root");
+    if (!root) return null;
+    const url = String(root.dataset.visitorSupabaseUrl ?? "").trim();
+    const anonKey = String(root.dataset.visitorSupabaseAnon ?? "").trim();
+    if (!url || !anonKey || !url.startsWith("http")) return null;
+    return { url, anonKey };
+  }
+
+  function isVisitorInsightsDomConfigured(): boolean {
+    return document.getElementById("visitor-insights-root")?.dataset.visitorConfigured === "1";
+  }
+
+  type CityAggRow = {
+    country: string;
+    country_code: string | null;
+    city: string;
+    visitCount: number;
+    uniqueIps: number;
+  };
 
   type VisitRow = {
     id: string;
@@ -301,12 +416,23 @@ const configured = isVisitorLogConfigured();
     city: string | null;
     region: string | null;
     country: string | null;
+    country_code?: string | null;
     lat: number | null;
     lon: number | null;
   };
 
   let rawVisits: VisitRow[] = [];
   let rawPageIndex = 1;
+  let cityRowsAll: CityAggRow[] = [];
+  let cityPageIndex = 1;
+  let visitLeafletMap: L.Map | null = null;
+
+  function destroyVisitLeafletMap(): void {
+    if (visitLeafletMap) {
+      visitLeafletMap.remove();
+      visitLeafletMap = null;
+    }
+  }
 
   function fmtTime(iso: string): string {
     try {
@@ -317,38 +443,168 @@ const configured = isVisitorLogConfigured();
     }
   }
 
+  function escapeAttr(s: string): string {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("<", "&lt;");
+  }
+
+  /** 表格/气泡内：国旗 SVG + 国名；无 ISO 时仅文字 */
+  function countryCell(country: string | null, countryCode: string | null | undefined): string {
+    const name = country?.trim() || "";
+    const iso = resolveCountryAlpha2(name || null, countryCode ?? null);
+    const flagHtml = iso ? flagImgHtml(iso) : "";
+    if (!name && !flagHtml) return "—";
+    const label = name ? escapeHtml(name) : escapeHtml(iso || "—");
+    if (!flagHtml) return label;
+    const title = escapeAttr(name || iso || "");
+    return `<span class="visitor-insights__country-cell" title="${title}"><span class="visitor-insights__flag-wrap" aria-hidden="true">${flagHtml}</span><span>${label}</span></span>`;
+  }
+
+  /** By City：—、_、空白视为未知；排序时整块沉底 */
+  function isCityTablePlaceholder(s: string): boolean {
+    const t = String(s).trim();
+    return t === "" || t === "—" || t === "_";
+  }
+
+  function cityAggRowIsUnknown(r: CityAggRow): boolean {
+    return isCityTablePlaceholder(r.country) || isCityTablePlaceholder(r.city);
+  }
+
+  /** By City 国家列：占位显示「未知」；有 country_code 时仍可出国旗 */
+  function countryCellForByCityTable(country: string, countryCode: string | null | undefined): string {
+    const ph = isCityTablePlaceholder(country);
+    const iso = resolveCountryAlpha2(ph ? null : country.trim() || null, countryCode ?? null);
+    const flagHtml = iso ? flagImgHtml(iso) : "";
+    const displayName = ph ? "未知" : country.trim();
+    const label = escapeHtml(displayName);
+    if (!flagHtml) return label;
+    const title = escapeAttr(displayName);
+    return `<span class="visitor-insights__country-cell" title="${title}"><span class="visitor-insights__flag-wrap" aria-hidden="true">${flagHtml}</span><span>${label}</span></span>`;
+  }
+
+  /**
+   * 使用站点内静态资源：浏览器标来自 npm @browser-logos（厂商维护）；Windows 为 Commons 四格标；
+   * Android/Linux/Apple 标来自 Simple Icons（MIT，与品牌公开图形一致）。
+   */
+  function localBrandIcon(file: string, title: string): string {
+    const t = escapeAttr(title);
+    const base = String(visitorBrandBase ?? "/").replace(/\/?$/, "/");
+    const src = `${base}brand-icons/${file}`;
+    return `<span class="visitor-insights__client-icon-wrap" title="${t}"><img class="visitor-insights__brand-icon" src="${src}" width="22" height="22" alt="" loading="lazy" decoding="async" /></span>`;
+  }
+
+  function fallbackGlyphIcon(title: string, glyph: string): string {
+    const t = escapeAttr(title);
+    return `<span class="visitor-insights__client-icon-wrap" title="${t}"><span class="visitor-insights__icon-fallback">${glyph}</span></span>`;
+  }
+
+  /** 与 Lucide Monitor / Smartphone / Tablet 同系比例：手机加宽、显示器略收，三者线宽一致，避免「大屏巨、手机针」 */
+  function deviceShapeIcon(kind: "desktop" | "mobile" | "tablet", title: string): string {
+    const t = escapeAttr(title);
+    const sw = "1.65";
+    const common = `class="visitor-insights__device-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
+    let svg = "";
+    if (kind === "desktop") {
+      svg = `<svg ${common}><rect x="3" y="4" width="18" height="11" rx="1.75" ry="1.75"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>`;
+    } else if (kind === "tablet") {
+      svg = `<svg ${common}><rect x="4.5" y="3" width="15" height="18" rx="2" ry="2"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+    } else {
+      svg = `<svg ${common}><rect x="5" y="2.5" width="14" height="19" rx="2" ry="2"/><line x1="12" y1="17.5" x2="12.01" y2="17.5"/></svg>`;
+    }
+    return `<span class="visitor-insights__client-icon-wrap" title="${t}">${svg}</span>`;
+  }
+
+  /**
+   * OS / 浏览器 / 设备用图标展示（悬停 title 为完整说明）。
+   * Edge 须先于 Chrome：Android Edge 为 EdgA/，iOS 为 Edgios/，均含 Chrome/ 字样。
+   */
+  function parseClientDisplay(uaRaw: string | null): { osCell: string; browserCell: string; deviceCell: string } {
+    const ua = String(uaRaw || "");
+    const low = ua.toLowerCase();
+
+    let osTitle = "Unknown OS";
+    let osCell = fallbackGlyphIcon(osTitle, "?");
+
+    if (low.includes("windows nt 10")) {
+      osTitle = "Windows 10/11";
+      osCell = localBrandIcon("windows.svg", osTitle);
+    } else if (low.includes("windows")) {
+      osTitle = "Windows";
+      osCell = localBrandIcon("windows.svg", osTitle);
+    } else if (low.includes("android")) {
+      osTitle = "Android";
+      osCell = localBrandIcon("android.svg", osTitle);
+    } else if (low.includes("iphone") || low.includes("cpu iphone os")) {
+      osTitle = "iOS (iPhone)";
+      osCell = localBrandIcon("apple.svg", osTitle);
+    } else if (low.includes("ipad")) {
+      osTitle = "iPadOS";
+      osCell = localBrandIcon("apple.svg", osTitle);
+    } else if (low.includes("mac os x") || low.includes("macintosh")) {
+      osTitle = "macOS";
+      osCell = localBrandIcon("apple.svg", osTitle);
+    } else if (low.includes("linux")) {
+      osTitle = "Linux";
+      osCell = localBrandIcon("linux.svg", osTitle);
+    }
+
+    const isEdge =
+      low.includes("edga/") ||
+      low.includes("edgios/") ||
+      low.includes("edg/") ||
+      /\bedge\/[\d.]+/i.test(ua);
+
+    let browserTitle = "Unknown browser";
+    let browserCell = fallbackGlyphIcon(browserTitle, "?");
+
+    if (isEdge) {
+      browserTitle = "Microsoft Edge";
+      browserCell = localBrandIcon("microsoft-edge.svg", browserTitle);
+    } else if (low.includes("opr/") || low.includes("opera")) {
+      browserTitle = "Opera";
+      browserCell = localBrandIcon("opera.svg", browserTitle);
+    } else if (low.includes("samsungbrowser")) {
+      browserTitle = "Samsung Internet";
+      browserCell = localBrandIcon("samsung-internet.svg", browserTitle);
+    } else if (low.includes("firefox/")) {
+      browserTitle = "Firefox";
+      browserCell = localBrandIcon("firefox.svg", browserTitle);
+    } else if (
+      low.includes("chrome/") &&
+      !low.includes("chromium/") &&
+      !low.includes("opr/") &&
+      !isEdge
+    ) {
+      browserTitle = "Google Chrome";
+      browserCell = localBrandIcon("google-chrome.svg", browserTitle);
+    } else if (low.includes("safari/") && !low.includes("chrome/") && !low.includes("chromium/")) {
+      browserTitle = "Safari";
+      browserCell = localBrandIcon("safari.svg", browserTitle);
+    }
+
+    let deviceKind: "desktop" | "mobile" | "tablet" = "desktop";
+    let deviceTitle = "Desktop";
+    if (low.includes("ipad") || low.includes("tablet")) {
+      deviceKind = "tablet";
+      deviceTitle = "Tablet";
+    } else if (low.includes("mobile") || low.includes("iphone") || low.includes("android")) {
+      deviceKind = "mobile";
+      deviceTitle = "Mobile";
+    }
+
+    const deviceCell = deviceShapeIcon(deviceKind, deviceTitle);
+
+    return { osCell, browserCell, deviceCell };
+  }
+
   /** 红圆像素半径：不重复 IP 数 n 的对数缩放，整体偏小 */
   function radiusForUniqueIps(n: number): number {
     if (n < 1) return 2.5;
     const log2n = Math.log(1 + n) / Math.LN2;
     const r = 2.2 + 2.4 * log2n;
     return Math.min(11, Math.max(2.5, r));
-  }
-
-  function parseClientInfo(uaRaw: string | null): { os: string; browser: string; device: string } {
-    const ua = String(uaRaw || "");
-    const low = ua.toLowerCase();
-
-    let os = "Unknown";
-    if (low.includes("windows nt 10")) os = "Windows 10/11";
-    else if (low.includes("windows")) os = "Windows";
-    else if (low.includes("android")) os = "Android";
-    else if (low.includes("iphone") || low.includes("ipad") || low.includes("cpu iphone os")) os = "iOS/iPadOS";
-    else if (low.includes("mac os x") || low.includes("macintosh")) os = "macOS";
-    else if (low.includes("linux")) os = "Linux";
-
-    let browser = "Unknown";
-    if (low.includes("edg/")) browser = "Edge";
-    else if (low.includes("opr/") || low.includes("opera")) browser = "Opera";
-    else if (low.includes("chrome/") && !low.includes("edg/") && !low.includes("opr/")) browser = "Chrome";
-    else if (low.includes("firefox/")) browser = "Firefox";
-    else if (low.includes("safari/") && !low.includes("chrome/") && !low.includes("chromium/")) browser = "Safari";
-
-    let device = "Desktop";
-    if (low.includes("ipad") || low.includes("tablet")) device = "Tablet";
-    else if (low.includes("mobile") || low.includes("iphone") || low.includes("android")) device = "Mobile";
-
-    return { os, browser, device };
   }
 
   function renderRawVisitPage(): void {
@@ -369,13 +625,11 @@ const configured = isVisitorLogConfigured();
           .map((r) => {
             const pair = resolveCityBilingual(r.city, r.region);
             const label = pair.en || r.city || r.region || "—";
-            const client = parseClientInfo(r.user_agent);
+            const client = parseClientDisplay(r.user_agent);
             const route = String(r.page_path || "—").trim() || "—";
-            return `<tr><td>${escapeHtml(fmtTime(r.created_at))}</td><td>${escapeHtml(client.os)}</td><td>${escapeHtml(
-              client.browser
-            )}</td><td>${escapeHtml(client.device)}</td><td><code>${escapeHtml(
+            return `<tr><td>${escapeHtml(fmtTime(r.created_at))}</td><td>${client.osCell}</td><td>${client.browserCell}</td><td>${client.deviceCell}</td><td><code>${escapeHtml(
               r.ip
-            )}</code></td><td>${escapeHtml(r.country || "—")}</td><td>${escapeHtml(
+            )}</code></td><td>${countryCell(r.country, r.country_code)}</td><td>${escapeHtml(
               label
             )}</td><td>${escapeHtml(
               r.region || "—"
@@ -417,11 +671,67 @@ const configured = isVisitorLogConfigured();
     }
   }
 
+  function renderCityPage(): void {
+    const rows = cityRowsAll;
+    const total = rows.length;
+    const totalPages = Math.max(1, Math.ceil(total / CITY_PER_PAGE) || 1);
+    cityPageIndex = Math.min(Math.max(1, cityPageIndex), totalPages);
+    const p = cityPageIndex;
+    const start = (p - 1) * CITY_PER_PAGE;
+    const slice = rows.slice(start, start + CITY_PER_PAGE);
+
+    const cityTbody = document.querySelector("#visit-by-city tbody");
+    if (cityTbody) {
+      if (total === 0) {
+        cityTbody.innerHTML = `<tr><td colspan="4">No records</td></tr>`;
+      } else {
+        cityTbody.innerHTML = slice
+          .map(
+            (x) =>
+              `<tr><td>${countryCellForByCityTable(x.country, x.country_code)}</td><td>${escapeHtml(isCityTablePlaceholder(x.city) ? "未知" : x.city)}</td><td>${x.uniqueIps}</td><td>${x.visitCount}</td></tr>`,
+          )
+          .join("");
+      }
+    }
+
+    const pager = document.getElementById("visit-city-pager");
+    if (!pager) return;
+    if (total === 0) {
+      pager.setAttribute("hidden", "");
+      pager.innerHTML = "";
+      return;
+    }
+    pager.removeAttribute("hidden");
+    const prevDis = p <= 1;
+    const nextDis = p >= totalPages;
+    pager.innerHTML = `<div class="visitor-insights__pager-inner">
+      <button type="button" class="visitor-insights__pager-btn" data-city-pager="prev" ${prevDis ? "disabled" : ""}>Prev</button>
+      <span class="visitor-insights__pager-info">Page ${p} / ${totalPages} (Total ${total}, ${CITY_PER_PAGE} per page)</span>
+      <button type="button" class="visitor-insights__pager-btn" data-city-pager="next" ${nextDis ? "disabled" : ""}>Next</button>
+    </div>`;
+  }
+
+  function onCityPagerClick(e: Event): void {
+    const t = (e.target as HTMLElement).closest("button[data-city-pager]");
+    if (!t) return;
+    const dir = t.getAttribute("data-city-pager");
+    const total = cityRowsAll.length;
+    const totalPages = Math.max(1, Math.ceil(total / CITY_PER_PAGE) || 1);
+    if (dir === "prev" && cityPageIndex > 1) {
+      cityPageIndex -= 1;
+      renderCityPage();
+    } else if (dir === "next" && cityPageIndex < totalPages) {
+      cityPageIndex += 1;
+      renderCityPage();
+    }
+  }
+
   type CacheGeo = {
     ip: string;
     city: string | null;
     region: string | null;
     country: string | null;
+    country_code?: string | null;
     lat: number | null;
     lon: number | null;
   };
@@ -433,7 +743,9 @@ const configured = isVisitorLogConfigured();
   async function hydrateGeoFromCache(
     supabase: ReturnType<typeof createClient>,
     list: VisitRow[],
+    totalBudgetMs: number,
   ): Promise<VisitRow[]> {
+    const t0 = Date.now();
     const ips = [...new Set(
       list
         .filter((r) => r.ip && !/^local-/i.test(r.ip) && needGeoFill(r))
@@ -444,19 +756,39 @@ const configured = isVisitorLogConfigured();
     const cacheMap = new Map<string, CacheGeo>();
     const CHUNK = 200;
     for (let i = 0; i < ips.length; i += CHUNK) {
+      if (Date.now() - t0 > totalBudgetMs) break;
       const part = ips.slice(i, i + CHUNK);
       try {
-        const res = await supabase
-          .from(IP_CACHE_TABLE)
-          .select("ip, city, region, country, lat, lon")
-          .in("ip", part);
+        const chunkTimeout = () =>
+          new Promise<never>((_, rej) =>
+            setTimeout(() => rej(new Error("ip_cache_chunk_timeout")), CACHE_CHUNK_TIMEOUT_MS),
+          );
+        let res = await Promise.race([
+          supabase
+            .from(IP_CACHE_TABLE)
+            .select("ip, city, region, country, country_code, lat, lon")
+            .in("ip", part),
+          chunkTimeout(),
+        ]);
+        if (
+          res.error &&
+          /country_code|column|schema cache|PGRST204/i.test(String(res.error.message || ""))
+        ) {
+          res = await Promise.race([
+            supabase
+              .from(IP_CACHE_TABLE)
+              .select("ip, city, region, country, lat, lon")
+              .in("ip", part),
+            chunkTimeout(),
+          ]);
+        }
         if (!res.error && Array.isArray(res.data)) {
           for (const row of res.data as CacheGeo[]) {
             if (row?.ip) cacheMap.set(row.ip, row);
           }
         }
       } catch {
-        // ignore cache lookup errors
+        // 单批超时或网络错误：跳过该批，仍用 blog_visits 原始字段渲染
       }
     }
 
@@ -469,84 +801,46 @@ const configured = isVisitorLogConfigured();
         city: r.city ?? c.city ?? null,
         region: r.region ?? c.region ?? null,
         country: r.country ?? c.country ?? null,
+        country_code: r.country_code ?? c.country_code ?? null,
         lat: r.lat ?? c.lat ?? null,
         lon: r.lon ?? c.lon ?? null,
       };
     });
   }
 
-  async function load(): Promise<void> {
-    const cfg = getSupabaseClientConfig();
-    if (!cfg) return;
-
-    const note = document.getElementById("visit-map-note");
-    /** 浏览器里只能用 Publishable 或 legacy anon，不能用 Secret / service_role */
-    if (cfg.anonKey.trim().startsWith("sb_secret_")) {
-      if (note) {
-        note.textContent =
-          "当前密钥为 Secret 类型，不能用于公开网页。请到 Supabase → API Keys 使用 Publishable 或 Legacy 里的 anon（eyJ 开头），并更新 GitHub / .env 后重新部署。";
-      }
-      return;
+  function setVisitorLoadError(message: string, noteEl: HTMLElement | null): void {
+    destroyVisitLeafletMap();
+    if (noteEl) noteEl.textContent = message;
+    const cityTbody = document.querySelector("#visit-by-city tbody");
+    if (cityTbody) {
+      cityTbody.innerHTML = `<tr><td colspan="4">${escapeHtml(message)}</td></tr>`;
     }
-
-    const supabase = createClient(cfg.url, cfg.anonKey);
-    let rows: unknown;
-    let error: { message?: string } | null = null;
-    try {
-      const res = await Promise.race([
-        supabase
-          .from(TABLE)
-          .select("id, created_at, ip, page_path, user_agent, city, region, country, lat, lon")
-          .order("created_at", { ascending: false })
-          .limit(5000),
-        new Promise<never>((_, rej) =>
-          setTimeout(
-            () => rej(new Error("请求 Supabase 超时（约 20s）。请检查本机到 Supabase 的网络、VPN，或见控制台。")),
-            20000
-          )
-        ),
-      ]);
-      rows = res.data;
-      error = res.error;
-    } catch (e) {
-      const err = e as Error;
-      error = { message: err?.message || String(e) };
-      rows = null;
+    const cityPagerErr = document.getElementById("visit-city-pager");
+    if (cityPagerErr) {
+      cityPagerErr.setAttribute("hidden", "");
+      cityPagerErr.innerHTML = "";
     }
-
-    if (error) {
-      let m = "读取失败: " + (error?.message || "");
-      if (error?.message && /invalid api key/i.test(String(error.message))) {
-        m +=
-          " 常见原因：① 把 Secret 键当成了公钥；② 密钥与项目 URL 不是同一项目；③ Secret 值前后多了引号或截断。请到 Supabase API Keys 重新复制 Publishable 或 legacy anon，更新后重新部署。";
-      }
-      if (note) note.textContent = m;
-      const cityTbody = document.querySelector("#visit-by-city tbody");
-      if (cityTbody) {
-        cityTbody.innerHTML = `<tr><td colspan="4">${escapeHtml(m)}</td></tr>`;
-      }
-      const rawTbodyErr = document.querySelector("#visit-raw tbody");
-      if (rawTbodyErr) {
-        rawTbodyErr.innerHTML = `<tr><td colspan="9">${escapeHtml(m)}</td></tr>`;
-      }
-      return;
+    cityRowsAll = [];
+    const rawTbodyErr = document.querySelector("#visit-raw tbody");
+    if (rawTbodyErr) {
+      rawTbodyErr.innerHTML = `<tr><td colspan="9">${escapeHtml(message)}</td></tr>`;
     }
+    const rawPagerErr = document.getElementById("visit-raw-pager");
+    if (rawPagerErr) {
+      rawPagerErr.setAttribute("hidden", "");
+      rawPagerErr.innerHTML = "";
+    }
+    rawVisits = [];
+  }
 
-    const rawList = (rows ?? []) as VisitRow[];
-    const list = await hydrateGeoFromCache(supabase, rawList);
+  function paintVisitorInsightsFromList(list: VisitRow[], note: HTMLElement | null, noteSuffix: string): void {
     if (note) {
-      note.textContent = `${list.length} records total (up to 5000 fetched).`;
+      note.textContent = `${list.length} records total (up to 5000 fetched).${noteSuffix}`;
     }
 
     const cityKey = (r: (typeof list)[number]) =>
       [r.country || "—", r.city || r.region || "—"].join("\t");
 
-    type CityAgg = {
-      country: string;
-      city: string;
-      visitCount: number;
-      uniqueIps: number;
-    };
     const cityIps = new Map<string, Set<string>>();
     const firstByCityKey = new Map<string, VisitRow>();
     for (const r of list) {
@@ -562,27 +856,32 @@ const configured = isVisitorLogConfigured();
       const k = cityKey(r);
       visitByCityKey.set(k, (visitByCityKey.get(k) || 0) + 1);
     }
-    const cityRows: CityAgg[] = [...cityIps.keys()].map((k) => {
+    const cityRows: CityAggRow[] = [...cityIps.keys()].map((k) => {
       const rep = firstByCityKey.get(k)!;
       const pair = resolveCityBilingual(rep.city, rep.region);
       const [country] = k.split("\t");
       return {
         country,
+        country_code: rep.country_code ?? null,
         city: pair.en || rep.city || rep.region || "—",
         visitCount: visitByCityKey.get(k) || 0,
         uniqueIps: cityIps.get(k)!.size,
       };
     });
-    cityRows.sort((a, b) => b.visitCount - a.visitCount);
+    cityRows.sort((a, b) => {
+      const ua = cityAggRowIsUnknown(a);
+      const ub = cityAggRowIsUnknown(b);
+      if (ua !== ub) return ua ? 1 : -1;
+      return b.visitCount - a.visitCount;
+    });
 
-    const cityTbody = document.querySelector("#visit-by-city tbody");
-    if (cityTbody) {
-      cityTbody.innerHTML = cityRows
-        .map(
-          (x) =>
-            `<tr><td>${escapeHtml(x.country)}</td><td>${escapeHtml(x.city)}</td><td>${x.uniqueIps}</td><td>${x.visitCount}</td></tr>`,
-        )
-        .join("");
+    cityRowsAll = cityRows;
+    cityPageIndex = 1;
+    renderCityPage();
+    const cityPagerHost = document.getElementById("visit-city-pager");
+    if (cityPagerHost && !cityPagerHost.dataset.pagerBound) {
+      cityPagerHost.dataset.pagerBound = "1";
+      cityPagerHost.addEventListener("click", onCityPagerClick);
     }
 
     rawVisits = list;
@@ -600,6 +899,7 @@ const configured = isVisitorLogConfigured();
       uniqueIps: number;
       visitCount: number;
       country: string;
+      country_code: string | null;
       city: string | null;
       region: string | null;
     };
@@ -614,6 +914,7 @@ const configured = isVisitorLogConfigured();
           uniqueIps: 0,
           visitCount: 0,
           country: r.country || "—",
+          country_code: r.country_code ?? null,
           city: r.city,
           region: r.region,
           latSum: 0,
@@ -628,29 +929,31 @@ const configured = isVisitorLogConfigured();
     }
     for (const k of byCity.keys()) {
       const agg = byCity.get(k)!;
-      const ips = cityIps.get(k);
-      agg.uniqueIps = ips ? ips.size : 0;
+      const ipsCity = cityIps.get(k);
+      agg.uniqueIps = ipsCity ? ipsCity.size : 0;
       agg.visitCount = visitByCityKey.get(k) || 0;
       agg.lat = agg.latSum / agg.w;
       agg.lon = agg.lonSum / agg.w;
     }
 
     const cityPoints: CityPoint[] = [...byCity.values()].map(
-      ({ lat, lon, uniqueIps, visitCount, country, city, region }) => ({
+      ({ lat, lon, uniqueIps, visitCount, country, country_code, city, region }) => ({
         lat,
         lon,
         uniqueIps,
         visitCount,
         country,
+        country_code,
         city,
         region,
-      })
+      }),
     );
 
     const el = document.getElementById("visit-map");
     if (!el) return;
+    destroyVisitLeafletMap();
+    el.replaceChildren();
     if (cityPoints.length === 0) {
-      el.replaceChildren();
       const p = document.createElement("p");
       p.className = "visitor-insights__muted";
       p.style.padding = "1rem";
@@ -660,6 +963,7 @@ const configured = isVisitorLogConfigured();
     }
 
     const map = L.map(el, { worldCopyJump: true, scrollWheelZoom: true }).setView([20, 0], 2);
+    visitLeafletMap = map;
     L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       maxZoom: 19,
       subdomains: "abcd",
@@ -675,7 +979,7 @@ const configured = isVisitorLogConfigured();
       const rad = radiusForUniqueIps(p.uniqueIps);
       const pair = resolveCityBilingual(p.city, p.region);
       const nameLine = formatCityPair(pair.zh, pair.en);
-      const detail = `${escapeHtml(p.country || "—")} · 访客数量：${p.uniqueIps} · 访问：${p.visitCount}`;
+      const detail = `${countryCell(p.country === "—" ? null : p.country, p.country_code)} · 访客数量：${p.uniqueIps} · 访问：${p.visitCount}`;
       const html = `<div class="visitor-insights__marker-tt">
         <div class="visitor-insights__marker-tt-line1">${escapeHtml(nameLine)}</div>
         <div class="visitor-insights__marker-tt-line2">${detail}</div>
@@ -701,6 +1005,88 @@ const configured = isVisitorLogConfigured();
     }
   }
 
+  async function load(): Promise<void> {
+    const cfg = getVisitorSupabaseConfig();
+    if (!cfg) return;
+
+    const note = document.getElementById("visit-map-note");
+    if (note) note.textContent = "正在拉取访问记录…";
+    /** 浏览器里只能用 Publishable 或 legacy anon，不能用 Secret / service_role */
+    if (cfg.anonKey.trim().startsWith("sb_secret_")) {
+      setVisitorLoadError(
+        "当前密钥为 Secret 类型，不能用于公开网页。请到 Supabase → API Keys 使用 Publishable 或 Legacy 里的 anon（eyJ 开头），并更新 GitHub / .env 后重新部署。",
+        note,
+      );
+      return;
+    }
+
+    let supabase: ReturnType<typeof createClient>;
+    try {
+      supabase = createClient(cfg.url, cfg.anonKey);
+    } catch (e) {
+      setVisitorLoadError("初始化 Supabase 客户端失败: " + ((e as Error)?.message || String(e)), note);
+      return;
+    }
+
+    let rows: unknown;
+    let error: { message?: string } | null = null;
+    try {
+      const loadTimeout = () =>
+        new Promise<never>((_, rej) =>
+          setTimeout(
+            () => rej(new Error("请求 Supabase 超时（约 20s）。请检查本机到 Supabase 的网络、VPN，或见控制台。")),
+            20000,
+          ),
+        );
+      const selWithCc =
+        "id, created_at, ip, page_path, user_agent, city, region, country, country_code, lat, lon";
+      const selBase =
+        "id, created_at, ip, page_path, user_agent, city, region, country, lat, lon";
+      let res = await Promise.race([
+        supabase.from(TABLE).select(selWithCc).order("created_at", { ascending: false }).limit(5000),
+        loadTimeout(),
+      ]);
+      if (
+        res.error &&
+        /country_code|column|schema cache|PGRST204/i.test(String(res.error.message || ""))
+      ) {
+        res = await Promise.race([
+          supabase.from(TABLE).select(selBase).order("created_at", { ascending: false }).limit(5000),
+          loadTimeout(),
+        ]);
+      }
+      rows = res.data;
+      error = res.error;
+    } catch (e) {
+      const err = e as Error;
+      error = { message: err?.message || String(e) };
+      rows = null;
+    }
+
+    if (error) {
+      let m = "读取失败: " + (error?.message || "");
+      if (error?.message && /invalid api key/i.test(String(error.message))) {
+        m +=
+          " 常见原因：① 把 Secret 键当成了公钥；② 密钥与项目 URL 不是同一项目；③ Secret 值前后多了引号或截断。请到 Supabase API Keys 重新复制 Publishable 或 legacy anon，更新后重新部署。";
+      }
+      setVisitorLoadError(m, note);
+      return;
+    }
+
+    try {
+    const rawList = (rows ?? []) as VisitRow[];
+    paintVisitorInsightsFromList(rawList, note, " 正在从 IP 缓存补齐地理信息…");
+    const list = await hydrateGeoFromCache(supabase, rawList, HYDRATE_TOTAL_BUDGET_MS);
+    paintVisitorInsightsFromList(list, note, "");
+    } catch (e) {
+      const err = e as Error;
+      setVisitorLoadError(
+        "访客数据渲染失败: " + (err?.message || String(e)) + "（请打开开发者工具 Console 查看详细报错）",
+        note,
+      );
+    }
+  }
+
   function escapeHtml(s: string): string {
     return s
       .replaceAll("&", "&amp;")
@@ -710,7 +1096,21 @@ const configured = isVisitorLogConfigured();
       .replaceAll("'", "&#039;");
   }
 
-  if (getSupabaseClientConfig()) {
-    void load();
+  const bootCfg = getVisitorSupabaseConfig();
+  const noteBoot = document.getElementById("visit-map-note");
+  if (isVisitorInsightsDomConfigured() && !bootCfg) {
+    setVisitorLoadError(
+      "服务端已启用访客统计，但页面 data 属性中缺少 Supabase URL/密钥。请确认 .env 后重新构建或重启 npm run dev。",
+      noteBoot,
+    );
+  } else if (bootCfg) {
+    if (noteBoot) noteBoot.textContent = "正在连接 Supabase…";
+    void load().catch((e) => {
+      console.error("[visitor-insights]", e);
+      setVisitorLoadError(
+        "脚本异常: " + ((e as Error)?.message || String(e)),
+        document.getElementById("visit-map-note"),
+      );
+    });
   }
 </script>

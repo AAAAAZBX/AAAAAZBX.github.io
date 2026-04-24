@@ -20,6 +20,12 @@
     "sharp": "^0.33.0"
   },
   "devDependencies": {
+    "@browser-logos/chrome": "^2.0.0",
+    "@browser-logos/edge": "^2.0.7",
+    "@browser-logos/firefox": "^3.0.9",
+    "@browser-logos/opera": "^1.1.1",
+    "@browser-logos/safari": "^2.1.0",
+    "@browser-logos/samsung-internet": "^4.0.6",
     "@types/leaflet": "^1.9.21",
     "pagefind": "^1.4.0"
   },
