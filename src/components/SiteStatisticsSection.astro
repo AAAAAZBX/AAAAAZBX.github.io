@@ -542,6 +542,20 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
       return decoded.replace(/\/+$/, "") || "/";
     }
 
+    /** 与 blog_visit_path_stats 的 page_path 对齐；尝试 encode 形式减少漏配 */
+    function pathStatsViewsForArticle(map, pathKey) {
+      if (!map || map.size === 0) return 0;
+      const k = normalizeArticlePathForStats(pathKey);
+      if (map.has(k)) return Number(map.get(k)) || 0;
+      try {
+        const enc = encodeURI(k);
+        if (enc !== k && map.has(enc)) return Number(map.get(enc)) || 0;
+      } catch (_) {
+        /* ignore */
+      }
+      return 0;
+    }
+
     function updateStatistics() {
       try {
         const n =
@@ -698,7 +712,7 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
         .slice(0, 5);
 
       if (top.length === 0) {
-        return `<p class="stat-rank-empty">No data.</p>`;
+        return `<p class="stat-rank-empty">暂无阅读量</p>`;
       }
       const items = top
         .map((x) => {
@@ -838,6 +852,8 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
         return;
       }
 
+      /** 启用 Supabase 后文章页不再 CountAPI /hit，路径聚合为 0 时历史计数仍只在 CountAPI；合并两者避免 Top Reads 全空 */
+      let pathMap = null;
       if (articleViewsSource === "supabase") {
         const cfg =
           supabaseClientConfig &&
@@ -847,10 +863,10 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
             ? supabaseClientConfig
             : null;
         if (cfg) {
-          const k = String(cfg.anonKey || "").trim();
-          if (k.startsWith("sb_secret_")) {
+          const sk = String(cfg.anonKey || "").trim();
+          if (sk.startsWith("sb_secret_")) {
             console.warn(
-              "[stat] Supabase：当前为 Secret 公钥，无法用于网页；M02 将回退 CountAPI。"
+              "[stat] Supabase：当前为 Secret 公钥，无法用于网页；将回退 CountAPI。"
             );
           } else {
             try {
@@ -869,32 +885,18 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
               }).finally(() => clearTimeout(tid));
               if (res.ok) {
                 const data = await res.json();
-                const map = new Map();
+                pathMap = new Map();
                 for (const r of data) {
                   const p = normalizeArticlePathForStats(String(r.page_path || ""));
                   const n = Number(r.views);
                   const add = Number.isFinite(n) ? n : 0;
-                  map.set(p, (map.get(p) || 0) + add);
+                  pathMap.set(p, (pathMap.get(p) || 0) + add);
                 }
-                const withVals = rows.map((r) => {
-                  const k2 = r.pathKey || normalizeArticlePathForStats(r.href);
-                  const v = map.get(k2) ?? 0;
-                  return { ...r, v };
-                });
-                const totalFromPath = withVals.reduce((acc, item) => acc + (item.v || 0), 0);
-                if (totalFromPath > 0) {
-                  const recentComments = await fetchRecentComments(5);
-                  applyArticleBarRows(host, sumEl, withVals, recentComments);
-                  return;
-                }
-                console.warn(
-                  "[stat] blog_visit_path_stats is empty/all-zero, fallback to countapi"
-                );
               } else {
                 console.warn("[stat] blog_visit_path_stats HTTP failed:", res.status);
               }
             } catch (e) {
-              console.warn("[stat] blog_visit_path_stats failed, falling back to countapi", e);
+              console.warn("[stat] blog_visit_path_stats failed, using CountAPI only", e);
             }
           }
         }
@@ -905,7 +907,12 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
       for (let i = 0; i < rows.length; i += CHUNK) {
         const part = rows.slice(i, i + CHUNK);
         const vals = await Promise.all(
-          part.map((r) => fetchCountValue(r.getUrl).then((v) => ({ ...r, v })))
+          part.map(async (r) => {
+            const k2 = r.pathKey || normalizeArticlePathForStats(r.href);
+            const fromDb = pathStatsViewsForArticle(pathMap, k2);
+            const fromApi = await fetchCountValue(r.getUrl);
+            return { ...r, v: fromDb + fromApi };
+          })
         );
         withVals.push.apply(withVals, vals);
       }

@@ -7,6 +7,8 @@ const {
   overlayNav = false,
   hideNav = false,
   noindex = false,
+  /** 整页固定为暗色主题令牌（不随顶栏昼夜切换改变控制台样式） */
+  lockPageDarkTheme = false,
 } = Astro.props;
 const logVisitorVisits = Boolean(
   import.meta.env.PUBLIC_SUPABASE_URL && import.meta.env.PUBLIC_SUPABASE_ANON_KEY
@@ -150,7 +152,9 @@ const countSitePageHitUrl = countapiHitUrl(
     />
   </head>
 
-  <body class:list={[overlayNav && "home-fluid-index"]}>
+  <body
+    class:list={[overlayNav && "home-fluid-index", lockPageDarkTheme && "page-theme-lock-dark"]}
+  >
     {
       !hideNav && (
         <header>
@@ -205,9 +209,19 @@ const countSitePageHitUrl = countapiHitUrl(
       )
     }
 
-    <slot />
-
-    <footer>© {year} Boxuan Zhang</footer>
+    {
+      lockPageDarkTheme ? (
+        <div class="dark page-theme-lock-wrap">
+          <slot />
+          <footer>© {year} Boxuan Zhang</footer>
+        </div>
+      ) : (
+        <>
+          <slot />
+          <footer>© {year} Boxuan Zhang</footer>
+        </>
+      )
+    }
 
     {
       logVisitorVisits && (

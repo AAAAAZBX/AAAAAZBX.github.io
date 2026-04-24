@@ -10,6 +10,7 @@ import {
 } from "../lib/statistics-build";
 import SiteStatisticsSection from "../components/SiteStatisticsSection.astro";
 import VisitorInsightsSection from "../components/VisitorInsightsSection.astro";
+import AdminGate from "../components/AdminGate.astro";
 
 const allPosts = await getMergedPosts();
 const countNs = getCountapiNamespace();
@@ -50,7 +51,8 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
 
 ---
 
-<Layout title="Statistics - Boxuan Zhang" overlayNav hideNav noindex>
+<Layout title="Statistics - Boxuan Zhang" overlayNav hideNav noindex lockPageDarkTheme>
+  <AdminGate title="Statistics Console">
   <main class="stats-console-main">
     <section class="stats-console">
       <div class="stats-console__topbar">
@@ -92,6 +94,7 @@ const tagCloudPairs: [string, number][] = [...tagCounts.entries()].sort(
       </div>
     </section>
   </main>
+  </AdminGate>
 
   <style is:global>
     .stats-console-main {

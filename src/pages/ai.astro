@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AdminGate from "../components/AdminGate.astro";
+import IndustryDashboard from "../components/IndustryDashboard.astro";
+import { industryDashboards } from "../lib/industry-dashboards";
+---
+
+<Layout title="AI - Boxuan Zhang" overlayNav hideNav noindex lockPageDarkTheme>
+  <AdminGate title="AI Industry Radar">
+    <IndustryDashboard dashboard={industryDashboards.ai} />
+  </AdminGate>
+</Layout>

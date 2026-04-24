@@ -1,21 +1,24 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import AdminGate from "../components/AdminGate.astro";
 import AnalyticsConsole from "../components/AnalyticsConsole.astro";
 ---
 
-<Layout title="Analytics - Boxuan Zhang" overlayNav hideNav noindex>
-  <main class="analytics-main">
-    <div class="analytics-topbar">
-      <div>
-        <h1 class="analytics-title">Visitor analytics</h1>
-        <p class="analytics-sub">Session paths, ISP hints, and rule-based risk (ECharts + Supabase)</p>
+<Layout title="Analytics - Boxuan Zhang" overlayNav hideNav noindex lockPageDarkTheme>
+  <AdminGate title="Visitor Portrait Analytics">
+    <main class="analytics-main">
+      <div class="analytics-topbar">
+        <div>
+          <h1 class="analytics-title">Visitor Portrait Analytics</h1>
+          <p class="analytics-sub">IP portraits, profile names, location traces, paths, and traffic flow context</p>
+        </div>
+        <a class="analytics-back" href={`${import.meta.env.BASE_URL}statistics`.replace(/([^:]\/)\/+/g, "$1")}>
+          Statistics
+        </a>
       </div>
-      <a class="analytics-back" href={`${import.meta.env.BASE_URL}statistics`.replace(/([^:]\/)\/+/g, "$1")}
-        >← Statistics</a
-      >
-    </div>
-    <AnalyticsConsole />
-  </main>
+      <AnalyticsConsole />
+    </main>
+  </AdminGate>
 </Layout>
 
 <style>

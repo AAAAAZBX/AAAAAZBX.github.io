@@ -1,0 +1,372 @@
+---
+import type { IndustryDashboard } from "../lib/industry-dashboards";
+
+const { dashboard } = Astro.props as { dashboard: IndustryDashboard };
+const nav = [
+  { href: "/ai", label: "AI" },
+  { href: "/fintech", label: "FinTech" },
+  { href: "/quant", label: "Quant" },
+];
+---
+
+<main class="industry-main">
+  <section class="industry-shell">
+    <div class="industry-topbar">
+      <div>
+        <p class="industry-kicker">{dashboard.kicker}</p>
+        <h1 class="industry-title">{dashboard.title}</h1>
+        <p class="industry-subtitle">{dashboard.subtitle}</p>
+      </div>
+      <nav class="industry-nav" aria-label="Industry routes">
+        {nav.map((item) => (
+          <a class:list={["industry-nav__link", item.href === dashboard.route && "industry-nav__link--active"]} href={item.href}>
+            {item.label}
+          </a>
+        ))}
+      </nav>
+    </div>
+
+    <section class="industry-hero">
+      <div class="industry-hero__brief">
+        <span>Horizon</span>
+        <strong>{dashboard.horizon}</strong>
+      </div>
+      <div class="industry-hero__focus">
+        {dashboard.focus.map((item) => <span>{item}</span>)}
+      </div>
+    </section>
+
+    <section class="industry-signals" aria-label="Key signals">
+      {dashboard.signals.map((signal) => (
+        <article class="industry-signal">
+          <span>{signal.label}</span>
+          <strong>{signal.value}</strong>
+          <p>{signal.note}</p>
+        </article>
+      ))}
+    </section>
+
+    <div class="industry-grid">
+      <section class="industry-card industry-card--wide">
+        <div class="industry-card__head">
+          <h2>Knowledge System</h2>
+          <p>知识体系和行业追踪重点</p>
+        </div>
+        <div class="industry-track-grid">
+          {dashboard.tracks.map((track) => (
+            <article class="industry-track">
+              <h3>{track.title}</h3>
+              <ul>
+                {track.items.map((item) => <li>{item}</li>)}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="industry-card">
+        <div class="industry-card__head">
+          <h2>Roadmap</h2>
+          <p>阶段性学习路径</p>
+        </div>
+        <div class="industry-roadmap">
+          {dashboard.roadmap.map((stage) => (
+            <article class="industry-stage">
+              <span>{stage.stage}</span>
+              <h3>{stage.title}</h3>
+              <ul>
+                {stage.tasks.map((task) => <li>{task}</li>)}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="industry-card">
+        <div class="industry-card__head">
+          <h2>Project Portfolio</h2>
+          <p>能写进简历/博客的项目</p>
+        </div>
+        <div class="industry-projects">
+          {dashboard.projects.map((project) => (
+            <article class="industry-project">
+              <h3>{project.title}</h3>
+              <p>{project.output}</p>
+              <code>{project.stack}</code>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="industry-card industry-card--wide">
+        <div class="industry-card__head">
+          <h2>Resources</h2>
+          <p>中文为主，加入少量高价值英文资料</p>
+        </div>
+        <div class="industry-resource-grid">
+          {dashboard.resources.map((resource) => (
+            <a class="industry-resource" href={resource.href} target="_blank" rel="noopener noreferrer">
+              <span>{resource.lang}</span>
+              <strong>{resource.title}</strong>
+              <p>{resource.note}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="industry-card industry-card--wide">
+        <div class="industry-card__head">
+          <h2>Watchlist</h2>
+          <p>后续可以定期补充最新进展</p>
+        </div>
+        <div class="industry-watchlist">
+          {dashboard.watchlist.map((item) => <span>{item}</span>)}
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<style>
+  .industry-main {
+    min-height: 100vh;
+    width: 100%;
+    padding: 18px 16px 36px;
+    background:
+      radial-gradient(circle at 10% 12%, rgba(56, 189, 248, 0.14), transparent 36%),
+      radial-gradient(circle at 88% 10%, rgba(20, 184, 166, 0.12), transparent 34%),
+      radial-gradient(circle at 50% 100%, rgba(245, 158, 11, 0.08), transparent 40%),
+      linear-gradient(160deg, #0b1220 0%, #0f172a 48%, #101b30 100%);
+    color: #d8e3f2;
+  }
+  .industry-shell {
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+  .industry-topbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .industry-kicker {
+    margin: 0 0 0.35rem;
+    color: #38bdf8;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 800;
+  }
+  .industry-title {
+    margin: 0;
+    color: #f8fbff;
+    font-size: clamp(1.6rem, 3vw, 2.65rem);
+    line-height: 1.1;
+  }
+  .industry-subtitle {
+    max-width: 780px;
+    margin: 0.6rem 0 0;
+    color: #9fb0d0;
+    line-height: 1.65;
+    font-size: 0.95rem;
+  }
+  .industry-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem;
+  }
+  .industry-nav__link {
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    border-radius: 999px;
+    padding: 0.42rem 0.85rem;
+    color: #7dd3fc;
+    background: rgba(15, 23, 42, 0.5);
+    text-decoration: none;
+    font-size: 0.84rem;
+  }
+  .industry-nav__link--active,
+  .industry-nav__link:hover {
+    color: #e0f2fe;
+    background: rgba(56, 189, 248, 0.16);
+  }
+  .industry-hero,
+  .industry-card,
+  .industry-signal {
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(15, 23, 42, 0.62);
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.18);
+  }
+  .industry-hero {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(280px, 0.85fr);
+    gap: 1rem;
+    border-radius: 20px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    background:
+      linear-gradient(135deg, rgba(14, 165, 233, 0.2), transparent 38%),
+      linear-gradient(155deg, rgba(15, 23, 42, 0.78), rgba(8, 13, 24, 0.82));
+  }
+  .industry-hero__brief span,
+  .industry-signal span,
+  .industry-stage span,
+  .industry-resource span {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 800;
+  }
+  .industry-hero__brief strong {
+    display: block;
+    margin-top: 0.45rem;
+    color: #f8fafc;
+    font-size: 1.08rem;
+    line-height: 1.6;
+  }
+  .industry-hero__focus,
+  .industry-watchlist {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 0.55rem;
+  }
+  .industry-hero__focus span,
+  .industry-watchlist span {
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 999px;
+    padding: 0.35rem 0.72rem;
+    color: #bae6fd;
+    background: rgba(56, 189, 248, 0.1);
+  }
+  .industry-signals {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  .industry-signal {
+    border-radius: 16px;
+    padding: 0.95rem;
+    background: rgba(8, 13, 24, 0.72);
+  }
+  .industry-signal strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: #f8fafc;
+    font-size: 1.35rem;
+  }
+  .industry-signal p,
+  .industry-card__head p,
+  .industry-project p,
+  .industry-resource p {
+    margin: 0.35rem 0 0;
+    color: #94a3b8;
+    line-height: 1.55;
+    font-size: 0.86rem;
+  }
+  .industry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .industry-card {
+    border-radius: 18px;
+    padding: 1rem;
+  }
+  .industry-card--wide {
+    grid-column: 1 / -1;
+  }
+  .industry-card__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  .industry-card__head h2 {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 1.05rem;
+  }
+  .industry-track-grid,
+  .industry-resource-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+  .industry-track,
+  .industry-stage,
+  .industry-project,
+  .industry-resource {
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 14px;
+    padding: 0.9rem;
+    background: rgba(2, 6, 23, 0.28);
+  }
+  .industry-track h3,
+  .industry-stage h3,
+  .industry-project h3,
+  .industry-resource strong {
+    display: block;
+    margin: 0 0 0.5rem;
+    color: #f8fafc;
+    font-size: 0.98rem;
+  }
+  .industry-track ul,
+  .industry-stage ul {
+    margin: 0;
+    padding-left: 1.05rem;
+    color: #d8e3f2;
+    line-height: 1.6;
+    font-size: 0.88rem;
+  }
+  .industry-roadmap,
+  .industry-projects {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .industry-stage span {
+    color: #38bdf8;
+  }
+  .industry-project code {
+    display: block;
+    margin-top: 0.55rem;
+    color: #f472b6;
+    white-space: normal;
+  }
+  .industry-resource {
+    color: inherit;
+    text-decoration: none;
+    transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+  }
+  .industry-resource:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56, 189, 248, 0.36);
+    background: rgba(56, 189, 248, 0.08);
+  }
+  @media (max-width: 980px) {
+    .industry-topbar,
+    .industry-card__head {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .industry-hero,
+    .industry-grid,
+    .industry-track-grid,
+    .industry-resource-grid {
+      grid-template-columns: 1fr;
+    }
+    .industry-signals {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 620px) {
+    .industry-signals {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,6 +1,11 @@
 {
   "commits": [
     {
+      "hash": "39a27a8029b40d016348b3e8106fabe9364afa62",
+      "date": "2026-04-24 09:26:57 +0800",
+      "message": "feat: visitor insights, analytics, and visit logging updates"
+    },
+    {
       "hash": "fccd8454f6c7c49d08cf8a3c5ffd60980719dee9",
       "date": "2026-04-23 23:20:38 +0800",
       "message": "refactor(statistics): polish labels and table scrollbar style"
@@ -44,12 +49,7 @@
       "hash": "c4df5f128652b10d553336627045cb56bd46f399",
       "date": "2026-04-23 11:03:11 +0800",
       "message": "refactor(about): move Education to main column; show pie legend to the right"
-    },
-    {
-      "hash": "4f04713739870d1961390b7b5a6a2760ec99c3be",
-      "date": "2026-04-23 10:49:27 +0800",
-      "message": "feat: domestic IP via Amap Web v3 (JSONP), optional PUBLIC_AMAP_WEB_KEY"
     }
   ],
-  "timestamp": "2026-04-23T19:31:31.445Z"
+  "timestamp": "2026-04-24T04:31:49.819Z"
 }

@@ -1,43 +1,105 @@
 ---
-/** 访客画像可视化：依赖 Supabase blog_visits 及可选视图 blog_visit_hot_paths / blog_visit_risk_summary */
+/**
+ * Private visitor traffic dashboard.
+ * Shows traffic statistics, quant-style flow indicators, and a rule-generated
+ * analyst brief without exposing this raw-IP view as a public page.
+ */
 ---
 
 <div class="analytics-console" id="analytics-console">
-  <p class="analytics-console__note" id="analytics-note">Loading…</p>
+  <div class="analytics-console__hero">
+    <div>
+      <p class="analytics-console__eyebrow">User Portrait Console</p>
+      <h2 class="analytics-console__title">Visitor Portrait Analytics</h2>
+      <p class="analytics-console__note" id="analytics-note">Loading...</p>
+    </div>
+    <div class="analytics-console__score">
+      <span class="analytics-console__score-label">Flow Index</span>
+      <strong id="flow-index">--</strong>
+      <span id="flow-regime">No signal</span>
+    </div>
+  </div>
+
+  <section class="analytics-console__brief" aria-label="Visitor portrait summary">
+    <div>
+      <h2 class="analytics-console__h">Summary</h2>
+      <p class="analytics-console__hint">
+        Visitor portrait summary: trend, concentration, dominant route, and most active IP.
+      </p>
+    </div>
+    <ul id="traffic-summary" class="analytics-console__summary">
+      <li>Waiting for visitor flow signals...</li>
+    </ul>
+  </section>
+
+  <div class="analytics-console__kpis" aria-label="Traffic KPIs">
+    <div class="analytics-console__kpi">
+      <span>Visits 24h</span>
+      <strong id="kpi-visits">--</strong>
+    </div>
+    <div class="analytics-console__kpi">
+      <span>Unique IPs</span>
+      <strong id="kpi-ips">--</strong>
+    </div>
+    <div class="analytics-console__kpi">
+      <span>Peak / Avg</span>
+      <strong id="kpi-peak">--</strong>
+    </div>
+    <div class="analytics-console__kpi">
+      <span>Top Path Share</span>
+      <strong id="kpi-concentration">--</strong>
+    </div>
+  </div>
 
   <div class="analytics-console__grid">
-    <section class="analytics-console__card" aria-label="Visitor kind">
-      <h2 class="analytics-console__h">Visitor kind</h2>
-      <div id="chart-kind" class="analytics-console__chart"></div>
-    </section>
-    <section class="analytics-console__card" aria-label="Risk score distribution">
-      <h2 class="analytics-console__h">Risk score (sample)</h2>
-      <div id="chart-risk" class="analytics-console__chart"></div>
+    <section class="analytics-console__card analytics-console__card--wide" aria-label="Traffic time series">
+      <h2 class="analytics-console__h">Traffic Timeline</h2>
+      <div id="chart-traffic-line" class="analytics-console__chart analytics-console__chart--tall"></div>
     </section>
     <section class="analytics-console__card analytics-console__card--wide" aria-label="Hot paths">
-      <h2 class="analytics-console__h">Hot paths</h2>
+      <h2 class="analytics-console__h">Hot Paths</h2>
       <div id="chart-paths" class="analytics-console__chart analytics-console__chart--tall"></div>
     </section>
     <section class="analytics-console__card analytics-console__card--wide" aria-label="Top cities">
-      <h2 class="analytics-console__h">Top cities</h2>
+      <h2 class="analytics-console__h">Geo / City Distribution</h2>
       <div id="chart-cities" class="analytics-console__chart"></div>
     </section>
   </div>
 
-  <section class="analytics-console__card analytics-console__card--alert" aria-label="Risk alerts">
-    <h2 class="analytics-console__h">Risk IP alerts</h2>
+  <section class="analytics-console__card analytics-console__card--alert" aria-label="IP portraits">
+    <h2 class="analytics-console__h">IP Portraits</h2>
     <p class="analytics-console__hint">
-      Rule-based labels: <code>normal</code>, <code>suspect</code>, <code>scan</code>, <code>crawler</code>. Not a guarantee of malice.
+      Private operator view: IP, custom profile name, ISP, location and path history should stay behind owner-only access.
     </p>
+    <div class="analytics-console__lock" id="portrait-lock">
+      <div>
+        <strong>Local profile notes</strong>
+        <span id="portrait-lock-status">Locked. First unlock initializes a local password on this browser.</span>
+      </div>
+      <form id="portrait-lock-form" class="analytics-console__lock-form">
+        <input
+          id="portrait-password"
+          class="analytics-console__input"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Password"
+        />
+        <button class="analytics-console__btn" type="submit">Unlock</button>
+        <button class="analytics-console__btn analytics-console__btn--ghost" type="button" id="portrait-lock-btn">Lock</button>
+      </form>
+    </div>
     <div class="analytics-console__table-wrap">
-      <table class="analytics-console__table" id="table-risk">
+      <table class="analytics-console__table" id="table-ip">
         <thead>
           <tr>
             <th>IP</th>
-            <th>Max risk</th>
-            <th>Kind</th>
-            <th>Events</th>
+            <th>Profile Name</th>
+            <th>Visits</th>
+            <th>Sessions</th>
+            <th>ISP</th>
+            <th>Location</th>
             <th>Last path</th>
+            <th>Last seen</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -48,14 +110,114 @@
 
 <style>
   .analytics-console {
+    --panel: rgba(15, 23, 42, 0.62);
+    --panel-strong: rgba(8, 13, 24, 0.78);
+    --line: rgba(148, 163, 184, 0.16);
+    --muted: #94a3b8;
+    --text: #e7eefb;
     width: 100%;
-    max-width: 1280px;
+    max-width: 1320px;
     margin: 0 auto;
   }
+  .analytics-console__hero,
+  .analytics-console__brief,
+  .analytics-console__card,
+  .analytics-console__kpi {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.18);
+  }
+  .analytics-console__hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: stretch;
+    border-radius: 18px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    background:
+      linear-gradient(135deg, rgba(14, 165, 233, 0.2), transparent 38%),
+      linear-gradient(155deg, rgba(15, 23, 42, 0.78), rgba(8, 13, 24, 0.82));
+  }
+  .analytics-console__eyebrow {
+    margin: 0 0 0.35rem;
+    color: #38bdf8;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 800;
+  }
+  .analytics-console__title {
+    margin: 0;
+    font-size: clamp(1.35rem, 2vw, 2.1rem);
+    color: #f8fbff;
+  }
   .analytics-console__note {
-    margin: 0 0 1rem;
+    margin: 0.55rem 0 0;
     font-size: 0.9rem;
-    color: #9fb0d0;
+    color: var(--muted);
+  }
+  .analytics-console__score {
+    min-width: 170px;
+    display: grid;
+    align-content: center;
+    justify-items: end;
+    gap: 0.15rem;
+    padding: 0.85rem 1rem;
+    border-radius: 16px;
+    background: rgba(2, 6, 23, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+  }
+  .analytics-console__score-label,
+  .analytics-console__score span:last-child {
+    font-size: 0.76rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .analytics-console__score strong {
+    color: #f8fafc;
+    font-size: 2.55rem;
+    line-height: 1;
+  }
+  .analytics-console__brief {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.42fr) minmax(280px, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 16px;
+    margin-bottom: 1rem;
+  }
+  .analytics-console__summary {
+    margin: 0;
+    padding-left: 1.05rem;
+    color: var(--text);
+    line-height: 1.55;
+    font-size: 0.92rem;
+  }
+  .analytics-console__kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  .analytics-console__kpi {
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    background: var(--panel-strong);
+  }
+  .analytics-console__kpi span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .analytics-console__kpi strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: #f8fafc;
+    font-size: 1.55rem;
   }
   .analytics-console__grid {
     display: grid;
@@ -64,10 +226,8 @@
     margin-bottom: 1.25rem;
   }
   .analytics-console__card {
-    background: rgba(15, 23, 42, 0.55);
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 1rem 1rem 0.5rem;
-    border: 1px solid rgba(148, 163, 184, 0.12);
   }
   .analytics-console__card--wide {
     grid-column: 1 / -1;
@@ -78,45 +238,183 @@
   .analytics-console__h {
     margin: 0 0 0.5rem;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
     color: #e2e8f0;
   }
   .analytics-console__hint {
     margin: 0 0 0.75rem;
-    font-size: 0.8rem;
-    color: #94a3b8;
-  }
-  .analytics-console__hint code {
-    color: #7dd3fc;
-    font-size: 0.85em;
+    font-size: 0.82rem;
+    color: var(--muted);
   }
   .analytics-console__chart {
     width: 100%;
     height: 260px;
   }
   .analytics-console__chart--tall {
-    height: 320px;
+    height: 340px;
   }
   .analytics-console__table-wrap {
     overflow-x: auto;
     margin-bottom: 0.75rem;
   }
+  .analytics-console__lock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    padding: 0.8rem 0.9rem;
+    margin: 0 0 0.9rem;
+    border-radius: 12px;
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    background: rgba(2, 6, 23, 0.38);
+  }
+  .analytics-console__lock strong,
+  .analytics-console__lock span {
+    display: block;
+  }
+  .analytics-console__lock strong {
+    color: #e2e8f0;
+    font-size: 0.9rem;
+  }
+  .analytics-console__lock span {
+    margin-top: 0.15rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+  .analytics-console__lock-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem;
+  }
+  .analytics-console__input {
+    width: 190px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 9px;
+    padding: 0.42rem 0.55rem;
+    background: rgba(15, 23, 42, 0.72);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.84rem;
+  }
+  .analytics-console__profile-input {
+    width: 170px;
+  }
+  .analytics-console__btn {
+    border: 1px solid rgba(56, 189, 248, 0.32);
+    border-radius: 9px;
+    padding: 0.42rem 0.65rem;
+    background: rgba(56, 189, 248, 0.14);
+    color: #bae6fd;
+    font: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .analytics-console__btn:hover {
+    background: rgba(56, 189, 248, 0.22);
+  }
+  .analytics-console__btn--ghost {
+    border-color: rgba(148, 163, 184, 0.22);
+    background: rgba(148, 163, 184, 0.08);
+    color: #cbd5e1;
+  }
+  .analytics-console__profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+  }
+  .analytics-console__profile-readonly {
+    color: #cbd5e1;
+  }
   .analytics-console__table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
-    color: #e7eefb;
+    font-size: 0.84rem;
+    color: var(--text);
+    table-layout: fixed;
   }
   .analytics-console__table th,
   .analytics-console__table td {
-    padding: 0.45rem 0.6rem;
+    padding: 0.5rem 0.62rem;
     text-align: left;
     border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-    white-space: nowrap;
+    vertical-align: top;
   }
   .analytics-console__table th {
-    color: #94a3b8;
-    font-weight: 600;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .analytics-console__table th:nth-child(1),
+  .analytics-console__table td:nth-child(1) {
+    width: 250px;
+  }
+  .analytics-console__table th:nth-child(2),
+  .analytics-console__table td:nth-child(2) {
+    width: 230px;
+  }
+  .analytics-console__table th:nth-child(3),
+  .analytics-console__table td:nth-child(3) {
+    width: 80px;
+  }
+  .analytics-console__table th:nth-child(4),
+  .analytics-console__table td:nth-child(4) {
+    width: 80px;
+  }
+  .analytics-console__table th:nth-child(5),
+  .analytics-console__table td:nth-child(5) {
+    width: 190px;
+  }
+  .analytics-console__table th:nth-child(6),
+  .analytics-console__table td:nth-child(6) {
+    width: 280px;
+    min-width: 280px;
+  }
+  .analytics-console__table th:nth-child(7),
+  .analytics-console__table td:nth-child(7) {
+    width: 420px;
+    min-width: 420px;
+  }
+  .analytics-console__table th:nth-child(8),
+  .analytics-console__table td:nth-child(8) {
+    width: 180px;
+  }
+  .analytics-console__ip-cell,
+  .analytics-console__path-cell {
+    color: #f472b6;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+  }
+  .analytics-console__location-cell {
+    display: inline-block;
+    max-width: 280px;
+    line-height: 1.45;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    color: #dbeafe;
+  }
+  @media (max-width: 760px) {
+    .analytics-console__hero,
+    .analytics-console__brief {
+      grid-template-columns: 1fr;
+      flex-direction: column;
+    }
+    .analytics-console__score {
+      justify-items: start;
+    }
+    .analytics-console__kpis {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .analytics-console__lock {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .analytics-console__lock-form {
+      justify-content: flex-start;
+    }
   }
 </style>
 
@@ -127,16 +425,34 @@
   type VisitRow = {
     ip: string | null;
     city: string | null;
+    region?: string | null;
     country: string | null;
-    visitor_kind: string | null;
-    risk_score: number | null;
+    visitor_kind?: string | null;
     page_path: string | null;
     created_at: string;
+    session_id?: string | null;
+    net_isp?: string | null;
   };
 
-  function loadEcharts(): Promise<NonNullable<(Window & { echarts?: { init: (el: HTMLElement | null) => { setOption: (o: unknown) => void } } }).echarts>> {
+  type IpPortrait = {
+    ip: string;
+    visits: number;
+    sessions: Set<string>;
+    isp: string;
+    location: string;
+    lastPath: string;
+    lastSeen: string;
+  };
+
+  type ProfileNotes = Record<string, string>;
+
+  type ChartApi = {
+    init: (el: HTMLElement | null) => { setOption: (o: unknown) => void };
+  };
+
+  function loadEcharts(): Promise<ChartApi> {
     return new Promise((resolve, reject) => {
-      const w = window as Window & { echarts?: { init: (el: HTMLElement | null) => { setOption: (o: unknown) => void } } };
+      const w = window as Window & { echarts?: ChartApi };
       if (w.echarts) {
         resolve(w.echarts);
         return;
@@ -145,7 +461,7 @@
       s.src = "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js";
       s.async = true;
       s.onload = () => {
-        const g = window as Window & { echarts?: typeof w.echarts };
+        const g = window as Window & { echarts?: ChartApi };
         if (g.echarts) resolve(g.echarts);
         else reject(new Error("echarts missing"));
       };
@@ -154,235 +470,420 @@
     });
   }
 
-  function esc(s: string): string {
-    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  function esc(value: unknown): string {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function text(id: string, value: string): void {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  const PROFILE_NOTES_KEY = "analytics.ipProfileNotes.v1";
+  const PROFILE_PASSWORD_HASH_KEY = "analytics.ipProfilePasswordHash.v1";
+  let portraitUnlocked = false;
+  let latestIpRows: IpPortrait[] = [];
+
+  async function sha256(input: string): Promise<string> {
+    const bytes = new TextEncoder().encode(input);
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    return [...new Uint8Array(digest)].map((x) => x.toString(16).padStart(2, "0")).join("");
+  }
+
+  function readProfileNotes(): ProfileNotes {
+    try {
+      const raw = localStorage.getItem(PROFILE_NOTES_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as ProfileNotes : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function writeProfileNotes(notes: ProfileNotes): void {
+    localStorage.setItem(PROFILE_NOTES_KEY, JSON.stringify(notes));
+  }
+
+  function setLockStatus(message: string): void {
+    const el = document.getElementById("portrait-lock-status");
+    if (el) el.textContent = message;
+  }
+
+  function fmtTime(iso: string): string {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString("zh-CN", { hour12: false, timeZone: "Asia/Shanghai" });
+  }
+
+  function hourKey(iso: string): string {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "unknown";
+    d.setMinutes(0, 0, 0);
+    return d.toLocaleString("zh-CN", {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Shanghai",
+    });
+  }
+
+  function shanghaiDayStart(date: Date): Date {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(date);
+    const year = parts.find((p) => p.type === "year")?.value || "1970";
+    const month = parts.find((p) => p.type === "month")?.value || "01";
+    const day = parts.find((p) => p.type === "day")?.value || "01";
+    return new Date(`${year}-${month}-${day}T00:00:00+08:00`);
+  }
+
+  function hourLabel(date: Date): string {
+    return date.toLocaleString("zh-CN", {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Shanghai",
+    });
+  }
+
+  function todayHourlyBuckets(): { key: string; label: string }[] {
+    const now = new Date();
+    const start = shanghaiDayStart(now);
+    const end = new Date(now);
+    end.setMinutes(0, 0, 0);
+    const buckets: { key: string; label: string }[] = [];
+    for (let t = start.getTime(); t <= end.getTime(); t += 60 * 60 * 1000) {
+      const d = new Date(t);
+      buckets.push({ key: hourKey(d.toISOString()), label: hourLabel(d) });
+    }
+    return buckets;
+  }
+
+  function movingAverage(values: number[], windowSize: number): number[] {
+    return values.map((_, i) => {
+      const start = Math.max(0, i - windowSize + 1);
+      const slice = values.slice(start, i + 1);
+      return Number((slice.reduce((a, b) => a + b, 0) / Math.max(1, slice.length)).toFixed(2));
+    });
+  }
+
+  function pct(value: number): string {
+    return `${Math.round(value * 100)}%`;
+  }
+
+  function buildLocation(row: VisitRow): string {
+    const parts = [row.city, row.region, row.country]
+      .map((x) => String(x || "").trim())
+      .filter(Boolean);
+    return [...new Set(parts)].join(", ") || "unknown";
+  }
+
+  function renderSummary(opts: {
+    rows: VisitRow[];
+    hourlyCounts: number[];
+    topPath?: [string, number];
+    topIp?: IpPortrait;
+    topPathShare: number;
+    peakRatio: number;
+  }): void {
+    const host = document.getElementById("traffic-summary");
+    if (!host) return;
+    const total = opts.rows.length;
+    const last6 = opts.hourlyCounts.slice(-6).reduce((a, b) => a + b, 0);
+    const prev6 = opts.hourlyCounts.slice(-12, -6).reduce((a, b) => a + b, 0);
+    const trend =
+      last6 > prev6 * 1.2 ? "rising" : last6 < prev6 * 0.8 ? "cooling down" : "stable";
+    const lines = [
+      `Traffic regime is ${trend}: last 6h ${last6} visits vs previous 6h ${prev6}.`,
+      `Peak/average multiplier is ${opts.peakRatio.toFixed(2)}x; higher values mean burstier traffic.`,
+      opts.topPath
+        ? `Top route contributes ${pct(opts.topPathShare)} of sampled visits: ${opts.topPath[0]}.`
+        : "No route concentration yet.",
+      opts.topIp
+        ? `Most active IP is ${opts.topIp.ip} with ${opts.topIp.visits} visits in the current sample.`
+        : `Current sample contains ${total} visits.`,
+    ];
+    host.innerHTML = lines.map((line) => `<li>${esc(line)}</li>`).join("");
+  }
+
+  function renderIpTable(): void {
+    const tbody = document.querySelector("#table-ip tbody");
+    if (!tbody) return;
+    const notes = readProfileNotes();
+    tbody.innerHTML = latestIpRows
+      .map((x) => {
+        const note = notes[x.ip] || "";
+        const profileCell = portraitUnlocked
+          ? `<input class="analytics-console__input analytics-console__profile-input" data-profile-input="${esc(x.ip)}" value="${esc(note)}" placeholder="例如：admin / 张三" />
+            <div class="analytics-console__profile-actions">
+              <button class="analytics-console__btn" type="button" data-profile-save="${esc(x.ip)}">Save</button>
+              <button class="analytics-console__btn analytics-console__btn--ghost" type="button" data-profile-delete="${esc(x.ip)}">Delete</button>
+            </div>`
+          : `<span class="analytics-console__profile-readonly">${note ? esc(note) : "Locked"}</span>`;
+        return `<tr>
+          <td><code class="analytics-console__ip-cell">${esc(x.ip)}</code></td>
+          <td>${profileCell}</td>
+          <td>${x.visits}</td>
+          <td>${x.sessions.size || "-"}</td>
+          <td>${esc(x.isp)}</td>
+          <td><span class="analytics-console__location-cell">${esc(x.location)}</span></td>
+          <td><code class="analytics-console__path-cell">${esc(x.lastPath)}</code></td>
+          <td>${esc(fmtTime(x.lastSeen))}</td>
+        </tr>`;
+      })
+      .join("");
+  }
+
+  async function unlockPortraitNotes(password: string): Promise<void> {
+    const next = password.trim();
+    if (!next) return;
+    const hash = await sha256(next);
+    const stored = localStorage.getItem(PROFILE_PASSWORD_HASH_KEY);
+    if (!stored) {
+      localStorage.setItem(PROFILE_PASSWORD_HASH_KEY, hash);
+      portraitUnlocked = true;
+      setLockStatus("Unlocked. Local password initialized on this browser.");
+      renderIpTable();
+      return;
+    }
+    if (stored === hash) {
+      portraitUnlocked = true;
+      setLockStatus("Unlocked. Profile names are stored only in this browser.");
+      renderIpTable();
+      return;
+    }
+    setLockStatus("Wrong password.");
+  }
+
+  function bindPortraitNoteControls(): void {
+    const form = document.getElementById("portrait-lock-form");
+    const password = document.getElementById("portrait-password") as HTMLInputElement | null;
+    form?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      void unlockPortraitNotes(password?.value || "");
+      if (password) password.value = "";
+    });
+    document.getElementById("portrait-lock-btn")?.addEventListener("click", () => {
+      portraitUnlocked = false;
+      setLockStatus("Locked.");
+      renderIpTable();
+    });
+    document.getElementById("table-ip")?.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      const saveIp = target.closest<HTMLElement>("[data-profile-save]")?.dataset.profileSave;
+      const deleteIp = target.closest<HTMLElement>("[data-profile-delete]")?.dataset.profileDelete;
+      if (!portraitUnlocked || (!saveIp && !deleteIp)) return;
+      const notes = readProfileNotes();
+      if (saveIp) {
+        const input = document.querySelector<HTMLInputElement>(`[data-profile-input="${CSS.escape(saveIp)}"]`);
+        const value = (input?.value || "").trim();
+        if (value) notes[saveIp] = value;
+        else delete notes[saveIp];
+        writeProfileNotes(notes);
+        setLockStatus(`Saved profile name for ${saveIp}.`);
+      }
+      if (deleteIp) {
+        delete notes[deleteIp];
+        writeProfileNotes(notes);
+        setLockStatus(`Deleted profile name for ${deleteIp}.`);
+      }
+      renderIpTable();
+    });
   }
 
   async function main(): Promise<void> {
+    bindPortraitNoteControls();
     const note = document.getElementById("analytics-note");
     const cfg = getSupabaseClientConfig();
     if (!cfg) {
-      if (note) note.textContent = "Supabase 未配置（需要 PUBLIC_SUPABASE_URL + PUBLIC_SUPABASE_ANON_KEY）。";
+      if (note) note.textContent = "Supabase is not configured. Set PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY.";
       return;
     }
     if (cfg.anonKey.trim().startsWith("sb_secret_")) {
-      if (note) {
-        note.textContent =
-          "不能使用 Secret 密钥作为公网页面的 anon。请在 Supabase 使用 Publishable / legacy anon（eyJ 开头）。";
-      }
+      if (note) note.textContent = "Do not expose a Supabase secret key in the browser. Use a publishable or legacy anon key.";
       return;
     }
 
-    const selectCols =
-      "ip,city,country,visitor_kind,risk_score,page_path,created_at,session_id,path_chain,referrer,net_isp";
-
     const supabase = createClient(cfg.url, cfg.anonKey);
-    let rows: VisitRow[] = [];
-    let hotErr = false;
-    let riskViewErr = false;
-
+    const selectCols = "ip,city,region,country,visitor_kind,page_path,created_at,session_id,net_isp";
     const raw = await supabase
       .from("blog_visits")
       .select(selectCols)
       .order("created_at", { ascending: false })
-      .limit(4500);
+      .limit(5000);
 
     if (raw.error) {
-      const msg = String(raw.error.message || "");
-      if (/column|schema|PGRST204/i.test(msg)) {
-        const legacy = await supabase
-          .from("blog_visits")
-          .select("ip,city,country,page_path,created_at")
-          .order("created_at", { ascending: false })
-          .limit(4500);
-        if (legacy.error) {
-          if (note) note.textContent = "读取失败: " + legacy.error.message;
-          return;
-        }
-        rows = (legacy.data || []) as VisitRow[];
-        if (note) {
-          note.textContent =
-            `${rows.length} events（旧表无画像字段）。请在 Supabase 执行 supabase/blog_visit_intel.sql 后重新部署。`;
-        }
-      } else {
-        if (note) note.textContent = "读取失败: " + msg;
-        return;
-      }
-    } else {
-      rows = (raw.data || []) as VisitRow[];
       if (note) {
-        note.textContent = `${rows.length} recent events loaded. Rule-based risk; refine in visit-behavior.ts.`;
+        note.textContent =
+          "Raw visit rows are not readable from the browser. Use aggregate views or a private admin API after enabling stricter RLS.";
       }
+      return;
     }
 
-    let hotPaths: { page_path: string; views: number; visitors: number }[] = [];
-    const hotRes = await supabase.from("blog_visit_hot_paths").select("*").order("views", { ascending: false }).limit(14);
-    if (!hotRes.error && Array.isArray(hotRes.data)) {
-      hotPaths = hotRes.data as typeof hotPaths;
-    } else {
-      hotErr = true;
-      const m = new Map<string, { views: number; ips: Set<string> }>();
-      for (const r of rows) {
-        const p = String(r.page_path || "").trim();
-        if (!p) continue;
-        if (!m.has(p)) m.set(p, { views: 0, ips: new Set() });
-        const e = m.get(p)!;
-        e.views += 1;
-        if (r.ip) e.ips.add(r.ip);
-      }
-      hotPaths = [...m.entries()]
-        .map(([page_path, v]) => ({ page_path, views: v.views, visitors: v.ips.size }))
-        .sort((a, b) => b.views - a.views)
-        .slice(0, 14);
+    const rows = (raw.data || []) as VisitRow[];
+    if (note) {
+      note.textContent = `${rows.length} visits loaded. Flow metrics are based on the latest sample.`;
     }
 
-    let riskRows: {
-      ip: string;
-      max_risk: number;
-      total_events: number;
-      crawler_events?: number;
-      scan_events?: number;
-    }[] = [];
-    const rr = await supabase
-      .from("blog_visit_risk_summary")
-      .select("*")
-      .order("max_risk", { ascending: false })
-      .limit(20);
-    if (!rr.error && Array.isArray(rr.data)) {
-      riskRows = rr.data as typeof riskRows;
-    } else {
-      riskViewErr = true;
-      const byIp = new Map<
-        string,
-        { maxR: number; n: number; kind: string; lastPath: string }
-      >();
-      for (const r of rows) {
-        const ip = String(r.ip || "");
-        if (!ip || /^local-/i.test(ip)) continue;
-        const score = typeof r.risk_score === "number" ? r.risk_score : 0;
-        const prev = byIp.get(ip) || { maxR: 0, n: 0, kind: "normal", lastPath: "" };
-        prev.maxR = Math.max(prev.maxR, score);
-        prev.n += 1;
-        const k = String(r.visitor_kind || "normal");
-        if (k === "crawler" || (prev.kind !== "crawler" && k === "scan")) prev.kind = k;
-        else if (prev.kind === "normal" && k === "suspect") prev.kind = "suspect";
-        prev.lastPath = String(r.page_path || prev.lastPath);
-        byIp.set(ip, prev);
-      }
-      riskRows = [...byIp.entries()]
-        .map(([ip, v]) => ({
-          ip,
-          max_risk: v.maxR,
-          total_events: v.n,
-          crawler_events: v.kind === "crawler" ? v.n : 0,
-          scan_events: v.kind === "scan" ? v.n : 0,
-        }))
-        .sort((a, b) => b.max_risk - a.max_risk)
-        .slice(0, 20);
-    }
+    const now = Date.now();
+    const dayRows = rows.filter((r) => now - new Date(r.created_at).getTime() <= 24 * 60 * 60 * 1000);
+    const uniqueIps = new Set(rows.map((r) => r.ip).filter(Boolean));
 
-    const kindCount: Record<string, number> = {};
-    const riskBuckets = [0, 0, 0, 0, 0];
-    const cityCount: Record<string, number> = {};
+    const hourly = new Map<string, { visits: number; ips: Set<string> }>();
+    const cityCount = new Map<string, number>();
+    const pathCount = new Map<string, { views: number; ips: Set<string> }>();
+    const ipMap = new Map<string, IpPortrait>();
+
     for (const r of rows) {
-      const k = String(r.visitor_kind || "unknown");
-      kindCount[k] = (kindCount[k] || 0) + 1;
-      const s = typeof r.risk_score === "number" ? r.risk_score : 0;
-      const b = Math.min(4, Math.floor(s / 20));
-      riskBuckets[b] += 1;
-      const city = [r.city, r.country].filter(Boolean).join(", ") || "—";
-      cityCount[city] = (cityCount[city] || 0) + 1;
+      const hk = hourKey(r.created_at);
+      const h = hourly.get(hk) || { visits: 0, ips: new Set<string>() };
+      h.visits += 1;
+      if (r.ip) h.ips.add(r.ip);
+      hourly.set(hk, h);
+
+      const city = buildLocation(r);
+      cityCount.set(city, (cityCount.get(city) || 0) + 1);
+
+      const path = String(r.page_path || "unknown").trim() || "unknown";
+      const pathEntry = pathCount.get(path) || { views: 0, ips: new Set<string>() };
+      pathEntry.views += 1;
+      if (r.ip) pathEntry.ips.add(r.ip);
+      pathCount.set(path, pathEntry);
+
+      const ip = String(r.ip || "");
+      if (ip && !/^local-/i.test(ip)) {
+        const prev = ipMap.get(ip) || {
+          ip,
+          visits: 0,
+          sessions: new Set<string>(),
+          isp: "unknown",
+          location: city,
+          lastPath: path,
+          lastSeen: r.created_at,
+        };
+        prev.visits += 1;
+        if (r.session_id) prev.sessions.add(r.session_id);
+        if (r.net_isp) prev.isp = r.net_isp;
+        if (city !== "unknown") prev.location = city;
+        if (new Date(r.created_at) >= new Date(prev.lastSeen)) {
+          prev.lastPath = path;
+          prev.lastSeen = r.created_at;
+        }
+        ipMap.set(ip, prev);
+      }
     }
 
-    const topCities = Object.entries(cityCount)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 12);
+    const buckets = todayHourlyBuckets();
+    const hourlyPairs = buckets.map((b) => [b.label, hourly.get(b.key) || { visits: 0, ips: new Set<string>() }] as const);
+    const hourlyCounts = hourlyPairs.map(([, v]) => v.visits);
+    const hourlyIps = hourlyPairs.map(([, v]) => v.ips.size);
+    const ma = movingAverage(hourlyCounts, 6);
+    const avgHourly = hourlyCounts.reduce((a, b) => a + b, 0) / Math.max(1, hourlyCounts.length);
+    const peakHourly = Math.max(0, ...hourlyCounts);
+    const peakRatio = avgHourly > 0 ? peakHourly / avgHourly : 0;
+
+    const topPaths = [...pathCount.entries()]
+      .map(([page_path, v]) => ({ page_path, views: v.views, visitors: v.ips.size }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 16);
+    const topPath = topPaths[0] ? [topPaths[0].page_path, topPaths[0].views] as [string, number] : undefined;
+    const topPathShare = topPath ? topPath[1] / Math.max(1, rows.length) : 0;
+    const cityRows = [...cityCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+    const ipRows = [...ipMap.values()].sort((a, b) => b.visits - a.visits).slice(0, 24);
+    latestIpRows = ipRows;
+    const flowIndex = Math.min(
+      100,
+      Math.round(Math.min(45, dayRows.length / 2) + Math.min(25, uniqueIps.size * 2) + Math.min(20, peakRatio * 5) + Math.min(10, topPathShare * 20)),
+    );
+
+    text("flow-index", String(flowIndex));
+    text("flow-regime", flowIndex >= 70 ? "Busy" : flowIndex >= 35 ? "Active" : "Quiet");
+    text("kpi-visits", String(dayRows.length));
+    text("kpi-ips", String(uniqueIps.size));
+    text("kpi-peak", `${peakRatio.toFixed(2)}x`);
+    text("kpi-concentration", pct(topPathShare));
+
+    renderSummary({
+      rows,
+      hourlyCounts,
+      topPath,
+      topIp: ipRows[0],
+      topPathShare,
+      peakRatio,
+    });
 
     const ec = await loadEcharts();
-    const dark = "#94a3b8";
-    const text = "#e2e8f0";
+    const axis = "#94a3b8";
+    const textColor = "#e2e8f0";
+    const gridLine = "#334155";
 
-    ec.init(document.getElementById("chart-kind")!).setOption({
-      textStyle: { color: text },
-      tooltip: { trigger: "item" },
+    ec.init(document.getElementById("chart-traffic-line")).setOption({
+      textStyle: { color: textColor },
+      tooltip: { trigger: "axis" },
+      legend: { textStyle: { color: axis } },
+      grid: { left: 42, right: 24, top: 32, bottom: 38 },
+      xAxis: { type: "category", data: hourlyPairs.map(([h]) => h), axisLabel: { color: axis } },
+      yAxis: { type: "value", axisLabel: { color: axis }, splitLine: { lineStyle: { color: gridLine } } },
       series: [
         {
-          type: "pie",
-          radius: ["36%", "68%"],
-          data: Object.entries(kindCount).map(([name, value]) => ({ name, value })),
-          label: { color: text },
+          name: "visits",
+          type: "bar",
+          data: hourlyCounts,
+          itemStyle: { color: "rgba(56, 189, 248, 0.72)" },
+        },
+        {
+          name: "6h moving avg",
+          type: "line",
+          smooth: true,
+          data: ma,
+          lineStyle: { color: "#f472b6", width: 3 },
+        },
+        {
+          name: "unique IPs",
+          type: "line",
+          smooth: true,
+          data: hourlyIps,
+          lineStyle: { color: "#34d399", width: 2 },
         },
       ],
     });
 
-    ec.init(document.getElementById("chart-risk")!).setOption({
-      textStyle: { color: text },
+    ec.init(document.getElementById("chart-paths")).setOption({
+      textStyle: { color: textColor },
       tooltip: { trigger: "axis" },
-      xAxis: {
-        type: "category",
-        data: ["0–19", "20–39", "40–59", "60–79", "80–100"],
-        axisLabel: { color: dark },
-      },
-      yAxis: { type: "value", axisLabel: { color: dark }, splitLine: { lineStyle: { color: "#334155" } } },
-      series: [{ type: "bar", data: riskBuckets, itemStyle: { color: "#38bdf8" } }],
-    });
-
-    ec.init(document.getElementById("chart-paths")!).setOption({
-      textStyle: { color: text },
-      tooltip: { trigger: "axis" },
-      grid: { left: 120, right: 16, top: 8, bottom: 24 },
-      xAxis: { type: "value", axisLabel: { color: dark }, splitLine: { lineStyle: { color: "#334155" } } },
+      grid: { left: 150, right: 16, top: 8, bottom: 24 },
+      xAxis: { type: "value", axisLabel: { color: axis }, splitLine: { lineStyle: { color: gridLine } } },
       yAxis: {
         type: "category",
-        data: hotPaths.map((h) => h.page_path).reverse(),
-        axisLabel: { color: dark, width: 110, overflow: "truncate" },
+        data: topPaths.map((h) => h.page_path).reverse(),
+        axisLabel: { color: axis, width: 140, overflow: "truncate" },
       },
-      series: [{ type: "bar", data: hotPaths.map((h) => h.views).reverse(), itemStyle: { color: "#a78bfa" } }],
+      series: [{ type: "bar", data: topPaths.map((h) => h.views).reverse(), itemStyle: { color: "#a78bfa" } }],
     });
 
-    ec.init(document.getElementById("chart-cities")!).setOption({
-      textStyle: { color: text },
+    ec.init(document.getElementById("chart-cities")).setOption({
+      textStyle: { color: textColor },
       tooltip: { trigger: "axis" },
-      grid: { left: 120, right: 16, top: 8, bottom: 24 },
-      xAxis: { type: "value", axisLabel: { color: dark }, splitLine: { lineStyle: { color: "#334155" } } },
+      grid: { left: 160, right: 16, top: 8, bottom: 24 },
+      xAxis: { type: "value", axisLabel: { color: axis }, splitLine: { lineStyle: { color: gridLine } } },
       yAxis: {
         type: "category",
-        data: topCities.map(([c]) => c).reverse(),
-        axisLabel: { color: dark, width: 100, overflow: "truncate" },
+        data: cityRows.map(([c]) => c).reverse(),
+        axisLabel: { color: axis, width: 150, overflow: "truncate" },
       },
-      series: [{ type: "bar", data: topCities.map(([, n]) => n).reverse(), itemStyle: { color: "#34d399" } }],
+      series: [{ type: "bar", data: cityRows.map(([, n]) => n).reverse(), itemStyle: { color: "#34d399" } }],
     });
 
-    const lastPathByIp = new Map<string, string>();
-    for (const r of rows) {
-      if (r.ip && r.page_path) lastPathByIp.set(r.ip, r.page_path);
-    }
-
-    const tbody = document.querySelector("#table-risk tbody");
-    if (tbody) {
-      const alerts = riskRows.filter((x) => x.max_risk >= 40 || (x.crawler_events ?? 0) > 0);
-      const show = alerts.length ? alerts : riskRows.slice(0, 12);
-      tbody.innerHTML = show
-        .map((x) => {
-          const kind =
-            (x.crawler_events ?? 0) > 0
-              ? "crawler"
-              : (x.scan_events ?? 0) > 0
-                ? "scan"
-                : x.max_risk >= 55
-                  ? "scan?"
-                  : "suspect";
-          const lp = lastPathByIp.get(x.ip) || "—";
-          return `<tr><td><code>${esc(x.ip)}</code></td><td>${x.max_risk}</td><td>${esc(
-            kind,
-          )}</td><td>${x.total_events}</td><td><code>${esc(lp)}</code></td></tr>`;
-        })
-        .join("");
-    }
-
-    if (note && (hotErr || riskViewErr)) {
-      note.textContent += "（部分聚合走浏览器回退：请在 Supabase 执行 blog_visit_intel.sql 以启用视图。）";
-    }
+    renderIpTable();
   }
 
   main().catch((e) => {

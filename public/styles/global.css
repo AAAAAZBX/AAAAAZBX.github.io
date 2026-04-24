@@ -2361,3 +2361,21 @@ main.fluid-board-page .category-list .category-post-list .list-group-item {
   }
 }
 
+/* ========== 统计 / Analytics：整页锁定暗色令牌（与 .dark 一致，不随全局昼夜切换） ========== */
+body.page-theme-lock-dark {
+  background-color: #252d38;
+  color-scheme: dark;
+}
+
+.page-theme-lock-wrap {
+  display: flow-root;
+  min-height: 100%;
+  color-scheme: dark;
+}
+
+/* overlay 首页类在亮色下会给 footer 强刷 #eee，锁定页需与暗色页脚一致 */
+body.page-theme-lock-dark.home-fluid-index footer {
+  background-color: #181c27 !important;
+  color: var(--text-secondary);
+}
+

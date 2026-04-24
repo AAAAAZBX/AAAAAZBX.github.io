@@ -1,0 +1,5 @@
+# Supabase CLI 本地/部署用；仅本仓库需要的片段。
+# 部署：supabase functions deploy visit-ip-whitelist-alert
+
+[functions.visit-ip-whitelist-alert]
+verify_jwt = false
