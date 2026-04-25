@@ -1,6 +1,11 @@
 {
   "commits": [
     {
+      "hash": "d550f10baf58ef908b009ffcf5c1e465d36f06b7",
+      "date": "2026-04-24 17:14:03 +0800",
+      "message": "feat(analytics): add ip profile sync and dashboard SQL scaffold"
+    },
+    {
       "hash": "b127fc3cfd274c260f7ac17acedf3f2e19a74659",
       "date": "2026-04-24 16:39:36 +0800",
       "message": "refactor(home): align tags and archive navigation layout"
@@ -44,12 +49,7 @@
       "hash": "a9e7cf7bf2c04c43172cd037890133bc056dae98",
       "date": "2026-04-23 14:40:57 +0800",
       "message": "refactor(statistics): redesign console layout and stabilize article view matching"
-    },
-    {
-      "hash": "a228399f316b315e3abef53ba16ed6f43d8b5ae5",
-      "date": "2026-04-23 13:29:46 +0800",
-      "message": "fix(visit-log): add request timeouts and local fallback resilience"
     }
   ],
-  "timestamp": "2026-04-24T09:12:04.888Z"
+  "timestamp": "2026-04-25T03:26:59.301Z"
 }
