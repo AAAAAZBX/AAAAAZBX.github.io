@@ -30,3 +30,19 @@ export function normalizeArticlePathForStats(href: string): string {
   }
   return decoded.replace(/\/+$/, "") || "/";
 }
+
+/** 与 `siteRelativePathname` 输出对齐；这些路由仅本地可见时不应写入访客表或计入全站 CountAPI。 */
+const OPERATOR_CONSOLE_FIRST_SEGMENTS = new Set([
+  "statistics",
+  "admin",
+  "analytics",
+  "quant",
+]);
+
+export function isOperatorConsolePath(relativePath: string | null | undefined): boolean {
+  if (relativePath == null || relativePath === "") return false;
+  const p = relativePath.replace(/\/+$/, "") || "/";
+  if (p === "/") return false;
+  const first = p.split("/").filter(Boolean)[0];
+  return first != null && OPERATOR_CONSOLE_FIRST_SEGMENTS.has(first);
+}

@@ -52,18 +52,20 @@
   </div>
 
   <div class="analytics-console__grid">
-    <section class="analytics-console__card analytics-console__card--wide" aria-label="Traffic time series">
-      <h2 class="analytics-console__h">Traffic Timeline</h2>
+    <section class="analytics-console__card analytics-console__card--wide" aria-label="Traffic time series last 30 days">
+      <h2 class="analytics-console__h">Traffic Timeline <span class="analytics-console__muted">(30d · Asia/Shanghai)</span></h2>
       <div id="chart-traffic-line" class="analytics-console__chart analytics-console__chart--tall"></div>
     </section>
-    <section class="analytics-console__card analytics-console__card--wide" aria-label="Hot paths">
-      <h2 class="analytics-console__h">Hot Paths</h2>
-      <div id="chart-paths" class="analytics-console__chart analytics-console__chart--tall"></div>
-    </section>
-    <section class="analytics-console__card analytics-console__card--wide" aria-label="Top cities">
-      <h2 class="analytics-console__h">Geo / City Distribution</h2>
-      <div id="chart-cities" class="analytics-console__chart"></div>
-    </section>
+    <div class="analytics-console__grid-row">
+      <section class="analytics-console__card" aria-label="Hot paths">
+        <h2 class="analytics-console__h">Hot Paths</h2>
+        <div id="chart-paths" class="analytics-console__chart"></div>
+      </section>
+      <section class="analytics-console__card" aria-label="Top cities">
+        <h2 class="analytics-console__h">Geo / City Distribution</h2>
+        <div id="chart-cities" class="analytics-console__chart"></div>
+      </section>
+    </div>
   </div>
 
   <section class="analytics-console__card analytics-console__card--alert" aria-label="IP portraits">
@@ -115,6 +117,26 @@
         <tbody></tbody>
       </table>
     </div>
+  </section>
+
+  <section class="analytics-console__card" aria-label="Private routes status">
+    <h2 class="analytics-console__h">🔒 私有路由状态</h2>
+    <table class="analytics-console__table">
+      <thead>
+        <tr><th>路径</th><th>名称</th><th>状态</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>Home</td><td><span class="route-badge route-badge--public">public</span></td><td>首页</td></tr>
+        <tr><td><code>/about</code></td><td>About</td><td><span class="route-badge route-badge--public">public</span></td><td>关于</td></tr>
+        <tr><td><code>/archives</code></td><td>Archives</td><td><span class="route-badge route-badge--public">public</span></td><td>归档</td></tr>
+        <tr><td><code>/admin</code></td><td>Admin</td><td><span class="route-badge route-badge--protected">protected</span></td><td>管理后台 (需密码)</td></tr>
+        <tr><td><code>/statistics</code></td><td>Statistics</td><td><span class="route-badge route-badge--protected">protected</span></td><td>统计 (需密码)</td></tr>
+        <tr><td><code>/analytics</code></td><td>Analytics</td><td><span class="route-badge route-badge--protected">protected</span></td><td>分析 (需密码)</td></tr>
+        <tr><td><code>/ai</code></td><td>AI Redirect</td><td><span class="route-badge route-badge--redirect">redirect</span></td><td>重定向到 /admin?tab=quant</td></tr>
+        <tr><td><code>/fintech</code></td><td>FinTech Redirect</td><td><span class="route-badge route-badge--redirect">redirect</span></td><td>重定向到 /admin?tab=quant</td></tr>
+        <tr><td><code>/quant</code></td><td>Quant Redirect</td><td><span class="route-badge route-badge--redirect">redirect</span></td><td>重定向到 /admin?tab=quant</td></tr>
+      </tbody>
+    </table>
   </section>
 </div>
 
@@ -231,9 +253,19 @@
   }
   .analytics-console__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1rem;
     margin-bottom: 1.25rem;
+  }
+  .analytics-console__grid-row {
+    display: grid;
+    grid-template-columns: minmax(380px, 1fr) minmax(320px, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 900px) {
+    .analytics-console__grid-row {
+      grid-template-columns: 1fr;
+    }
   }
   .analytics-console__card {
     border-radius: 16px;
@@ -250,6 +282,13 @@
     font-size: 1rem;
     font-weight: 700;
     color: #e2e8f0;
+  }
+  .analytics-console__muted {
+    font-weight: 500;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    text-transform: none;
   }
   .analytics-console__hint {
     margin: 0 0 0.75rem;
@@ -371,6 +410,13 @@
     text-align: center;
     border-bottom: 1px solid rgba(148, 163, 184, 0.15);
     vertical-align: middle;
+    line-height: 1.4;
+  }
+  .analytics-console__table td {
+    height: calc(1.4em * 2 + 1rem);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
   .analytics-console__table th {
     color: var(--muted);
@@ -390,13 +436,12 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     display: inline-block;
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
     vertical-align: middle;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
   .analytics-console__ip-cell {
-    overflow-wrap: anywhere;
     white-space: normal;
   }
   .analytics-console__location-cell {
@@ -405,6 +450,7 @@
     line-height: 1.45;
     white-space: normal;
     overflow-wrap: anywhere;
+    word-break: break-word;
     color: #dbeafe;
   }
   @media (max-width: 760px) {
@@ -426,6 +472,24 @@
     .analytics-console__lock-form {
       justify-content: flex-start;
     }
+  }
+  .route-badge {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .route-badge--public {
+    background: rgba(74, 222, 128, 0.2);
+    color: #4ade80;
+  }
+  .route-badge--protected {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+  }
+  .route-badge--redirect {
+    background: rgba(96, 165, 250, 0.2);
+    color: #60a5fa;
   }
 </style>
 
@@ -581,17 +645,26 @@
     return d.toLocaleString("zh-CN", { hour12: false, timeZone: "Asia/Shanghai" });
   }
 
-  function hourKey(iso: string): string {
+  /** 上海日历日，用于 Traffic Timeline（近 30 日按日聚合） */
+  function dayKey(iso: string): string {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "unknown";
-    d.setMinutes(0, 0, 0);
-    return d.toLocaleString("zh-CN", {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
       month: "2-digit",
       day: "2-digit",
-      hour: "2-digit",
-      hour12: false,
-      timeZone: "Asia/Shanghai",
-    });
+    }).formatToParts(d);
+    const year = parts.find((p) => p.type === "year")?.value || "1970";
+    const month = parts.find((p) => p.type === "month")?.value || "01";
+    const day = parts.find((p) => p.type === "day")?.value || "01";
+    return `${year}-${month}-${day}`;
+  }
+
+  function dayLabel(key: string): string {
+    const m = key.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return key;
+    return `${m[2]}/${m[3]}`;
   }
 
   function shanghaiDayStart(date: Date): Date {
@@ -607,25 +680,14 @@
     return new Date(`${year}-${month}-${day}T00:00:00+08:00`);
   }
 
-  function hourLabel(date: Date): string {
-    return date.toLocaleString("zh-CN", {
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      hour12: false,
-      timeZone: "Asia/Shanghai",
-    });
-  }
-
-  function todayHourlyBuckets(): { key: string; label: string }[] {
-    const now = new Date();
-    const start = shanghaiDayStart(now);
-    const end = new Date(now);
-    end.setMinutes(0, 0, 0);
+  /** 上海时区：从「今天 0 点」往前共 30 个日历日（含今天） */
+  function last30DailyBuckets(now = new Date()): { key: string; label: string }[] {
+    const end = shanghaiDayStart(now);
     const buckets: { key: string; label: string }[] = [];
-    for (let t = start.getTime(); t <= end.getTime(); t += 60 * 60 * 1000) {
-      const d = new Date(t);
-      buckets.push({ key: hourKey(d.toISOString()), label: hourLabel(d) });
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(end.getTime() - i * 24 * 60 * 60 * 1000);
+      const key = dayKey(d.toISOString());
+      buckets.push({ key, label: dayLabel(key) });
     }
     return buckets;
   }
@@ -663,7 +725,7 @@
 
   function renderSummary(opts: {
     rows: VisitRow[];
-    hourlyCounts: number[];
+    dailyCounts: number[];
     topPath?: [string, number];
     topIp?: IpPortrait;
     topPathShare: number;
@@ -672,12 +734,12 @@
     const host = document.getElementById("traffic-summary");
     if (!host) return;
     const total = opts.rows.length;
-    const last6 = opts.hourlyCounts.slice(-6).reduce((a, b) => a + b, 0);
-    const prev6 = opts.hourlyCounts.slice(-12, -6).reduce((a, b) => a + b, 0);
+    const last7 = opts.dailyCounts.slice(-7).reduce((a, b) => a + b, 0);
+    const prev7 = opts.dailyCounts.slice(-14, -7).reduce((a, b) => a + b, 0);
     const trend =
-      last6 > prev6 * 1.2 ? "rising" : last6 < prev6 * 0.8 ? "cooling down" : "stable";
+      last7 > prev7 * 1.2 ? "rising" : last7 < prev7 * 0.8 ? "cooling down" : "stable";
     const lines = [
-      `Traffic regime is ${trend}: last 6h ${last6} visits vs previous 6h ${prev6}.`,
+      `Traffic regime is ${trend}: last 7d ${last7} visits vs previous 7d ${prev7} (30d timeline).`,
       `Peak/average multiplier is ${opts.peakRatio.toFixed(2)}x; higher values mean burstier traffic.`,
       opts.topPath
         ? `Top route contributes ${pct(opts.topPathShare)} of sampled visits: ${opts.topPath[0]}.`
@@ -818,7 +880,7 @@
       .from("blog_visits")
       .select(selectCols)
       .order("created_at", { ascending: false })
-      .limit(5000);
+      .limit(15000);
 
     if (raw.error) {
       if (note) {
@@ -837,17 +899,17 @@
     const dayRows = rows.filter((r) => now - new Date(r.created_at).getTime() <= 24 * 60 * 60 * 1000);
     const uniqueIps = new Set(rows.map((r) => r.ip).filter(Boolean));
 
-    const hourly = new Map<string, { visits: number; ips: Set<string> }>();
+    const daily = new Map<string, { visits: number; ips: Set<string> }>();
     const cityCount = new Map<string, number>();
     const pathCount = new Map<string, { views: number; ips: Set<string> }>();
     const ipMap = new Map<string, IpPortrait>();
 
     for (const r of rows) {
-      const hk = hourKey(r.created_at);
-      const h = hourly.get(hk) || { visits: 0, ips: new Set<string>() };
+      const dk = dayKey(r.created_at);
+      const h = daily.get(dk) || { visits: 0, ips: new Set<string>() };
       h.visits += 1;
       if (r.ip) h.ips.add(r.ip);
-      hourly.set(hk, h);
+      daily.set(dk, h);
 
       const city = buildLocation(r);
       cityCount.set(city, (cityCount.get(city) || 0) + 1);
@@ -881,14 +943,14 @@
       }
     }
 
-    const buckets = todayHourlyBuckets();
-    const hourlyPairs = buckets.map((b) => [b.label, hourly.get(b.key) || { visits: 0, ips: new Set<string>() }] as const);
-    const hourlyCounts = hourlyPairs.map(([, v]) => v.visits);
-    const hourlyIps = hourlyPairs.map(([, v]) => v.ips.size);
-    const ma = movingAverage(hourlyCounts, 6);
-    const avgHourly = hourlyCounts.reduce((a, b) => a + b, 0) / Math.max(1, hourlyCounts.length);
-    const peakHourly = Math.max(0, ...hourlyCounts);
-    const peakRatio = avgHourly > 0 ? peakHourly / avgHourly : 0;
+    const buckets = last30DailyBuckets();
+    const dailyPairs = buckets.map((b) => [b.label, daily.get(b.key) || { visits: 0, ips: new Set<string>() }] as const);
+    const dailyCounts = dailyPairs.map(([, v]) => v.visits);
+    const dailyIps = dailyPairs.map(([, v]) => v.ips.size);
+    const ma = movingAverage(dailyCounts, 7);
+    const avgDaily = dailyCounts.reduce((a, b) => a + b, 0) / Math.max(1, dailyCounts.length);
+    const peakDaily = Math.max(0, ...dailyCounts);
+    const peakRatio = avgDaily > 0 ? peakDaily / avgDaily : 0;
 
     const topPaths = [...pathCount.entries()]
       .map(([page_path, v]) => ({ page_path, views: v.views, visitors: v.ips.size }))
@@ -913,7 +975,7 @@
 
     renderSummary({
       rows,
-      hourlyCounts,
+      dailyCounts,
       topPath,
       topIp: ipRows[0],
       topPathShare,
@@ -931,17 +993,21 @@
       tooltip: { trigger: "axis" },
       legend: { textStyle: { color: axis } },
       grid: { left: 12, right: 18, top: 38, bottom: 30, containLabel: true },
-      xAxis: { type: "category", data: hourlyPairs.map(([h]) => h), axisLabel: { color: axis } },
+      xAxis: {
+        type: "category",
+        data: dailyPairs.map(([h]) => h),
+        axisLabel: { color: axis, rotate: 38, fontSize: 11 },
+      },
       yAxis: { type: "value", axisLabel: { color: axis }, splitLine: { lineStyle: { color: gridLine } } },
       series: [
         {
           name: "visits",
           type: "bar",
-          data: hourlyCounts,
+          data: dailyCounts,
           itemStyle: { color: "rgba(56, 189, 248, 0.72)" },
         },
         {
-          name: "6h moving avg",
+          name: "7d moving avg",
           type: "line",
           smooth: true,
           data: ma,
@@ -951,7 +1017,7 @@
           name: "unique IPs",
           type: "line",
           smooth: true,
-          data: hourlyIps,
+          data: dailyIps,
           lineStyle: { color: "#34d399", width: 2 },
         },
       ],

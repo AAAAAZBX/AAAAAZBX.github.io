@@ -109,3 +109,69 @@ export function isAmapIpSuccess(a: AmapV3IpResult): boolean {
   }
   return true;
 }
+
+/**
+ * 高德 Web 服务 **高级** IP 定位 v5（支持 IPv4/IPv6、国内外）。
+ * 与 v3 不同：需在控制台通过工单开通「高级 IP 定位」，否则接口会返回权限/服务类错误。
+ * @see https://lbs.amap.com/api/webservice/guide/api-advanced/ip
+ */
+export type AmapV5IpLocationResult = {
+  status: string;
+  info: string;
+  infocode: string;
+  country?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+  adcode?: string;
+  /** 经度在前、纬度在后，逗号分隔 */
+  location?: string;
+  isp?: string;
+  ip?: string;
+};
+
+/** 根据地址形态推断高德 `type`：4=IPv4，6=IPv6 */
+export function amapIpQueryType(ip: string): 4 | 6 {
+  return String(ip).includes(":") ? 6 : 4;
+}
+
+/**
+ * 服务端或任意支持 `fetch` 的环境调用 v5/ip/location（非 JSONP，无浏览器 CORS 问题）。
+ * IPv6 示例：`2001:250:5006:2311:fd07:6587:b8d2:4aec` → `type=6`
+ */
+export async function fetchAmapV5IpLocation(
+  key: string,
+  ip: string,
+  init?: RequestInit,
+): Promise<AmapV5IpLocationResult> {
+  const k = String(key).trim();
+  if (!k) {
+    throw new Error("amap key empty");
+  }
+  const addr = String(ip).trim();
+  if (!addr) {
+    throw new Error("ip empty");
+  }
+  const type = amapIpQueryType(addr);
+  const u = new URL("https://restapi.amap.com/v5/ip/location");
+  u.searchParams.set("key", k);
+  u.searchParams.set("ip", addr);
+  u.searchParams.set("type", String(type));
+  const res = await fetch(u.toString(), init);
+  if (!res.ok) {
+    throw new Error(`amap v5 http ${res.status}`);
+  }
+  return (await res.json()) as AmapV5IpLocationResult;
+}
+
+export function isAmapV5IpSuccess(a: AmapV5IpLocationResult): boolean {
+  return a.status === "1" && String(a.infocode ?? "") === "10000";
+}
+
+/** 国家/省/市/区拼接展示（与 v3 直辖市展示习惯接近） */
+export function amapV5DisplayRegion(a: AmapV5IpLocationResult): string {
+  const parts = [a.country, a.province, a.city, a.district]
+    .map((x) => (x != null ? String(x).trim() : ""))
+    .filter(Boolean);
+  return parts.join(" ") || "—";
+}

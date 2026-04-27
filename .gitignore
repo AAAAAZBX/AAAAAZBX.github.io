@@ -6,3 +6,6 @@ dist/
 .env.production
 .claude/
 private
+quant
+quant_backend
+*.parquet

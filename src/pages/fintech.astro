@@ -1,12 +1,9 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import AdminGate from "../components/AdminGate.astro";
-import IndustryDashboard from "../components/IndustryDashboard.astro";
-import { industryDashboards } from "../lib/industry-dashboards";
+title: "FinTech - Redirect to Admin"
 ---
 
-<Layout title="FinTech - Boxuan Zhang" overlayNav hideNav noindex lockPageDarkTheme>
-  <AdminGate title="FinTech Industry Radar">
-    <IndustryDashboard dashboard={industryDashboards.fintech} />
-  </AdminGate>
-</Layout>
+<script>
+  window.location.href = "/admin?tab=quant";
+</script>
+
+<p>Redirecting to <a href="/admin?tab=quant">/admin</a>...</p>

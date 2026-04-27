@@ -1,6 +1,4 @@
 ---
-import { countapiHitUrl, getCountapiNamespace, COUNTAPI_KEYS } from "../lib/site-stats";
-
 const {
   title = "Boxuan Zhang",
   isArticle = false,
@@ -16,11 +14,6 @@ const logVisitorVisits = Boolean(
 const year = new Date().getFullYear();
 /** 与 public 资源、Service Worker 注册一致（支持子路径部署） */
 const baseUrl = import.meta.env.BASE_URL;
-
-const countSitePageHitUrl = countapiHitUrl(
-  getCountapiNamespace(),
-  COUNTAPI_KEYS.sitePageViews
-);
 ---
 
 <html lang="en">
@@ -471,7 +464,7 @@ const countSitePageHitUrl = countapiHitUrl(
       });
     </script>
 
-    <script is:inline define:vars={{ baseUrl, countSitePageHitUrl }}>
+    <script is:inline define:vars={{ baseUrl }}>
       (function () {
         if (!("serviceWorker" in navigator)) return;
         var scope = baseUrl || "/";
@@ -479,11 +472,14 @@ const countSitePageHitUrl = countapiHitUrl(
         navigator.serviceWorker.register(scope + "sw.js", { scope: scope }).catch(function () {});
       })();
     </script>
-    <script is:inline define:vars={{ countSitePageHitUrl }}>
-      (function () {
-        if (!countSitePageHitUrl) return;
-        fetch(countSitePageHitUrl, { mode: "cors", cache: "no-store" }).catch(function () {});
-      })();
+    <script>
+      import { runSitewideCountHit } from "../scripts/sitewide-count-hit.ts";
+      import { countapiHitUrl, getCountapiNamespace, COUNTAPI_KEYS } from "../lib/site-stats";
+
+      runSitewideCountHit({
+        siteBasePath: import.meta.env.BASE_URL,
+        hitUrl: countapiHitUrl(getCountapiNamespace(), COUNTAPI_KEYS.sitePageViews),
+      });
     </script>
   </body>
 </html>

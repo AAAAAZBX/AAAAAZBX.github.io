@@ -6,7 +6,7 @@ import {
   isAmapIpSuccess,
 } from "../lib/amap-ip";
 import { getVisitBehaviorPayload } from "../lib/visit-behavior";
-import { siteRelativePathname } from "../lib/site-path";
+import { isOperatorConsolePath, siteRelativePathname } from "../lib/site-path";
 
 const TABLE = "blog_visits";
 const IP_CACHE_TABLE = "blog_visit_ip_cache";
@@ -484,18 +484,21 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
     return;
   }
 
+  const siteBase = options?.siteBasePath ?? "/";
+  const pagePath =
+    typeof window !== "undefined" && window.location?.pathname
+      ? siteRelativePathname(window.location.pathname, siteBase)
+      : null;
+  if (pagePath != null && isOperatorConsolePath(pagePath)) {
+    return;
+  }
+
   let supabase: SupabaseClient;
   try {
     supabase = createClient(String(url), String(key));
   } catch {
     return;
   }
-
-  const siteBase = options?.siteBasePath ?? "/";
-  const pagePath =
-    typeof window !== "undefined" && window.location?.pathname
-      ? siteRelativePathname(window.location.pathname, siteBase)
-      : null;
   const uaNav =
     typeof navigator !== "undefined" && navigator.userAgent
       ? navigator.userAgent.slice(0, 1024)

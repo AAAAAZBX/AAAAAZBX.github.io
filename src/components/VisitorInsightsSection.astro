@@ -58,7 +58,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     </div>
 
     <div class="visitor-insights__section" aria-label="By city">
-      <h3 class="visitor-insights__h2">By City / Region (Visits, 10 per page)</h3>
+      <h3 class="visitor-insights__h2">By City / Region (Visits, 5 per page)</h3>
       <div class="visitor-insights__table-wrap">
         <table class="visitor-insights__table" id="visit-by-city">
           <thead>
@@ -96,6 +96,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
               <th>Browser</th>
               <th>Device</th>
               <th>IP</th>
+              <th>Profile</th>
               <th>Country</th>
               <th>City</th>
               <th>Region</th>
@@ -105,11 +106,11 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
           <tbody>
             {configured ? (
               <tr>
-                <td colspan="9">Loading...</td>
+                <td colspan="10">Loading...</td>
               </tr>
             ) : (
               <tr>
-                <td colspan="9">Configure Supabase to display data.</td>
+                <td colspan="10">Configure Supabase to display data.</td>
               </tr>
             )}
           </tbody>
@@ -213,6 +214,16 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
   }
   .visitor-insights--embed .visitor-insights__table--wide {
     min-width: 640px;
+  }
+  /* Recent Visits: force one-line cells */
+  .visitor-insights--embed #visit-raw {
+    table-layout: auto;
+    width: max-content;
+    min-width: 100%;
+  }
+  .visitor-insights--embed #visit-raw th,
+  .visitor-insights--embed #visit-raw td {
+    white-space: nowrap;
   }
   .visitor-insights--embed .visitor-insights__route-cell {
     max-width: 190px;
@@ -378,13 +389,15 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
 
   const TABLE = "blog_visits";
   const IP_CACHE_TABLE = "blog_visit_ip_cache";
+  const IP_PROFILE_TABLE = "blog_visit_ip_profiles";
   /** IP 缓存表按批查询超时，避免单批挂起过久 */
   const CACHE_CHUNK_TIMEOUT_MS = 8000;
   /** 补全地理缓存全程时间上限（否则数千待补 IP 会串行多批，表格长时间不出） */
   const HYDRATE_TOTAL_BUDGET_MS = 12000;
   const TABLE_ROWS_PER_PAGE = 10;
   const RAW_PER_PAGE = TABLE_ROWS_PER_PAGE;
-  const CITY_PER_PAGE = TABLE_ROWS_PER_PAGE;
+  const CITY_PER_PAGE = 5;
+  let ipProfileNotes: Record<string, string> = {};
 
   function getVisitorSupabaseConfig(): { url: string; anonKey: string } | null {
     const root = document.getElementById("visitor-insights-root");
@@ -393,6 +406,21 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     const anonKey = String(root.dataset.visitorSupabaseAnon ?? "").trim();
     if (!url || !anonKey || !url.startsWith("http")) return null;
     return { url, anonKey };
+  }
+
+  async function loadIpProfileNotes(supabase: ReturnType<typeof createClient>): Promise<void> {
+    const res = await supabase
+      .from(IP_PROFILE_TABLE)
+      .select("ip,profile_name");
+    if (res.error) {
+      console.warn("[visitor-insights] profile notes table unavailable", res.error);
+      return;
+    }
+    ipProfileNotes = Object.fromEntries(
+      ((res.data || []) as Array<{ ip: string | null; profile_name: string | null }>)
+        .map((row) => [String(row.ip || ""), String(row.profile_name || "").trim()] as const)
+        .filter(([ip, profileName]) => ip && profileName)
+    );
   }
 
   function isVisitorInsightsDomConfigured(): boolean {
@@ -628,7 +656,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     const rawTbody = document.querySelector("#visit-raw tbody");
     if (rawTbody) {
       if (total === 0) {
-        rawTbody.innerHTML = `<tr><td colspan="9">No records</td></tr>`;
+        rawTbody.innerHTML = `<tr><td colspan="10">No records</td></tr>`;
       } else {
         rawTbody.innerHTML = slice
           .map((r) => {
@@ -638,7 +666,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
             const route = String(r.page_path || "—").trim() || "—";
             return `<tr><td>${escapeHtml(fmtTime(r.created_at))}</td><td>${client.osCell}</td><td>${client.browserCell}</td><td>${client.deviceCell}</td><td><code>${escapeHtml(
               r.ip
-            )}</code></td><td>${countryCell(r.country, r.country_code)}</td><td>${escapeHtml(
+            )}</code></td><td>${escapeHtml(ipProfileNotes[r.ip] || "—")}</td><td>${countryCell(r.country, r.country_code)}</td><td>${escapeHtml(
               label
             )}</td><td>${escapeHtml(
               r.region || "—"
@@ -832,7 +860,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     cityRowsAll = [];
     const rawTbodyErr = document.querySelector("#visit-raw tbody");
     if (rawTbodyErr) {
-      rawTbodyErr.innerHTML = `<tr><td colspan="9">${escapeHtml(message)}</td></tr>`;
+      rawTbodyErr.innerHTML = `<tr><td colspan="10">${escapeHtml(message)}</td></tr>`;
     }
     const rawPagerErr = document.getElementById("visit-raw-pager");
     if (rawPagerErr) {
@@ -1036,6 +1064,9 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
       setVisitorLoadError("初始化 Supabase 客户端失败: " + ((e as Error)?.message || String(e)), note);
       return;
     }
+
+    // Load IP profile names
+    await loadIpProfileNotes(supabase);
 
     let rows: unknown;
     let error: { message?: string } | null = null;

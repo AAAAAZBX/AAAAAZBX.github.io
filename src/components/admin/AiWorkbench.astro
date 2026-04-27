@@ -1,0 +1,156 @@
+---
+const focusItems = ["LLM signal extraction", "news tagging", "RAG research notes", "model eval", "prompt workflow"];
+const modules = [
+  {
+    title: "1. Data intake",
+    points: [
+      "Pull research text, notes, or announcements into a structured local dataset.",
+      "Normalize source, symbol, date, and topic fields before downstream use.",
+    ],
+  },
+  {
+    title: "2. AI processing",
+    points: [
+      "Run summarization, classification, and signal extraction on each record.",
+      "Store prompt version, model output, confidence, and review state.",
+    ],
+  },
+  {
+    title: "3. Research output",
+    points: [
+      "Generate watchlists, strategy notes, and operator-facing brief cards.",
+      "Feed approved outputs into the quant workflow instead of manual copy-paste.",
+    ],
+  },
+];
+const todoItems = [
+  "Define your AI input sources: news, filings, notebook notes, or strategy memos.",
+  "Set one canonical schema for symbol / date / topic / sentiment / extracted signal.",
+  "Implement a first pass that writes structured outputs the quant backend can consume.",
+];
+---
+
+<div class="ai-workbench">
+  <section class="ai-workbench__hero">
+    <div>
+      <p class="ai-workbench__eyebrow">Admin-supervised AI</p>
+      <h2 class="ai-workbench__title">AI Workbench</h2>
+      <p class="ai-workbench__subtitle">先把 AI 做成量化研究前置层：采集、提取、结构化，再把结果喂给 quant，而不是单独漂在外面。</p>
+    </div>
+    <div class="ai-workbench__chips">
+      {focusItems.map((item) => <span>{item}</span>)}
+    </div>
+  </section>
+
+  <section class="ai-workbench__grid" aria-label="AI pipeline">
+    {modules.map((module) => (
+      <article class="ai-workbench__card">
+        <h3>{module.title}</h3>
+        <ul>
+          {module.points.map((point) => <li>{point}</li>)}
+        </ul>
+      </article>
+    ))}
+  </section>
+
+  <section class="ai-workbench__card ai-workbench__card--wide" aria-label="Implementation checklist">
+    <div class="ai-workbench__head">
+      <h3>你现在要做什么</h3>
+      <p>不是学习路线，是马上能接到 quant 的最小实现链路。</p>
+    </div>
+    <ol class="ai-workbench__list">
+      {todoItems.map((item) => <li>{item}</li>)}
+    </ol>
+  </section>
+</div>
+
+<style>
+  .ai-workbench {
+    display: grid;
+    gap: 1rem;
+    padding: 8px 0;
+  }
+  .ai-workbench__hero,
+  .ai-workbench__card {
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.64);
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.18);
+  }
+  .ai-workbench__hero {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(240px, 0.8fr);
+    gap: 1rem;
+    padding: 1.2rem;
+    background:
+      linear-gradient(135deg, rgba(125, 211, 252, 0.14), transparent 36%),
+      linear-gradient(155deg, rgba(15, 23, 42, 0.78), rgba(8, 13, 24, 0.82));
+  }
+  .ai-workbench__eyebrow {
+    margin: 0 0 0.35rem;
+    color: #7dd3fc;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 800;
+  }
+  .ai-workbench__title {
+    margin: 0;
+    color: #f8fbff;
+    font-size: clamp(1.4rem, 2.2vw, 2.2rem);
+  }
+  .ai-workbench__subtitle {
+    margin: 0.55rem 0 0;
+    color: #9fb0d0;
+    line-height: 1.65;
+    font-size: 0.94rem;
+  }
+  .ai-workbench__chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 0.55rem;
+  }
+  .ai-workbench__chips span {
+    border: 1px solid rgba(125, 211, 252, 0.25);
+    border-radius: 999px;
+    padding: 0.38rem 0.78rem;
+    color: #bae6fd;
+    background: rgba(56, 189, 248, 0.1);
+    font-size: 0.84rem;
+  }
+  .ai-workbench__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .ai-workbench__card {
+    padding: 1rem;
+  }
+  .ai-workbench__card h3 {
+    margin: 0 0 0.75rem;
+    color: #f1f6ff;
+    font-size: 1rem;
+  }
+  .ai-workbench__card ul,
+  .ai-workbench__list {
+    margin: 0;
+    padding-left: 1.15rem;
+    color: #cbd5e1;
+    line-height: 1.65;
+    font-size: 0.9rem;
+  }
+  .ai-workbench__card--wide {
+    grid-column: 1 / -1;
+  }
+  .ai-workbench__head p {
+    margin: 0 0 0.75rem;
+    color: #94a3b8;
+    font-size: 0.84rem;
+  }
+  @media (max-width: 900px) {
+    .ai-workbench__hero {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

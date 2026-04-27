@@ -1,12 +1,9 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import AdminGate from "../components/AdminGate.astro";
-import IndustryDashboard from "../components/IndustryDashboard.astro";
-import { industryDashboards } from "../lib/industry-dashboards";
+title: "Quant - Redirect to Admin"
 ---
 
-<Layout title="Quant - Boxuan Zhang" overlayNav hideNav noindex lockPageDarkTheme>
-  <AdminGate title="Quant Research Radar">
-    <IndustryDashboard dashboard={industryDashboards.quant} />
-  </AdminGate>
-</Layout>
+<script>
+  window.location.href = "/admin?tab=quant";
+</script>
+
+<p>Redirecting to <a href="/admin?tab=quant">/admin</a>...</p>

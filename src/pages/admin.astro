@@ -1,188 +1,403 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import AdminGate from "../components/AdminGate.astro";
+import SiteStatisticsSection from "../components/SiteStatisticsSection.astro";
+import VisitorInsightsSection from "../components/VisitorInsightsSection.astro";
+import AnalyticsConsole from "../components/AnalyticsConsole.astro";
+import AiWorkbench from "../components/admin/AiWorkbench.astro";
+import QuantWorkbench from "../components/admin/QuantWorkbench.astro";
+import RuntimePanel from "../components/admin/RuntimePanel.astro";
+import { getMergedPosts } from "../lib/content-posts";
+import { countapiGetUrl, getCountapiNamespace, COUNTAPI_KEYS } from "../lib/site-stats";
+import { isVisitorLogConfigured } from "../lib/visitor-env";
+import {
+  buildCollectionPieStats,
+  buildPerArticleViewRows,
+  calculateWordCount,
+} from "../lib/statistics-build";
 
-const panels = [
-  {
-    title: "Statistics",
-    href: "/statistics",
-    tag: "Site + Visitor",
-    desc: "内容统计、访客地图、城市分布、近期访问明细。",
-    items: ["文章与浏览量", "访客地理分布", "Supabase/CountAPI 数据源"],
-  },
-  {
-    title: "Analytics",
-    href: "/analytics",
-    tag: "IP Portrait",
-    desc: "IP 画像、Profile Name 备注、访问路径、地区、ISP 与访问频率。",
-    items: ["IP 自定义备注", "今天 UTC+8 流量线", "热门路径与画像表"],
-  },
-  {
-    title: "AI",
-    href: "/ai",
-    tag: "Career Radar",
-    desc: "大模型算法、RAG、Agent、评测、AI Infra 和项目路线。",
-    items: ["LLM 知识体系", "RAG/Agent 项目", "中文+英文资料"],
-  },
-  {
-    title: "FinTech",
-    href: "/fintech",
-    tag: "Industry Radar",
-    desc: "金融科技、风控、支付、监管科技、AI in Finance 的学习路线。",
-    items: ["金融业务地图", "风控/反欺诈", "监管与合规"],
-  },
-  {
-    title: "Quant",
-    href: "/quant",
-    tag: "Research Radar",
-    desc: "量化研究、因子、回测、组合优化、风险归因和交易工程。",
-    items: ["多因子研究", "回测系统", "组合优化"],
-  },
-];
+const allPosts = await getMergedPosts();
+const countNs = getCountapiNamespace();
+const { totalPosts, pieItems } = buildCollectionPieStats(allPosts);
+const perArticleViewRows = buildPerArticleViewRows(allPosts, countNs);
+const countStatsGetUrls = {
+  site: countapiGetUrl(countNs, COUNTAPI_KEYS.sitePageViews),
+};
+const totalWordCount = allPosts.reduce((sum, p) => sum + calculateWordCount(p.body), 0);
+const lastPostDateIso: string | null = (() => {
+  const times = allPosts
+    .map((p) => (p.date ? new Date(p.date).getTime() : NaN))
+    .filter((t) => !Number.isNaN(t));
+  if (times.length === 0) return null;
+  return new Date(Math.max(...times)).toISOString();
+})();
+const siteStartDate = "2025-12-03";
+const useSupabaseArticleStats = isVisitorLogConfigured();
 ---
 
 <Layout title="Admin - Boxuan Zhang" overlayNav hideNav noindex lockPageDarkTheme>
-  <AdminGate title="Admin Dashboard">
+  <AdminGate title="Private Console">
     <main class="admin-main">
       <section class="admin-shell">
-        <div class="admin-hero">
-          <div>
-            <p class="admin-kicker">Private Control Center</p>
-            <h1>Admin Dashboard</h1>
-            <p>
-              汇总站点统计、访问画像、AI / FinTech / Quant 三条职业与行业追踪路线。进入任意子页面仍会复用同一个本地会话解锁状态。
-            </p>
-          </div>
-          <div class="admin-hero__metric">
-            <span>Private Routes</span>
-            <strong>{panels.length}</strong>
-            <small>Statistics / Analytics / AI / FinTech / Quant</small>
-          </div>
+        <div class="admin-pager" aria-label="Console tabs">
+          <button class="admin-pager__tab is-active" type="button" data-admin-tab="statistics">Statistics</button>
+          <button class="admin-pager__tab" type="button" data-admin-tab="analytics">Analytics</button>
+          <button class="admin-pager__tab" type="button" data-admin-tab="ai">AI</button>
+          <button class="admin-pager__tab" type="button" data-admin-tab="quant">Quant</button>
+          <button class="admin-pager__tab" type="button" data-admin-tab="runtime">Runtime</button>
         </div>
 
-        <div class="admin-grid">
-          {panels.map((panel) => (
-            <a class="admin-card" href={panel.href}>
-              <span>{panel.tag}</span>
-              <h2>{panel.title}</h2>
-              <p>{panel.desc}</p>
-              <ul>
-                {panel.items.map((item) => <li>{item}</li>)}
-              </ul>
-            </a>
-          ))}
-        </div>
+        <section class="admin-page is-active" data-admin-page="statistics">
+          <div class="stats-console__topbar">
+            <div class="stats-console__title-wrap">
+              <h2 class="stats-console__title">Statistics Console</h2>
+              <p class="stats-console__subtitle">Landscape dashboard for content and visitor insights</p>
+            </div>
+            <div class="stats-console__meta">
+              <span class="stats-console__pill">Posts {totalPosts}</span>
+              <span class="stats-console__pill">Source {useSupabaseArticleStats ? "Supabase" : "CountAPI"}</span>
+            </div>
+          </div>
+          <div class="stats-console__grid">
+            <section class="stats-console__panel" aria-label="Core statistics">
+              <SiteStatisticsSection
+                totalPosts={totalPosts}
+                pieItems={pieItems}
+                perArticleViewRows={perArticleViewRows}
+                countStatsGetUrls={countStatsGetUrls}
+                totalWordCount={totalWordCount}
+                lastPostDateIso={lastPostDateIso}
+                siteStartDate={siteStartDate}
+                articleViewsSource={useSupabaseArticleStats ? "supabase" : "countapi"}
+              />
+            </section>
+            <aside class="stats-console__panel" aria-label="Visitor insights">
+              <VisitorInsightsSection />
+            </aside>
+          </div>
+        </section>
+
+        <section class="admin-page" data-admin-page="analytics">
+          <AnalyticsConsole />
+        </section>
+
+        <section class="admin-page" data-admin-page="ai">
+          <AiWorkbench />
+        </section>
+
+        <section class="admin-page" data-admin-page="quant">
+          <QuantWorkbench />
+        </section>
+
+        <section class="admin-page" data-admin-page="runtime">
+          <RuntimePanel />
+        </section>
       </section>
     </main>
   </AdminGate>
 </Layout>
 
-<style>
+<style is:global>
   .admin-main {
     min-height: 100vh;
     width: 100%;
-    padding: 18px 16px 36px;
+    padding: 16px;
     background:
-      radial-gradient(circle at 10% 12%, rgba(56, 189, 248, 0.16), transparent 36%),
-      radial-gradient(circle at 86% 8%, rgba(244, 114, 182, 0.12), transparent 34%),
-      linear-gradient(160deg, #0b1220 0%, #0f172a 48%, #101b30 100%);
+      radial-gradient(circle at 12% 8%, rgba(48, 169, 222, 0.15), transparent 34%),
+      radial-gradient(circle at 88% 10%, rgba(50, 86, 150, 0.14), transparent 38%),
+      linear-gradient(155deg, #0b1220 0%, #0f172a 45%, #101b30 100%);
     color: #d8e3f2;
+    overflow-x: auto;
   }
   .admin-shell {
-    max-width: 1280px;
+    max-width: 1760px;
     margin: 0 auto;
   }
-  .admin-hero,
-  .admin-card {
-    border: 1px solid rgba(148, 163, 184, 0.16);
-    background: rgba(15, 23, 42, 0.62);
-    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.18);
+  .admin-pager {
+    display: flex;
+    gap: 0.55rem;
+    margin: 0 0 0.95rem;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
-  .admin-hero {
-    display: grid;
-    grid-template-columns: minmax(280px, 1fr) 220px;
-    gap: 1rem;
-    border-radius: 22px;
-    padding: 1.35rem;
-    margin-bottom: 1rem;
-    background:
-      linear-gradient(135deg, rgba(14, 165, 233, 0.2), transparent 38%),
-      linear-gradient(155deg, rgba(15, 23, 42, 0.78), rgba(8, 13, 24, 0.82));
+  .admin-pager__tab {
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    background: rgba(15, 23, 42, 0.56);
+    color: #cbd5e1;
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    cursor: pointer;
   }
-  .admin-kicker {
-    margin: 0 0 0.35rem;
-    color: #38bdf8;
-    font-size: 0.76rem;
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    font-weight: 800;
+  .admin-pager__tab.is-active {
+    border-color: rgba(56, 189, 248, 0.5);
+    background: rgba(56, 189, 248, 0.16);
+    color: #dff6ff;
   }
-  .admin-hero h1 {
-    margin: 0;
-    color: #f8fbff;
-    font-size: clamp(1.7rem, 3vw, 2.7rem);
+  .admin-page {
+    display: none;
   }
-  .admin-hero p,
-  .admin-card p,
-  .admin-card li,
-  .admin-hero__metric small {
-    color: #94a3b8;
-    line-height: 1.6;
-  }
-  .admin-hero__metric {
-    display: grid;
-    align-content: center;
-    justify-items: end;
-    border-radius: 18px;
-    padding: 1rem;
-    background: rgba(2, 6, 23, 0.48);
-  }
-  .admin-hero__metric span,
-  .admin-card span {
-    color: #94a3b8;
-    font-size: 0.74rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 800;
-  }
-  .admin-hero__metric strong {
-    color: #f8fafc;
-    font-size: 3rem;
-    line-height: 1;
-  }
-  .admin-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
-  }
-  .admin-card {
+  .admin-page.is-active {
     display: block;
-    border-radius: 18px;
-    padding: 1rem;
-    color: inherit;
-    text-decoration: none;
-    transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
   }
-  .admin-card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(56, 189, 248, 0.36);
-    background: rgba(56, 189, 248, 0.08);
+
+  .stats-console__topbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 20px;
+    padding: 4px 2px 8px;
   }
-  .admin-card h2 {
-    margin: 0.35rem 0 0;
-    color: #f8fafc;
-    font-size: 1.25rem;
+  .stats-console__title {
+    margin: 0;
+    color: #f1f6ff;
+    font-size: 1.08rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
   }
-  .admin-card ul {
-    margin: 0.65rem 0 0;
-    padding-left: 1.1rem;
+  .stats-console__subtitle {
+    margin: 4px 0 0;
+    color: rgba(206, 221, 241, 0.76);
+    font-size: 0.82rem;
   }
-  @media (max-width: 760px) {
-    .admin-hero {
+  .stats-console__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .stats-console__pill {
+    color: #e0f2fe;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+  .stats-console__grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.72fr) minmax(840px, 2.03fr);
+    gap: 12px;
+  }
+  .stats-console__panel {
+    min-height: 0;
+    padding: 4px;
+  }
+
+  .runtime-panel { padding: 8px 0; }
+  .runtime-health, .recent-jobs, .quant-section {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .runtime-health h3, .quant-section h2 { margin: 0 0 16px; color: #f1f6ff; font-size: 1.1rem; }
+  .health-status { display: flex; align-items: center; gap: 12px; }
+  .health-indicator { width: 12px; height: 12px; border-radius: 50%; background: #6b7280; }
+  .health-indicator.online { background: #4ade80; }
+  .health-indicator.offline { background: #f87171; }
+  .health-text { color: #d1d5db; font-size: 0.9rem; }
+  .check-btn { margin-left: auto; padding: 8px 16px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; color: #38bdf8; cursor: pointer; font-size: 0.8rem; }
+  .job-list { list-style: none; padding: 0; margin: 0; }
+  .job-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(148, 163, 184, 0.1); font-size: 0.85rem; color: #94a3b8; }
+  .job-item:last-child { border: none; }
+  .job-id { color: #60a5fa; }
+
+  .quant-workbench { padding: 8px 0; }
+  .quant-hero { background: linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(31, 41, 55, 0.95)); border-radius: 12px; padding: 24px; margin: 16px 0; border: 1px solid rgba(56, 189, 248, 0.2); }
+  .quant-title { font-size: 2rem; font-weight: 800; margin: 0 0 12px; background: linear-gradient(90deg, #60a5fa, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .quant-subtitle { margin: 0; color: #bfdbfe; font-size: 0.92rem; line-height: 1.6; }
+  .quant-focus { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 20px; }
+  .quant-focus > span { padding: 4px 10px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; color: #60a5fa; font-size: 0.74rem; }
+  .quant-tracks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+  .quant-track { background: rgba(17, 24, 39, 0.6); border: 1px solid rgba(148, 163, 184, 0.16); border-radius: 10px; padding: 16px; }
+  .quant-track h2 { font-size: 1.1rem; margin: 0 0 12px; color: #f1f6ff; }
+  .quant-track code { background: rgba(56, 189, 248, 0.15); padding: 2px 4px; border-radius: 3px; font-size: 0.78rem; color: #eff6ff; }
+  .quant-tip { color: #fbbf24; font-size: 0.8rem; margin-top: 12px; }
+  .quant-flow {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: #d1d5db;
+    line-height: 1.7;
+  }
+
+  .backtest-runner { background: rgba(17, 24, 39, 0.7); border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 10px; padding: 20px; margin: 20px 0; }
+  .backtest-runner h3 { margin: 0 0 16px; color: #f1f6ff; }
+  .backtest-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .backtest-form label { display: flex; flex-direction: column; gap: 4px; color: #94a3b8; font-size: 0.8rem; }
+  .backtest-form select, .backtest-form input { padding: 8px 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(148, 163, 184, 0.24); border-radius: 6px; color: #f1f6ff; font-size: 0.85rem; }
+  .backtest-form button { grid-column: 1 / -1; padding: 12px 24px; background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.5); border-radius: 8px; color: #38bdf8; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+  .backtest-form button:hover { background: rgba(56, 189, 248, 0.3); }
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .metric-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.16); border-radius: 8px; padding: 12px; text-align: center; }
+  .metric-label { color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; }
+  .metric-value { color: #f1f6ff; font-size: 1.4rem; font-weight: 700; margin-top: 4px; }
+  .metric-value.positive { color: #4ade80; }
+  .metric-value.negative { color: #f87171; }
+  .quant-loading,
+  .quant-error {
+    margin-top: 1rem;
+    color: #dbeafe;
+  }
+
+  @media (max-width: 1360px) {
+    .stats-console__grid {
       grid-template-columns: 1fr;
     }
-    .admin-hero__metric {
-      justify-items: start;
+  }
+  @media (max-width: 900px) {
+    .quant-tracks {
+      grid-template-columns: 1fr;
     }
   }
 </style>
+
+<script>
+  const API_BASE = "http://127.0.0.1:8000";
+  const VALID_TABS = ["statistics", "analytics", "ai", "quant", "runtime"];
+
+  function bindQuantWorkbench() {
+    const form = document.getElementById("backtest-form");
+    if (!form || form.dataset.bound === "true") return;
+    form.dataset.bound = "true";
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const currentForm = e.currentTarget;
+      const resultsDiv = document.getElementById("backtest-results");
+      const btn = currentForm.querySelector("button");
+      if (!resultsDiv || !btn) return;
+
+      btn.disabled = true;
+      btn.textContent = "运行中...";
+      resultsDiv.innerHTML = '<p class="quant-loading">执行回测...</p>';
+
+      try {
+        const res = await fetch(`${API_BASE}/backtests/run`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            strategy_name: currentForm.strategy.value,
+            start_date: currentForm.start_date.value,
+            end_date: currentForm.end_date.value,
+            universe: "demo",
+            rebalance_freq: currentForm.rebalance_freq.value,
+            top_n: parseInt(currentForm.top_n.value),
+            fee_rate: 0.001,
+            slippage: 0.0005,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Request failed");
+
+        const resultRes = await fetch(`${API_BASE}/backtests/${data.job_id}/result`);
+        const result = await resultRes.json();
+        const m = result.metrics;
+
+        resultsDiv.innerHTML = `
+          <div class="backtest-results">
+            <h4>回测结果 - ${result.params.strategy_name}</h4>
+            <div class="metrics-grid">
+              <div class="metric-card"><div class="metric-label">总收益</div><div class="metric-value ${m.total_return >= 0 ? "positive" : "negative"}">${(m.total_return * 100).toFixed(1)}%</div></div>
+              <div class="metric-card"><div class="metric-label">年化收益</div><div class="metric-value ${m.annual_return >= 0 ? "positive" : "negative"}">${(m.annual_return * 100).toFixed(1)}%</div></div>
+              <div class="metric-card"><div class="metric-label">夏普比率</div><div class="metric-value">${m.sharpe.toFixed(2)}</div></div>
+              <div class="metric-card"><div class="metric-label">最大回撤</div><div class="metric-value negative">${(m.max_drawdown * 100).toFixed(1)}%</div></div>
+              <div class="metric-card"><div class="metric-label">胜率</div><div class="metric-value">${(m.win_rate * 100).toFixed(1)}%</div></div>
+              <div class="metric-card"><div class="metric-label">换手率</div><div class="metric-value">${(m.turnover * 100).toFixed(1)}%</div></div>
+            </div>
+            <p class="quant-tip">日志：${result.logs.slice(0, 3).join(" → ")}</p>
+          </div>
+        `;
+      } catch (err) {
+        resultsDiv.innerHTML = `<div class="quant-error">错误：${err.message}<br>请确保 FastAPI 后端已启动 (uvicorn app.main:app --port 8000)</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "运行回测";
+      }
+    });
+  }
+
+  async function checkHealth() {
+    const indicator = document.getElementById("health-indicator");
+    const text = document.getElementById("health-text");
+    const jobList = document.getElementById("job-list");
+    if (!indicator || !text || !jobList) return;
+
+    indicator.className = "health-indicator";
+    text.textContent = "检测中...";
+
+    try {
+      const res = await fetch(`${API_BASE}/health`);
+      if (!res.ok) throw new Error("not ok");
+
+      indicator.classList.add("online");
+      text.textContent = "在线";
+      const jobsRes = await fetch(`${API_BASE}/backtests/recent`);
+      const jobs = await jobsRes.json();
+      if (jobs.length) {
+        jobList.innerHTML = jobs
+          .map(
+            (j) => `
+            <li class="job-item">
+              <span class="job-id">${j.job_id}</span>
+              <span>${j.strategy}</span>
+              <span class="job-status">${j.status}</span>
+            </li>
+          `,
+          )
+          .join("");
+      } else {
+        jobList.innerHTML = '<li class="job-item">暂无任务</li>';
+      }
+    } catch (e) {
+      indicator.classList.add("offline");
+      text.textContent = "离线 - 后端未启动";
+      jobList.innerHTML = '<li class="job-item">暂无任务</li>';
+    }
+  }
+
+  function bindRuntimePanel() {
+    const checkBtn = document.getElementById("check-health");
+    if (!checkBtn || checkBtn.dataset.bound === "true") return;
+    checkBtn.dataset.bound = "true";
+    checkBtn.addEventListener("click", checkHealth);
+    checkHealth();
+  }
+
+  (() => {
+    const tabs = Array.from(document.querySelectorAll("[data-admin-tab]"));
+    const pages = Array.from(document.querySelectorAll("[data-admin-page]"));
+    if (!tabs.length || !pages.length) return;
+
+    const activate = (id, { replace = false } = {}) => {
+      const nextId = VALID_TABS.includes(id) ? id : "statistics";
+      tabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.adminTab === nextId));
+      pages.forEach((page) => page.classList.toggle("is-active", page.dataset.adminPage === nextId));
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", nextId);
+      const method = replace ? "replaceState" : "pushState";
+      window.history[method]({}, "", url);
+
+      if (nextId === "quant") bindQuantWorkbench();
+      if (nextId === "runtime") bindRuntimePanel();
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const id = tab.dataset.adminTab;
+        if (!id) return;
+        activate(id);
+      });
+    });
+
+    const initial = new URL(window.location.href).searchParams.get("tab") ?? "statistics";
+    activate(initial, { replace: true });
+
+    window.addEventListener("popstate", () => {
+      const current = new URL(window.location.href).searchParams.get("tab") ?? "statistics";
+      activate(current, { replace: true });
+    });
+  })();
+</script>
