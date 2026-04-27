@@ -1,6 +1,11 @@
 {
   "commits": [
     {
+      "hash": "85f7596491de451eb482941252ca3ffc92ff2f38",
+      "date": "2026-04-27 20:20:32 +0800",
+      "message": "feat(admin): unify private consoles and refine tracking controls"
+    },
+    {
       "hash": "f8f0f4f5ca75e978620bef6dc4e2a8de4d250fb6",
       "date": "2026-04-27 09:31:52 +0800",
       "message": "feat(quant): complete quant system guide with roadmap and resources"
@@ -44,12 +49,7 @@
       "hash": "4926fdaae5c1954a9dc093aadaacc3ee60488aaf",
       "date": "2026-04-23 17:42:27 +0800",
       "message": "refactor(statistics): remove inner scrollbars in dashboard panels"
-    },
-    {
-      "hash": "f86d5c762223a2915b3c709249c1a3e15fdf8c09",
-      "date": "2026-04-23 17:37:34 +0800",
-      "message": "refactor(statistics): simplify rankings and remove tags route"
     }
   ],
-  "timestamp": "2026-04-27T05:39:08.600Z"
+  "timestamp": "2026-04-27T12:25:29.993Z"
 }
