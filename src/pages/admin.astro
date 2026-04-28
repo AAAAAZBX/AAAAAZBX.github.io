@@ -483,20 +483,37 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
     }
     container.innerHTML = html;
 
-    // Smooth toggle animation
-    container.querySelectorAll("details.access-group").forEach(d => {
-      d.addEventListener("toggle", e => {
-        const body = d.querySelector(".access-group-body");
+    // Smooth toggle: intercept summary clicks, animate max-height manually
+    container.querySelectorAll("details.access-group summary").forEach(summary => {
+      summary.addEventListener("click", e => {
+        e.preventDefault();
+        const details = summary.closest("details");
+        const body = details.querySelector(".access-group-body");
         if (!body) return;
-        if (d.open) {
-          const h = body.scrollHeight;
+
+        if (details.open) {
+          // Close: lock height → animate to 0 → clean up
+          body.style.maxHeight = body.scrollHeight + "px";
+          body.offsetHeight; // force reflow
           body.style.maxHeight = "0px";
-          requestAnimationFrame(() => { body.style.maxHeight = h + "px"; });
-          const onDone = () => { body.style.maxHeight = ""; body.removeEventListener("transitionend", onDone); };
+          const onDone = () => {
+            details.open = false;
+            body.style.maxHeight = "";
+            body.removeEventListener("transitionend", onDone);
+          };
           body.addEventListener("transitionend", onDone);
         } else {
-          body.style.maxHeight = body.scrollHeight + "px";
-          requestAnimationFrame(() => { body.style.maxHeight = "0px"; });
+          // Open: set max-height:0 → open details → animate to full height
+          body.style.maxHeight = "0px";
+          details.open = true;
+          const h = body.scrollHeight;
+          body.offsetHeight; // force reflow
+          body.style.maxHeight = h + "px";
+          const onDone = () => {
+            body.style.maxHeight = "";
+            body.removeEventListener("transitionend", onDone);
+          };
+          body.addEventListener("transitionend", onDone);
         }
       });
     });
