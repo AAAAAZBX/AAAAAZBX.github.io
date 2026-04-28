@@ -1,3 +1,5 @@
+export const prerender = false;
+
 import type { APIRoute } from 'astro';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,7 +15,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const unique = [...new Set(payload.hidden.map(String))].sort((a, b) =>
+    const unique = [...new Set(payload.hidden.map(String).map(s => s.toLowerCase()))].sort((a, b) =>
       a.localeCompare(b, 'zh-CN')
     );
 

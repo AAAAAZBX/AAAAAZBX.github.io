@@ -1,76 +1,11 @@
+export const prerender = false;
+
 import type { APIRoute } from 'astro';
 import fs from 'node:fs';
 import path from 'node:path';
+import { getCollection } from 'astro:content';
 import { createClient } from '@supabase/supabase-js';
-
-function parseFrontmatter(source: string): Record<string, string> {
-  if (!source.startsWith('---')) return {};
-  const end = source.indexOf('\n---', 3);
-  if (end === -1) return {};
-  const block = source.slice(3, end).trim();
-  const data: Record<string, string> = {};
-  for (const line of block.split(/\r?\n/)) {
-    const match = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-    if (!match) continue;
-    let value = match[2].trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-    data[match[1]] = value;
-  }
-  return data;
-}
-
-function walkPosts(): Array<{
-  key: string;
-  collection: string;
-  id: string;
-  title: string;
-  date: string;
-  file: string;
-}> {
-  const contentRoot = path.join(process.cwd(), 'src', 'content');
-  if (!fs.existsSync(contentRoot)) return [];
-
-  const collections = fs
-    .readdirSync(contentRoot, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
-    .map((d) => d.name);
-
-  const posts: ReturnType<typeof walkPosts> = [];
-
-  for (const collection of collections) {
-    const base = path.join(contentRoot, collection);
-    const walk = (dir: string) => {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        if (entry.name.startsWith('.')) continue;
-        const full = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          walk(full);
-          continue;
-        }
-        if (!/\.(md|mdx)$/i.test(entry.name)) continue;
-        const rel = path.relative(base, full).replace(/\\/g, '/');
-        const id = rel.replace(/\.(md|mdx)$/i, '');
-        const fm = parseFrontmatter(fs.readFileSync(full, 'utf-8'));
-        posts.push({
-          key: `${collection}/${id}`,
-          collection,
-          id,
-          title: fm.title || path.basename(id),
-          date: fm.date || '',
-          file: path.relative(process.cwd(), full).replace(/\\/g, '/'),
-        });
-      }
-    };
-    walk(base);
-  }
-
-  return posts.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-}
+import { getCollectionKeys } from '../../lib/content-posts';
 
 function readJson<T>(filePath: string, fallback: T): T {
   try {
@@ -93,7 +28,7 @@ async function readHiddenList(): Promise<string[]> {
         .eq('id', 1)
         .single();
       if (!error && data && Array.isArray(data.hidden_posts)) {
-        return data.hidden_posts;
+        return data.hidden_posts.map((k: unknown) => String(k).trim().toLowerCase());
       }
     } catch {
       // fall through to local file
@@ -102,33 +37,37 @@ async function readHiddenList(): Promise<string[]> {
 
   const visibilityPath = path.join(process.cwd(), 'src', 'content-visibility.json');
   const fallback = readJson<{ hidden?: string[] }>(visibilityPath, { hidden: [] });
-  return Array.isArray(fallback.hidden) ? fallback.hidden : [];
+  return (Array.isArray(fallback.hidden) ? fallback.hidden : []).map(k => String(k).trim().toLowerCase());
 }
 
 export const GET: APIRoute = async () => {
   try {
     const hidden = await readHiddenList();
+    const collectionKeys = getCollectionKeys();
+
+    const allPosts: Array<{ id: string; title: string; date: string }> = [];
+    for (const col of collectionKeys) {
+      const posts = await getCollection(col as never);
+      for (const p of posts) {
+        allPosts.push({
+          id: p.data.id?.trim() || '',
+          title: p.data.title,
+          date: p.data.date || '',
+        });
+      }
+    }
 
     return new Response(
-      JSON.stringify({
-        posts: walkPosts(),
-        hidden,
-      }),
+      JSON.stringify({ posts: allPosts, hidden }),
       {
         status: 200,
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'no-store',
-        },
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
       }
     );
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      }
+      { status: 500, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
     );
   }
 };

@@ -124,8 +124,6 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
                   <tr>
                     <th class="access-th--title">Article</th>
                     <th class="access-th--visibility">Visibility</th>
-                    <th class="access-th--collection">Collection</th>
-                    <th class="access-th--file">File</th>
                   </tr>
                 </thead>
                 <tbody id="access-rows"></tbody>
@@ -306,7 +304,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   .access-table th, .access-table td { padding: 10px 12px; border-bottom: 1px solid rgba(148, 163, 184, 0.1); text-align: left; vertical-align: top; }
   .access-table th { background: rgba(15, 23, 42, 0.6); color: #64748b; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
   .access-table tr:last-child td { border-bottom: 0; }
-  .access-th--title { width: 44%; } .access-th--visibility { width: 15%; } .access-th--collection { width: 18%; } .access-th--file { width: 23%; }
+  .access-th--title { width: 70%; } .access-th--visibility { width: 30%; }
   .access-title-text { font-weight: 700; color: #e2e8f0; overflow-wrap: anywhere; }
   .access-meta { margin-top: 3px; color: #64748b; font-size: 0.75rem; overflow-wrap: anywhere; }
   .access-switch { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; cursor: pointer; }
@@ -446,7 +444,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
 
   function accessMatches(post) {
     if (!accessQuery) return true;
-    const haystack = [post.title, post.key, post.collection, post.file].join(" ").toLowerCase();
+    const haystack = [post.title, post.id, post.date].join(" ").toLowerCase();
     return haystack.includes(accessQuery.toLowerCase());
   }
   function accessVisiblePosts() { return accessPosts.filter(accessMatches); }
@@ -464,9 +462,9 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
     const rows = document.getElementById("access-rows"); if (!rows) return;
     accessUpdateSummary();
     rows.innerHTML = accessVisiblePosts().map(p => {
-      const isH = accessHidden.has(p.key);
-      return `<tr><td><div class="access-title-text">${accessEscapeHtml(p.title)}</div><div class="access-meta">${accessEscapeHtml(p.key)}${p.date ? " · " + accessEscapeHtml(p.date) : ""}</div></td><td><label class="access-switch"><input type="checkbox" data-key="${accessEscapeHtml(p.key)}" ${isH ? "" : "checked"} /><span class="access-status ${isH ? "access-status--hidden" : "access-status--public"}">${isH ? "Hidden" : "Public"}</span></label></td><td>${accessEscapeHtml(p.collection)}</td><td><div class="access-meta">${accessEscapeHtml(p.file)}</div></td></tr>`;
-    }).join("") || '<tr><td colspan="4" class="access-notice">No matching posts.</td></tr>';
+      const isH = accessHidden.has(p.id);
+      return `<tr><td><div class="access-title-text">${accessEscapeHtml(p.title)}</div><div class="access-meta">${accessEscapeHtml(p.id)}${p.date ? " · " + accessEscapeHtml(p.date) : ""}</div></td><td><label class="access-switch"><input type="checkbox" data-key="${accessEscapeHtml(p.id)}" ${isH ? "" : "checked"} /><span class="access-status ${isH ? "access-status--hidden" : "access-status--public"}">${isH ? "Hidden" : "Public"}</span></label></td></tr>`;
+    }).join("") || '<tr><td colspan="2" class="access-notice">No matching posts.</td></tr>';
   }
 
   async function accessLoad() {
@@ -487,8 +485,8 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
     document.getElementById("access-reload")?.addEventListener("click", accessLoad);
     document.getElementById("access-save")?.addEventListener("click", accessSave);
     document.getElementById("access-show-all")?.addEventListener("click", () => { const f = document.getElementById("access-filter"); if (f) f.value = ""; accessQuery = ""; accessRender(); });
-    document.getElementById("access-hide-filtered")?.addEventListener("click", () => { for (const p of accessVisiblePosts()) accessHidden.add(p.key); accessRender(); });
-    document.getElementById("access-show-filtered")?.addEventListener("click", () => { for (const p of accessVisiblePosts()) accessHidden.delete(p.key); accessRender(); });
+    document.getElementById("access-hide-filtered")?.addEventListener("click", () => { for (const p of accessVisiblePosts()) accessHidden.add(p.id); accessRender(); });
+    document.getElementById("access-show-filtered")?.addEventListener("click", () => { for (const p of accessVisiblePosts()) accessHidden.delete(p.id); accessRender(); });
     accessLoad().catch(e => { const t = document.getElementById("access-toast"); if (t) t.textContent = "Failed to load: " + e.message; });
   }
 

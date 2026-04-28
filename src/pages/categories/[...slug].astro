@@ -34,7 +34,7 @@ export async function getStaticPaths() {
   const buckets = await Promise.all(
     collectionKeys.map(async (collection) => {
       const posts = await getCollection(collection as never);
-      return posts.filter((post) => isPostVisible(collection, post.id, hiddenKeys)).map((post) => ({
+      return posts.filter((post) => isPostVisible(post.data.id, hiddenKeys)).map((post) => ({
         params: { slug: `${collection}/${post.id}` },
         props: { collection, id: post.id } satisfies RouteProps,
       }));
@@ -46,7 +46,7 @@ export async function getStaticPaths() {
 const { collection, id } = Astro.props as RouteProps;
 const post = await getEntry(collection, id);
 const hiddenKeys = await fetchHiddenPostKeys();
-if (!post || !isPostVisible(collection, id, hiddenKeys)) {
+if (!post || !isPostVisible(post.data.id, hiddenKeys)) {
   return new Response(null, {
     status: 404,
     statusText: "Not found",

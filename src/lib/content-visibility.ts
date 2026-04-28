@@ -4,10 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 
 const visibilityLocalPath = path.join(process.cwd(), "src", "content-visibility.json");
 
-function postKey(collection: string, id: string): string {
-  return `${collection}/${id}`.replace(/\\/g, "/").replace(/\/+/g, "/");
-}
-
 function getSupabase() {
   const url = String(import.meta.env.PUBLIC_SUPABASE_URL ?? "").trim();
   const key = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
@@ -19,7 +15,7 @@ function readLocalHidden(): string[] {
   try {
     const raw = fs.readFileSync(visibilityLocalPath, "utf-8");
     const parsed = JSON.parse(raw) as { hidden?: string[] };
-    return (Array.isArray(parsed.hidden) ? parsed.hidden : []).map(k => String(k).replace(/\\/g, "/"));
+    return (Array.isArray(parsed.hidden) ? parsed.hidden : []).map(k => String(k).trim().toLowerCase());
   } catch {
     return [];
   }
@@ -36,7 +32,7 @@ export async function fetchHiddenPostKeys(): Promise<Set<string>> {
         .single();
       if (!error && data) {
         const hidden = Array.isArray(data.hidden_posts) ? data.hidden_posts : [];
-        return new Set(hidden.map(k => String(k).replace(/\\/g, "/")));
+        return new Set(hidden.map(k => String(k).trim().toLowerCase()));
       }
     } catch {
       // Supabase unreachable, fall through to local file
@@ -45,10 +41,11 @@ export async function fetchHiddenPostKeys(): Promise<Set<string>> {
   return new Set(readLocalHidden());
 }
 
-export function isPostVisible(collection: string, id: string, hiddenKeys: Set<string>): boolean {
-  return !hiddenKeys.has(postKey(collection, id));
+export function isPostVisible(postId: string | undefined, hiddenKeys: Set<string>): boolean {
+  if (!postId) return true;
+  return !hiddenKeys.has(postId.trim().toLowerCase());
 }
 
-export function isPostHidden(collection: string, id: string, hiddenKeys: Set<string>): boolean {
-  return !isPostVisible(collection, id, hiddenKeys);
+export function isPostHidden(postId: string | undefined, hiddenKeys: Set<string>): boolean {
+  return !isPostVisible(postId, hiddenKeys);
 }

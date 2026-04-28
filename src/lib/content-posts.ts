@@ -30,7 +30,7 @@ export async function getMergedPosts(): Promise<MergedPost[]> {
   const buckets = await Promise.all(
     collectionKeys.map(async (key) => {
       const posts = await getCollection(key as never);
-      return posts.filter((post) => isPostVisible(key, post.id, hiddenKeys)).map((post) => ({
+      return posts.filter((post) => isPostVisible(post.data.id, hiddenKeys)).map((post) => ({
         collection: key,
         slug: post.id,
         sortId:
