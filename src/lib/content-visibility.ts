@@ -1,52 +1,54 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createClient } from "@supabase/supabase-js";
 
-type ContentVisibilityConfig = {
-  hidden?: string[];
-};
-
-const visibilityPath = path.join(process.cwd(), "src", "content-visibility.json");
-
-let cachedMtimeMs = -1;
-let cachedHidden = new Set<string>();
+const visibilityLocalPath = path.join(process.cwd(), "src", "content-visibility.json");
 
 function postKey(collection: string, id: string): string {
   return `${collection}/${id}`.replace(/\\/g, "/").replace(/\/+/g, "/");
 }
 
-function readHiddenPostKeys(): Set<string> {
-  let stat: fs.Stats | null = null;
-  try {
-    stat = fs.statSync(visibilityPath);
-  } catch {
-    cachedMtimeMs = -1;
-    cachedHidden = new Set();
-    return cachedHidden;
-  }
-
-  if (stat.mtimeMs === cachedMtimeMs) return cachedHidden;
-
-  try {
-    const raw = fs.readFileSync(visibilityPath, "utf-8");
-    const parsed = JSON.parse(raw) as ContentVisibilityConfig;
-    cachedHidden = new Set(
-      Array.isArray(parsed.hidden)
-        ? parsed.hidden.map((key) => String(key).replace(/\\/g, "/"))
-        : []
-    );
-    cachedMtimeMs = stat.mtimeMs;
-  } catch {
-    cachedHidden = new Set();
-    cachedMtimeMs = stat.mtimeMs;
-  }
-
-  return cachedHidden;
+function getSupabase() {
+  const url = String(import.meta.env.PUBLIC_SUPABASE_URL ?? "").trim();
+  const key = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+  if (!url || !key || !url.startsWith("http")) return null;
+  return createClient(url, key);
 }
 
-export function isPostVisible(collection: string, id: string): boolean {
-  return !readHiddenPostKeys().has(postKey(collection, id));
+function readLocalHidden(): string[] {
+  try {
+    const raw = fs.readFileSync(visibilityLocalPath, "utf-8");
+    const parsed = JSON.parse(raw) as { hidden?: string[] };
+    return (Array.isArray(parsed.hidden) ? parsed.hidden : []).map(k => String(k).replace(/\\/g, "/"));
+  } catch {
+    return [];
+  }
 }
 
-export function isPostHidden(collection: string, id: string): boolean {
-  return !isPostVisible(collection, id);
+export async function fetchHiddenPostKeys(): Promise<Set<string>> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("content_visibility")
+        .select("hidden_posts")
+        .eq("id", 1)
+        .single();
+      if (!error && data) {
+        const hidden = Array.isArray(data.hidden_posts) ? data.hidden_posts : [];
+        return new Set(hidden.map(k => String(k).replace(/\\/g, "/")));
+      }
+    } catch {
+      // Supabase unreachable, fall through to local file
+    }
+  }
+  return new Set(readLocalHidden());
+}
+
+export function isPostVisible(collection: string, id: string, hiddenKeys: Set<string>): boolean {
+  return !hiddenKeys.has(postKey(collection, id));
+}
+
+export function isPostHidden(collection: string, id: string, hiddenKeys: Set<string>): boolean {
+  return !isPostVisible(collection, id, hiddenKeys);
 }

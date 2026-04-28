@@ -1,6 +1,6 @@
 import { getCollection } from "astro:content";
-import { collections } from "../content/config";
-import { isPostVisible } from "./content-visibility";
+import { collections } from "../content.config";
+import { isPostVisible, fetchHiddenPostKeys } from "./content-visibility";
 
 export type ColKey = string;
 
@@ -25,13 +25,13 @@ export type MergedPost = {
 };
 
 export async function getMergedPosts(): Promise<MergedPost[]> {
+  const hiddenKeys = await fetchHiddenPostKeys();
   const collectionKeys = getCollectionKeys();
   const buckets = await Promise.all(
     collectionKeys.map(async (key) => {
       const posts = await getCollection(key as never);
-      return posts.filter((post) => isPostVisible(key, post.id)).map((post) => ({
+      return posts.filter((post) => isPostVisible(key, post.id, hiddenKeys)).map((post) => ({
         collection: key,
-        /* glob loader 集合无 slug，路径键与 getEntry(collection, id) 一致 */
         slug: post.id,
         sortId:
           post.data.id?.trim() ||
