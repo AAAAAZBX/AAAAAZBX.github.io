@@ -313,7 +313,9 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   .access-status--public { background: #dcfce7; color: #166534; }
   .access-status--hidden { background: #fee2e2; color: #991b1b; }
   .access-notice { color: #64748b; font-size: 0.82rem; padding: 16px 12px; text-align: center; }
-  .access-group-hd td { background: rgba(56, 189, 248, 0.08); border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding: 10px 12px; }
+  .access-group-hd td { background: rgba(56, 189, 248, 0.08); border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding: 10px 12px; cursor: pointer; user-select: none; }
+  .access-group-hd.collapsed td { background: rgba(56, 189, 248, 0.04); }
+  .access-group-arrow { color: #38bdf8; font-size: 0.65rem; margin-right: 6px; display: inline-block; transition: transform 0.15s; }
   .access-group-name { color: #e2e8f0; font-weight: 700; font-size: 0.85rem; }
   .access-group-meta { color: #64748b; font-size: 0.72rem; margin-left: 10px; }
 
@@ -477,10 +479,11 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
     let html = "";
     for (const [col, colPosts] of groups) {
       const hiddenCount = colPosts.filter(p => accessHidden.has(p.id)).length;
-      html += `<tr class="access-group-hd"><td colspan="2"><span class="access-group-name">${accessEscapeHtml(col)}</span><span class="access-group-meta">${colPosts.length} posts${hiddenCount ? ", " + hiddenCount + " hidden" : ""}</span></td></tr>`;
+      const groupId = "access-grp-" + col.replace(/[^a-z0-9]/gi, "-");
+      html += `<tr class="access-group-hd" data-group-toggle="${groupId}"><td colspan="2"><span class="access-group-arrow">▼</span><span class="access-group-name">${accessEscapeHtml(col)}</span><span class="access-group-meta">${colPosts.length} posts${hiddenCount ? ", " + hiddenCount + " hidden" : ""}</span></td></tr>`;
       for (const p of colPosts) {
         const isH = accessHidden.has(p.id);
-        html += `<tr><td><div class="access-title-text">${accessEscapeHtml(p.title)}</div><div class="access-meta">${accessEscapeHtml(p.id)}${p.date ? " · " + accessEscapeHtml(p.date) : ""}</div></td><td><label class="access-switch"><input type="checkbox" data-key="${accessEscapeHtml(p.id)}" ${isH ? "" : "checked"} /><span class="access-status ${isH ? "access-status--hidden" : "access-status--public"}">${isH ? "Hidden" : "Public"}</span></label></td></tr>`;
+        html += `<tr class="access-group-row" data-group="${groupId}"><td><div class="access-title-text">${accessEscapeHtml(p.title)}</div><div class="access-meta">${accessEscapeHtml(p.id)}${p.date ? " · " + accessEscapeHtml(p.date) : ""}</div></td><td><label class="access-switch"><input type="checkbox" data-key="${accessEscapeHtml(p.id)}" ${isH ? "" : "checked"} /><span class="access-status ${isH ? "access-status--hidden" : "access-status--public"}">${isH ? "Hidden" : "Public"}</span></label></td></tr>`;
       }
     }
     rows.innerHTML = html;
@@ -500,6 +503,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   function bindAccessPanel() {
     const rows = document.getElementById("access-rows"); if (rows && rows.dataset.bound === "true") return; if (rows) rows.dataset.bound = "true";
     rows?.addEventListener("change", e => { const i = e.target.closest("input[data-key]"); if (!i) return; if (i.checked) accessHidden.delete(i.dataset.key); else accessHidden.add(i.dataset.key); accessRender(); });
+    rows?.addEventListener("click", e => { const hd = e.target.closest("[data-group-toggle]"); if (!hd) return; const gid = hd.dataset.groupToggle; const arrow = hd.querySelector(".access-group-arrow"); const coll = hd.classList.toggle("collapsed"); const posts = rows.querySelectorAll(`[data-group="${gid}"]`); posts.forEach(tr => tr.style.display = coll ? "none" : ""); if (arrow) arrow.textContent = coll ? "▶" : "▼"; });
     document.getElementById("access-filter")?.addEventListener("input", e => { accessQuery = e.target.value.trim(); accessRender(); });
     document.getElementById("access-reload")?.addEventListener("click", accessLoad);
     document.getElementById("access-save")?.addEventListener("click", accessSave);
