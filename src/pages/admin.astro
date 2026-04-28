@@ -112,7 +112,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
               <div class="access-metric"><span>Hidden</span><strong id="access-hidden">0</strong></div>
             </div>
             <div class="access-toolbar">
-              <input id="access-filter" type="search" placeholder="Search title, path, collection..." />
+              <input id="access-filter" type="search" placeholder="Search title, id, collection..." />
               <button class="access-btn access-btn--secondary" id="access-show-all">Show all</button>
               <button class="access-btn access-btn--secondary" id="access-hide-filtered">Hide filtered</button>
               <button class="access-btn access-btn--secondary" id="access-show-filtered">Show filtered</button>
@@ -313,6 +313,9 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   .access-status--public { background: #dcfce7; color: #166534; }
   .access-status--hidden { background: #fee2e2; color: #991b1b; }
   .access-notice { color: #64748b; font-size: 0.82rem; padding: 16px 12px; text-align: center; }
+  .access-group-hd td { background: rgba(56, 189, 248, 0.08); border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding: 10px 12px; }
+  .access-group-name { color: #e2e8f0; font-weight: 700; font-size: 0.85rem; }
+  .access-group-meta { color: #64748b; font-size: 0.72rem; margin-left: 10px; }
 
   @media (max-width: 1360px) {
     .stats-console__grid {
@@ -444,7 +447,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
 
   function accessMatches(post) {
     if (!accessQuery) return true;
-    const haystack = [post.title, post.id, post.date].join(" ").toLowerCase();
+    const haystack = [post.title, post.id, post.date, post.collection].join(" ").toLowerCase();
     return haystack.includes(accessQuery.toLowerCase());
   }
   function accessVisiblePosts() { return accessPosts.filter(accessMatches); }
@@ -461,10 +464,26 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   function accessRender() {
     const rows = document.getElementById("access-rows"); if (!rows) return;
     accessUpdateSummary();
-    rows.innerHTML = accessVisiblePosts().map(p => {
-      const isH = accessHidden.has(p.id);
-      return `<tr><td><div class="access-title-text">${accessEscapeHtml(p.title)}</div><div class="access-meta">${accessEscapeHtml(p.id)}${p.date ? " · " + accessEscapeHtml(p.date) : ""}</div></td><td><label class="access-switch"><input type="checkbox" data-key="${accessEscapeHtml(p.id)}" ${isH ? "" : "checked"} /><span class="access-status ${isH ? "access-status--hidden" : "access-status--public"}">${isH ? "Hidden" : "Public"}</span></label></td></tr>`;
-    }).join("") || '<tr><td colspan="2" class="access-notice">No matching posts.</td></tr>';
+    const posts = accessVisiblePosts();
+    if (!posts.length) { rows.innerHTML = '<tr><td colspan="2" class="access-notice">No matching posts.</td></tr>'; return; }
+
+    const groups = new Map();
+    for (const p of posts) {
+      const col = p.collection || "Other";
+      if (!groups.has(col)) groups.set(col, []);
+      groups.get(col).push(p);
+    }
+
+    let html = "";
+    for (const [col, colPosts] of groups) {
+      const hiddenCount = colPosts.filter(p => accessHidden.has(p.id)).length;
+      html += `<tr class="access-group-hd"><td colspan="2"><span class="access-group-name">${accessEscapeHtml(col)}</span><span class="access-group-meta">${colPosts.length} posts${hiddenCount ? ", " + hiddenCount + " hidden" : ""}</span></td></tr>`;
+      for (const p of colPosts) {
+        const isH = accessHidden.has(p.id);
+        html += `<tr><td><div class="access-title-text">${accessEscapeHtml(p.title)}</div><div class="access-meta">${accessEscapeHtml(p.id)}${p.date ? " · " + accessEscapeHtml(p.date) : ""}</div></td><td><label class="access-switch"><input type="checkbox" data-key="${accessEscapeHtml(p.id)}" ${isH ? "" : "checked"} /><span class="access-status ${isH ? "access-status--hidden" : "access-status--public"}">${isH ? "Hidden" : "Public"}</span></label></td></tr>`;
+      }
+    }
+    rows.innerHTML = html;
   }
 
   async function accessLoad() {
