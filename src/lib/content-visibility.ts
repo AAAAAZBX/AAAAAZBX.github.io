@@ -31,12 +31,13 @@ export async function fetchHiddenPostKeys(): Promise<Set<string>> {
         .select("hidden_posts")
         .eq("id", 1)
         .single();
-      if (!error && data && Array.isArray(data.hidden_posts) && data.hidden_posts.length > 0) {
-        return new Set(data.hidden_posts.map(k => String(k).trim().toLowerCase()));
+      if (!error && data && Array.isArray(data.hidden_posts)) {
+        for (const k of data.hidden_posts) {
+          local.add(String(k).trim().toLowerCase());
+        }
       }
-      // Supabase returned empty — use local file as fallback
     } catch {
-      // Supabase unreachable, use local file
+      // Supabase unreachable, keep local only
     }
   }
   return local;

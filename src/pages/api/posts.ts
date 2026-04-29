@@ -14,6 +14,16 @@ function readJson<T>(filePath: string, fallback: T): T {
 }
 
 async function readHiddenList(): Promise<string[]> {
+  const merged = new Set<string>();
+
+  // Load local JSON first
+  const visibilityPath = path.join(process.cwd(), 'src', 'content-visibility.json');
+  const localData = readJson<{ hidden?: string[] }>(visibilityPath, { hidden: [] });
+  for (const k of (Array.isArray(localData.hidden) ? localData.hidden : [])) {
+    merged.add(String(k).trim().toLowerCase());
+  }
+
+  // Merge Supabase data
   const supabaseUrl = String(import.meta.env.PUBLIC_SUPABASE_URL ?? '').trim();
   const anonKey = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '').trim();
 
@@ -25,18 +35,17 @@ async function readHiddenList(): Promise<string[]> {
         .select('hidden_posts')
         .eq('id', 1)
         .single();
-      if (!error && data && Array.isArray(data.hidden_posts) && data.hidden_posts.length > 0) {
-        return data.hidden_posts.map((k: unknown) => String(k).trim().toLowerCase());
+      if (!error && data && Array.isArray(data.hidden_posts)) {
+        for (const k of data.hidden_posts) {
+          merged.add(String(k).trim().toLowerCase());
+        }
       }
-      // Supabase returned empty — fall back to local file
     } catch {
-      // fall through to local file
+      // Supabase unreachable, keep local only
     }
   }
 
-  const visibilityPath = path.join(process.cwd(), 'src', 'content-visibility.json');
-  const fallback = readJson<{ hidden?: string[] }>(visibilityPath, { hidden: [] });
-  return (Array.isArray(fallback.hidden) ? fallback.hidden : []).map(k => String(k).trim().toLowerCase());
+  return [...merged];
 }
 
 export const GET: APIRoute = async () => {
