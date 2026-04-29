@@ -464,6 +464,33 @@ const baseUrl = import.meta.env.BASE_URL;
       });
     </script>
 
+    <!-- Client-side visibility filter: reads hidden IDs from Supabase and hides posts -->
+    <script is:inline define:vars={{ supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL, supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
+      (function () {
+        var url = supabaseUrl;
+        var key = supabaseAnonKey;
+        if (!url || !key) return;
+        try {
+          fetch(url + "/rest/v1/content_visibility?select=hidden_posts&id=eq.1", {
+            headers: { apikey: key, Authorization: "Bearer " + key }
+          })
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+            .then(function (rows) {
+              var hidden = (Array.isArray(rows) && rows[0] && Array.isArray(rows[0].hidden_posts))
+                ? rows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })
+                : [];
+              if (!hidden.length) return;
+              hidden.forEach(function (id) {
+                var els = document.querySelectorAll('[data-post-id="' + id + '"]');
+                for (var i = 0; i < els.length; i++) {
+                  els[i].style.display = "none";
+                }
+              });
+            })
+            .catch(function () { /* Supabase unreachable, skip client-side filter */ });
+        } catch (_) {}
+      })();
+    </script>
     <script is:inline define:vars={{ baseUrl }}>
       (function () {
         if (!("serviceWorker" in navigator)) return;

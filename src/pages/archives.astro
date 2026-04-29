@@ -85,7 +85,7 @@ const bannerTypedText = "Archives";
                   <>
                     <p class="fluid-archives-year fluid-archives-year-heading" id={`y-${year}`}>{year}</p>
                     {byYear.get(year)!.map((p) => (
-                      <a class="fluid-list-group-item list-group-item-action" href={p.href}>
+                      <a class="fluid-list-group-item list-group-item-action" href={p.href} data-post-id={p.sortId}>
                         <time datetime={p.date ?? ""}>{formatDateIso(p.date)}</time>
                         <div class="list-group-item-title">{p.title}</div>
                       </a>
@@ -97,7 +97,7 @@ const bannerTypedText = "Archives";
                   <>
                     <p class="fluid-archives-year fluid-archives-year-heading" id="y-undated">Undated</p>
                     {undated.map((p) => (
-                      <a class="fluid-list-group-item list-group-item-action" href={p.href}>
+                      <a class="fluid-list-group-item list-group-item-action" href={p.href} data-post-id={p.sortId}>
                         <time datetime={p.date ?? ""}>-</time>
                         <div class="list-group-item-title">{p.title}</div>
                       </a>

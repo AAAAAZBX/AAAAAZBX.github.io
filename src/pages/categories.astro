@@ -37,7 +37,7 @@ const sections = collectionKeys.map((collection) => {
   const byKey = b.sortKey.localeCompare(a.sortKey, "zh-CN");
   if (byKey !== 0) return byKey;
   return a.heading.localeCompare(b.heading, "zh-CN");
-});
+}).filter(section => section.posts.length > 0);
 
 const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
 const bannerTypedText = "Categories";

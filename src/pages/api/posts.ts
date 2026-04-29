@@ -25,9 +25,10 @@ async function readHiddenList(): Promise<string[]> {
         .select('hidden_posts')
         .eq('id', 1)
         .single();
-      if (!error && data && Array.isArray(data.hidden_posts)) {
+      if (!error && data && Array.isArray(data.hidden_posts) && data.hidden_posts.length > 0) {
         return data.hidden_posts.map((k: unknown) => String(k).trim().toLowerCase());
       }
+      // Supabase returned empty — fall back to local file
     } catch {
       // fall through to local file
     }

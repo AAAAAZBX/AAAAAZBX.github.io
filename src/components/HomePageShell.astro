@@ -151,7 +151,7 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
             <div class="home-feed">
               <ul class="home-post-list">
                 {recentPosts.map((item) => (
-                  <li class="home-post-item index-card-mimic">
+                  <li class="home-post-item index-card-mimic" data-post-id={item.sortId}>
                     <a class="home-post-link" href={item.href}>
                       <span class="home-post-title">{item.title}</span>
                     </a>

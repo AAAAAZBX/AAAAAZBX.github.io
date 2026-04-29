@@ -527,7 +527,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   async function accessSave() {
     const btn = document.getElementById("access-save"), toast = document.getElementById("access-toast");
     if (!btn) return; btn.disabled = true;
-    try { const r = await fetch("/api/visibility", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ hidden: [...accessHidden] }) }); const d = await r.json(); if (!r.ok) throw new Error(d.reason || d.error || "Save failed"); if (toast) { toast.textContent = (d.synced !== false ? "Saved & synced." : "Saved locally.") + (d.rebuilt ? " Rebuild triggered." : ""); setTimeout(() => { if (toast) toast.textContent = ""; }, 2000); } } catch (e) { if (toast) toast.textContent = "Save failed: " + e.message; } finally { btn.disabled = false; }
+    try { const params = new URLSearchParams(); for (const id of accessHidden) params.append("hidden", id); const r = await fetch("/api/visibility?" + params.toString()); const d = await r.json(); if (!r.ok) throw new Error(d.reason || d.error || "Save failed"); if (toast) { toast.textContent = (d.synced !== false ? "Saved & synced." : "Saved locally.") + (d.rebuilt ? " Rebuild triggered." : ""); setTimeout(() => { if (toast) toast.textContent = ""; }, 2000); } } catch (e) { if (toast) toast.textContent = "Save failed: " + e.message; } finally { btn.disabled = false; }
   }
 
   function bindAccessPanel() {

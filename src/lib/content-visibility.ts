@@ -22,6 +22,7 @@ function readLocalHidden(): string[] {
 }
 
 export async function fetchHiddenPostKeys(): Promise<Set<string>> {
+  const local = new Set(readLocalHidden());
   const supabase = getSupabase();
   if (supabase) {
     try {
@@ -30,15 +31,15 @@ export async function fetchHiddenPostKeys(): Promise<Set<string>> {
         .select("hidden_posts")
         .eq("id", 1)
         .single();
-      if (!error && data) {
-        const hidden = Array.isArray(data.hidden_posts) ? data.hidden_posts : [];
-        return new Set(hidden.map(k => String(k).trim().toLowerCase()));
+      if (!error && data && Array.isArray(data.hidden_posts) && data.hidden_posts.length > 0) {
+        return new Set(data.hidden_posts.map(k => String(k).trim().toLowerCase()));
       }
+      // Supabase returned empty — use local file as fallback
     } catch {
-      // Supabase unreachable, fall through to local file
+      // Supabase unreachable, use local file
     }
   }
-  return new Set(readLocalHidden());
+  return local;
 }
 
 export function isPostVisible(postId: string | undefined, hiddenKeys: Set<string>): boolean {
