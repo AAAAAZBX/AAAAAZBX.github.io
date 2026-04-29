@@ -25,13 +25,20 @@ export type MergedPost = {
   body: string;
 };
 
-export async function getMergedPosts(): Promise<MergedPost[]> {
-  const hiddenKeys = await fetchHiddenPostKeys();
+function sortMergedPosts(posts: MergedPost[]): MergedPost[] {
+  return posts.sort((a, b) => {
+    const ta = a.date ? new Date(a.date).getTime() : 0;
+    const tb = b.date ? new Date(b.date).getTime() : 0;
+    return tb - ta;
+  });
+}
+
+export async function getAllMergedPosts(): Promise<MergedPost[]> {
   const collectionKeys = getCollectionKeys();
   const buckets = await Promise.all(
     collectionKeys.map(async (key) => {
       const posts = await getCollection(key as never);
-      return posts.filter((post) => isPostVisible(resolvePostId({ id: post.data.id, slug: post.id }), hiddenKeys)).map((post) => ({
+      return posts.map((post) => ({
         collection: key,
         slug: post.id,
         sortId: resolvePostId({ id: post.data.id, slug: post.id }),
@@ -44,11 +51,37 @@ export async function getMergedPosts(): Promise<MergedPost[]> {
       }));
     })
   );
-  return buckets.flat().sort((a, b) => {
-    const ta = a.date ? new Date(a.date).getTime() : 0;
-    const tb = b.date ? new Date(b.date).getTime() : 0;
-    return tb - ta;
-  });
+
+  return sortMergedPosts(buckets.flat());
+}
+
+export async function getMergedPosts(): Promise<MergedPost[]> {
+  const hiddenKeys = await fetchHiddenPostKeys();
+  const posts = await getAllMergedPosts();
+  return posts.filter((post) => isPostVisible(post.sortId, hiddenKeys));
+}
+
+export function buildPostExcerpt(body: string | undefined, maxLen = 260): string {
+  const safeBody = typeof body === "string" ? body : "";
+  const singleLine = safeBody
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`]+`/g, " ")
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^\)]+\)/g, "")
+    .replace(/^#+\s+/gm, "")
+    .replace(/\*\*([^\*]+)\*\*/g, "$1")
+    .replace(/\*([^\*]+)\*/g, "$1")
+    .replace(/~~([^~]+)~~/g, "$1")
+    .replace(/^>\s+/gm, "")
+    .replace(/^[\*\-\+]\s+/gm, "")
+    .replace(/^\d+\.\s+/gm, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\r?\n+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (singleLine.length <= maxLen) return singleLine;
+  return `${singleLine.slice(0, maxLen)}…`;
 }
 
 export function formatDateIso(dateString: string | undefined): string {

@@ -1,11 +1,12 @@
 ---
 import type { MergedPost } from "../lib/content-posts";
-import { formatDateIso } from "../lib/content-posts";
+import { buildPostExcerpt, formatDateIso } from "../lib/content-posts";
 import {
   buildContentFolderDisplayMap,
   categoryIndexHref,
   normSeg,
 } from "../lib/category-tree";
+import { HOME_POSTS_PER_PAGE } from "../lib/home-pagination";
 
 interface Props {
   recentPosts: MergedPost[];
@@ -13,16 +14,26 @@ interface Props {
   totalPages: number;
 }
 
+type RuntimeHomePost = {
+  sortId: string;
+  title: string;
+  date: string;
+  dateFormatted: string;
+  href: string;
+  excerpt: string;
+  crumbs: Array<{ label: string; href: string }>;
+  tags: Array<{ label: string; href: string }>;
+};
+
 const { recentPosts, currentPage, totalPages } = Astro.props;
 
 const heroTypedText = "Algorithms, Systems, and Machine Learning";
-/** Hero 下静态开头语。 */
 const heroIntro =
   "Rigorous notes, small experiments, and things worth coming back to.";
 const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
 const folderDisplayMap = buildContentFolderDisplayMap();
-
 const baseUrl = import.meta.env.BASE_URL;
+
 function homePageHref(page: number): string {
   if (page <= 1) return baseUrl;
   const path = `page/${page}`;
@@ -35,7 +46,7 @@ function baseJoin(path: string): string {
 }
 
 function tagSlug(tag: string): string {
-  return tag.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\u4e00-\u9fff_-]/g, "");
+  return tag.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9一-鿿_-]/g, "");
 }
 
 function categoryArchiveCrumbs(collection: string, slug: string): Array<{ label: string; href: string }> {
@@ -58,32 +69,23 @@ function categoryArchiveCrumbs(collection: string, slug: string): Array<{ label:
   return crumbs;
 }
 
-function stripMd(text: string): string {
-  return text
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/`[^`]+`/g, " ")
-    .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
-    .replace(/!\[([^\]]*)\]\([^\)]+\)/g, "")
-    .replace(/^#+\s+/gm, "")
-    .replace(/\*\*([^\*]+)\*\*/g, "$1")
-    .replace(/\*([^\*]+)\*/g, "$1")
-    .replace(/~~([^~]+)~~/g, "$1")
-    .replace(/^>\s+/gm, "")
-    .replace(/^[\*\-\+]\s+/gm, "")
-    .replace(/^\d+\.\s+/gm, "")
-    .replace(/<[^>]+>/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+function toRuntimePost(post: MergedPost): RuntimeHomePost {
+  return {
+    sortId: post.sortId,
+    title: post.title,
+    date: post.date ?? "",
+    dateFormatted: formatDateIso(post.date),
+    href: post.href,
+    excerpt: buildPostExcerpt(post.body),
+    crumbs: categoryArchiveCrumbs(post.collection, post.slug),
+    tags: (post.tags ?? []).map((tag) => ({
+      label: tag,
+      href: `${baseJoin("tags")}/${encodeURIComponent(tagSlug(tag))}`,
+    })),
+  };
 }
 
-function excerptFromPost(body: string | undefined, maxLen = 260): string {
-  const safeBody = typeof body === "string" ? body : "";
-  const noCode = safeBody.replace(/```[\s\S]*?```/g, " ");
-  const singleLine = stripMd(noCode.replace(/\r?\n+/g, " "));
-  if (singleLine.length <= maxLen) return singleLine;
-  return `${singleLine.slice(0, maxLen)}…`;
-}
-
+const initialRuntimePosts = recentPosts.map(toRuntimePost);
 const showPagination = totalPages > 1;
 const prevHref = currentPage > 1 ? homePageHref(currentPage - 1) : null;
 const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null;
@@ -148,7 +150,16 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
       <div class="fluid-container">
         <div class="fluid-row">
           <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
-            <div class="home-feed">
+            <div
+              class="home-feed"
+              data-home-page={currentPage}
+              data-home-total-pages={totalPages}
+              data-home-posts-per-page={HOME_POSTS_PER_PAGE}
+              data-home-runtime-endpoint={baseJoin("home-posts.json")}
+              data-home-supabase-url={import.meta.env.PUBLIC_SUPABASE_URL ?? ""}
+              data-home-supabase-key={import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? ""}
+              data-home-base-url={baseUrl}
+            >
               <ul class="home-post-list">
                 {recentPosts.map((item) => (
                   <li class="home-post-item index-card-mimic" data-post-id={item.sortId}>
@@ -156,7 +167,7 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
                       <span class="home-post-title">{item.title}</span>
                     </a>
                     <a class="home-post-excerpt-link" href={item.href}>
-                      <p class="home-post-excerpt">{excerptFromPost(item.body)}</p>
+                      <p class="home-post-excerpt">{buildPostExcerpt(item.body)}</p>
                     </a>
                     <div class="home-post-meta">
                       <span class="home-post-meta-item">
@@ -201,7 +212,7 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
                 ))}
               </ul>
 
-              {recentPosts.length === 0 && <p class="home-empty">No posts yet.</p>}
+              <p class="home-empty" style={recentPosts.length === 0 ? undefined : "display:none"}>No posts yet.</p>
 
               {
                 showPagination && (
@@ -239,7 +250,7 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
 </main>
 
 <script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
-<script is:inline>
+<script is:inline define:vars={{ currentPage, homePostsPerPage: HOME_POSTS_PER_PAGE }}>
   (function () {
     function fluidHeroTyping() {
       if (typeof window.Typed === "undefined") return;
@@ -255,11 +266,6 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
         loop: false,
         showCursor: true,
       });
-    }
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fluidHeroTyping);
-    } else {
-      fluidHeroTyping();
     }
 
     function fluidHeroParallax() {
@@ -295,9 +301,7 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
       var board = document.querySelector("#board.fluid-board-home");
       if (!hero || !board) return;
 
-      /** 滚动区间 ≈ 该系数 × Hero 高度；越小叠满越快 */
       var scrollSpanFactor = 0.52;
-      /** 最大上推（px），越大白卡叠入顶图越多 */
       var maxLiftPx = 112;
       var ticking = false;
       function update() {
@@ -322,7 +326,119 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
       update();
     }
 
-    fluidHeroParallax();
-    fluidBoardLift();
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, function (ch) {
+        return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[ch] || ch;
+      });
+    }
+
+    function renderHomePost(item) {
+      var crumbs = Array.isArray(item.crumbs) ? item.crumbs : [];
+      var tags = Array.isArray(item.tags) ? item.tags : [];
+      var crumbHtml = crumbs.map(function (crumb, idx) {
+        var sep = idx > 0 ? '<span class="home-post-cat-separator"> &gt; </span>' : '';
+        return sep + '<a class="home-post-meta-link" href="' + escapeHtml(crumb.href) + '">' + escapeHtml(crumb.label) + '</a>';
+      }).join('');
+      var tagsHtml = tags.length
+        ? '<span class="home-post-meta-item"><i class="iconfont icon-tags-fill" aria-hidden="true"></i><span class="home-post-tags">' + tags.map(function (tag, idx) {
+            var prefix = idx > 0 ? '  ' : '';
+            return prefix + '<a class="home-post-meta-link home-post-tag-link" href="' + escapeHtml(tag.href) + '">#' + escapeHtml(tag.label) + '</a>';
+          }).join('') + '</span></span>'
+        : '';
+
+      return '<li class="home-post-item index-card-mimic" data-post-id="' + escapeHtml(item.sortId) + '">' +
+        '<a class="home-post-link" href="' + escapeHtml(item.href) + '"><span class="home-post-title">' + escapeHtml(item.title) + '</span></a>' +
+        '<a class="home-post-excerpt-link" href="' + escapeHtml(item.href) + '"><p class="home-post-excerpt">' + escapeHtml(item.excerpt || '') + '</p></a>' +
+        '<div class="home-post-meta">' +
+          '<span class="home-post-meta-item"><i class="iconfont icon-date" aria-hidden="true"></i><time class="home-post-date" datetime="' + escapeHtml(item.date || '') + '">' + escapeHtml(item.dateFormatted || '') + '</time></span>' +
+          '<span class="home-post-meta-item"><i class="iconfont icon-category-fill" aria-hidden="true"></i><span class="home-post-cat">' + crumbHtml + '</span></span>' +
+          tagsHtml +
+        '</div>' +
+      '</li>';
+    }
+
+    function replacePaginationEdge(nav, selector, href, enabled) {
+      var current = nav.querySelector(selector);
+      if (!current) return;
+      var replacement;
+      if (enabled) {
+        replacement = document.createElement('a');
+        replacement.className = current.className.replace(/\bis-disabled\b/g, '').replace(/\s+/g, ' ').trim();
+        replacement.href = href;
+      } else {
+        replacement = document.createElement('span');
+        replacement.className = (current.className + ' is-disabled').replace(/\s+/g, ' ').trim();
+        replacement.setAttribute('aria-disabled', 'true');
+      }
+      replacement.textContent = current.textContent || '';
+      current.replaceWith(replacement);
+    }
+
+    function renderRuntimeHome() {
+      var feed = document.querySelector('.home-feed[data-home-runtime-endpoint]');
+      if (!feed) return;
+      var list = feed.querySelector('.home-post-list');
+      var empty = feed.querySelector('.home-empty');
+      var pagination = feed.querySelector('.home-pagination');
+      if (!list || !empty) return;
+
+      var endpoint = feed.getAttribute('data-home-runtime-endpoint') || '';
+      var supabaseUrl = feed.getAttribute('data-home-supabase-url') || '';
+      var supabaseKey = feed.getAttribute('data-home-supabase-key') || '';
+      var page = Number(feed.getAttribute('data-home-page') || currentPage || 1) || 1;
+      var perPage = Number(feed.getAttribute('data-home-posts-per-page') || homePostsPerPage) || homePostsPerPage;
+
+      if (!endpoint) return;
+
+      Promise.all([
+        fetch(endpoint).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
+        (supabaseUrl && supabaseKey)
+          ? fetch(supabaseUrl + '/rest/v1/content_visibility?select=hidden_posts&id=eq.1', {
+              headers: { apikey: supabaseKey, Authorization: 'Bearer ' + supabaseKey }
+            }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          : Promise.resolve([])
+      ]).then(function (results) {
+        var catalogRows = results[0];
+        var hiddenRows = results[1];
+        var catalog = Array.isArray(catalogRows && catalogRows.posts) ? catalogRows.posts : [];
+        var hidden = (Array.isArray(hiddenRows) && hiddenRows[0] && Array.isArray(hiddenRows[0].hidden_posts))
+          ? hiddenRows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })
+          : [];
+        var hiddenSet = new Set(hidden);
+        var visiblePosts = catalog.filter(function (post) {
+          return !hiddenSet.has(String(post.sortId || '').trim().toLowerCase());
+        });
+        var totalPagesRuntime = Math.max(1, Math.ceil(visiblePosts.length / perPage));
+        var start = Math.max(0, (page - 1) * perPage);
+        var currentPosts = visiblePosts.slice(start, start + perPage);
+
+        list.innerHTML = currentPosts.map(renderHomePost).join('');
+        empty.style.display = currentPosts.length ? 'none' : '';
+
+        if (pagination) {
+          pagination.style.display = totalPagesRuntime > 1 ? '' : 'none';
+          var status = pagination.querySelector('.home-pagination-status');
+          if (status) status.textContent = page + ' / ' + totalPagesRuntime;
+          replacePaginationEdge(pagination, '.home-pagination-prev', homePageHref(page - 1), page > 1);
+          replacePaginationEdge(pagination, '.home-pagination-next', homePageHref(page + 1), page < totalPagesRuntime);
+        }
+      }).catch(function () {
+        // keep server-rendered fallback
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        fluidHeroTyping();
+        fluidHeroParallax();
+        fluidBoardLift();
+        renderRuntimeHome();
+      });
+    } else {
+      fluidHeroTyping();
+      fluidHeroParallax();
+      fluidBoardLift();
+      renderRuntimeHome();
+    }
   })();
 </script>

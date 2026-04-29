@@ -479,10 +479,13 @@ const baseUrl = import.meta.env.BASE_URL;
               var hidden = (Array.isArray(rows) && rows[0] && Array.isArray(rows[0].hidden_posts))
                 ? rows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })
                 : [];
+              var homeFeed = document.querySelector('.home-feed[data-home-runtime-endpoint]');
               if (hidden.length) {
                 hidden.forEach(function (id) {
-                  var els = document.querySelectorAll('[data-post-id="' + id + '"]');
+                  var selector = '[data-post-id="' + id + '"]';
+                  var els = document.querySelectorAll(selector);
                   for (var i = 0; i < els.length; i++) {
+                    if (homeFeed && homeFeed.contains(els[i])) continue;
                     els[i].style.display = "none";
                   }
                 });
