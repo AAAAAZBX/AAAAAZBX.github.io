@@ -1,46 +1,12 @@
 import type { APIRoute } from 'astro';
-import fs from 'node:fs';
-import path from 'node:path';
 import { getCollection } from 'astro:content';
-import { createClient } from '@supabase/supabase-js';
 import { getCollectionKeys } from '../../lib/content-posts';
-
-function readJson<T>(filePath: string, fallback: T): T {
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-  } catch {
-    return fallback;
-  }
-}
-
-async function readHiddenList(): Promise<string[]> {
-  const supabaseUrl = String(import.meta.env.PUBLIC_SUPABASE_URL ?? '').trim();
-  const anonKey = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '').trim();
-
-  if (supabaseUrl && anonKey && supabaseUrl.startsWith('http')) {
-    try {
-      const supabase = createClient(supabaseUrl, anonKey);
-      const { data, error } = await supabase
-        .from('content_visibility')
-        .select('hidden_posts')
-        .eq('id', 1)
-        .single();
-      if (!error && data && Array.isArray(data.hidden_posts) && data.hidden_posts.length > 0) {
-        return data.hidden_posts.map((k: unknown) => String(k).trim().toLowerCase());
-      }
-    } catch {
-      // fall through to local file
-    }
-  }
-
-  const visibilityPath = path.join(process.cwd(), 'src', 'content-visibility.json');
-  const fallback = readJson<{ hidden?: string[] }>(visibilityPath, { hidden: [] });
-  return (Array.isArray(fallback.hidden) ? fallback.hidden : []).map(k => String(k).trim().toLowerCase());
-}
+import { readHiddenPostIds } from '../../lib/content-visibility';
+import { resolvePostId } from '../../lib/post-id';
 
 export const GET: APIRoute = async () => {
   try {
-    const hidden = await readHiddenList();
+    const hidden = await readHiddenPostIds();
     const collectionKeys = getCollectionKeys();
 
     const allPosts: Array<{ id: string; title: string; date: string; collection: string }> = [];
@@ -48,7 +14,7 @@ export const GET: APIRoute = async () => {
       const posts = await getCollection(col as never);
       for (const p of posts) {
         allPosts.push({
-          id: p.data.id?.trim() || '',
+          id: resolvePostId({ id: p.data.id, slug: p.id }),
           title: p.data.title,
           date: p.data.date || '',
           collection: col,

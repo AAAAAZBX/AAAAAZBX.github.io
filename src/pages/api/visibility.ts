@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { normalizeHiddenPostIds } from '../../lib/post-id';
 
 // The Vite plugin in astro.config.mjs parses hidden IDs from req.url
 // (bypassing Node.js 24 bug) and stores them in globalThis.__hiddenFromUrl.
@@ -8,9 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 export const GET: APIRoute = async () => {
   try {
     const hidden: string[] = (globalThis as any).__hiddenFromUrl ?? [];
-    const unique = [...new Set(hidden.map(s => s.toLowerCase()))].sort((a, b) =>
-      a.localeCompare(b, 'zh-CN')
-    );
+    const unique = normalizeHiddenPostIds(hidden);
 
     let synced = false;
     const supabaseUrl = String(import.meta.env.PUBLIC_SUPABASE_URL ?? '').trim();

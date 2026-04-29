@@ -449,11 +449,16 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   }
   function accessVisiblePosts() { return accessPosts.filter(accessMatches); }
 
+  function accessHiddenCount() {
+    return accessPosts.reduce((total, post) => total + (accessHidden.has(post.id) ? 1 : 0), 0);
+  }
+
   function accessUpdateSummary() {
     const t = document.getElementById("access-total"), p = document.getElementById("access-public"), h = document.getElementById("access-hidden");
+    const hiddenCount = accessHiddenCount();
     if (t) t.textContent = accessPosts.length;
-    if (h) h.textContent = accessHidden.size;
-    if (p) p.textContent = accessPosts.length - accessHidden.size;
+    if (h) h.textContent = hiddenCount;
+    if (p) p.textContent = accessPosts.length - hiddenCount;
   }
 
   function accessEscapeHtml(v) { return String(v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[ch])); }

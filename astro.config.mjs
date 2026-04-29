@@ -19,18 +19,13 @@ function visibilityApiPlugin() {
         if (!req.url?.startsWith('/api/visibility')) { next(); return; }
         const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?') + 1) : '';
         const params = new URLSearchParams(qs);
-        const hidden = params.getAll('hidden');
+        const hidden = [...new Set(params.getAll('hidden').map(s => String(s).trim().toLowerCase()).filter(Boolean))].sort((a, b) =>
+          a.localeCompare(b, 'zh-CN')
+        );
 
-        if (hidden.length) {
-          const unique = [...new Set(hidden.map(s => s.toLowerCase()))].sort((a, b) =>
-            a.localeCompare(b, 'zh-CN')
-          );
-          fs.writeFileSync(visibilityPath, `${JSON.stringify({ hidden: unique }, null, 2)}\n`, 'utf-8');
-          // Store parsed IDs so the API route can use them for Supabase sync
-          globalThis.__hiddenFromUrl = unique;
-        } else {
-          globalThis.__hiddenFromUrl = [];
-        }
+        fs.writeFileSync(visibilityPath, `${JSON.stringify({ hidden }, null, 2)}\n`, 'utf-8');
+        // Store parsed IDs so the API route can use them for Supabase sync
+        globalThis.__hiddenFromUrl = hidden;
         next();
       });
     },

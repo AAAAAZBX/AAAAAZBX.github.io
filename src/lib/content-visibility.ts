@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
+import { normalizeHiddenPostIds } from "./post-id";
 
 const visibilityLocalPath = path.join(process.cwd(), "src", "content-visibility.json");
 
@@ -15,13 +16,13 @@ function readLocalHidden(): string[] {
   try {
     const raw = fs.readFileSync(visibilityLocalPath, "utf-8");
     const parsed = JSON.parse(raw) as { hidden?: string[] };
-    return (Array.isArray(parsed.hidden) ? parsed.hidden : []).map(k => String(k).trim().toLowerCase());
+    return normalizeHiddenPostIds(Array.isArray(parsed.hidden) ? parsed.hidden : []);
   } catch {
     return [];
   }
 }
 
-export async function fetchHiddenPostKeys(): Promise<Set<string>> {
+export async function readHiddenPostIds(): Promise<string[]> {
   const supabase = getSupabase();
   if (supabase) {
     try {
@@ -30,14 +31,26 @@ export async function fetchHiddenPostKeys(): Promise<Set<string>> {
         .select("hidden_posts")
         .eq("id", 1)
         .single();
-      if (!error && data && Array.isArray(data.hidden_posts) && data.hidden_posts.length > 0) {
-        return new Set(data.hidden_posts.map(k => String(k).trim().toLowerCase()));
+      if (!error && data && Array.isArray(data.hidden_posts)) {
+        return normalizeHiddenPostIds(data.hidden_posts);
       }
     } catch {
       // Supabase unreachable, use local file
     }
   }
-  return new Set(readLocalHidden());
+  return readLocalHidden();
+}
+
+export async function fetchHiddenPostKeys(): Promise<Set<string>> {
+  return new Set(await readHiddenPostIds());
+}
+
+export function countHiddenPosts(postIds: Iterable<string>, hiddenKeys: Set<string>): number {
+  let total = 0;
+  for (const postId of postIds) {
+    if (hiddenKeys.has(String(postId).trim().toLowerCase())) total += 1;
+  }
+  return total;
 }
 
 export function isPostVisible(postId: string | undefined, hiddenKeys: Set<string>): boolean {

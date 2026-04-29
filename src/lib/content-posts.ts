@@ -1,6 +1,7 @@
 import { getCollection } from "astro:content";
 import { collections } from "../content.config";
 import { isPostVisible, fetchHiddenPostKeys } from "./content-visibility";
+import { resolvePostId } from "./post-id";
 
 export type ColKey = string;
 
@@ -30,13 +31,10 @@ export async function getMergedPosts(): Promise<MergedPost[]> {
   const buckets = await Promise.all(
     collectionKeys.map(async (key) => {
       const posts = await getCollection(key as never);
-      return posts.filter((post) => isPostVisible(post.data.id, hiddenKeys)).map((post) => ({
+      return posts.filter((post) => isPostVisible(resolvePostId({ id: post.data.id, slug: post.id }), hiddenKeys)).map((post) => ({
         collection: key,
         slug: post.id,
-        sortId:
-          post.data.id?.trim() ||
-          post.id.split("/").filter(Boolean).slice(-1)[0] ||
-          post.id,
+        sortId: resolvePostId({ id: post.data.id, slug: post.id }),
         title: post.data.title,
         date: post.data.date,
         href: `/categories/${key}/${post.id}`,

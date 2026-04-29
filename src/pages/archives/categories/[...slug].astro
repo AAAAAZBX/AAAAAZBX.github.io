@@ -101,7 +101,7 @@ const bannerTypedText = current.displayName;
               <div class="fluid-list-group list-group category-index-posts">
                 <hr class="fluid-list-hr" />
                 {posts.map((post) => (
-                  <a class="fluid-list-group-item list-group-item-action" href={post.href}>
+                  <a class="fluid-list-group-item list-group-item-action" href={post.href} data-post-id={post.sortId}>
                     <time datetime={post.date ?? ""}>{formatDateIso(post.date)}</time>
                     <div class="list-group-item-title">{post.title}</div>
                   </a>
