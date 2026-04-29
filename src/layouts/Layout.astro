@@ -479,13 +479,36 @@ const baseUrl = import.meta.env.BASE_URL;
               var hidden = (Array.isArray(rows) && rows[0] && Array.isArray(rows[0].hidden_posts))
                 ? rows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })
                 : [];
-              if (!hidden.length) return;
-              hidden.forEach(function (id) {
-                var els = document.querySelectorAll('[data-post-id="' + id + '"]');
-                for (var i = 0; i < els.length; i++) {
-                  els[i].style.display = "none";
+              if (hidden.length) {
+                hidden.forEach(function (id) {
+                  var els = document.querySelectorAll('[data-post-id="' + id + '"]');
+                  for (var i = 0; i < els.length; i++) {
+                    els[i].style.display = "none";
+                  }
+                });
+              }
+
+              // Recalculate homepage pagination
+              var allItems = document.querySelectorAll('.home-post-item');
+              var visible = 0;
+              for (var i = 0; i < allItems.length; i++) {
+                if (allItems[i].style.display !== 'none') visible++;
+              }
+              var pagination = document.querySelector('.home-pagination');
+              if (pagination) {
+                pagination.style.display = visible > 10 ? '' : 'none';
+              }
+
+              // Hide empty category sections
+              var sections = document.querySelectorAll('.cat-section, .fluid-category-section');
+              for (var i = 0; i < sections.length; i++) {
+                var links = sections[i].querySelectorAll('[data-post-id]');
+                var allHidden = links.length > 0;
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].style.display !== 'none') { allHidden = false; break; }
                 }
-              });
+                if (allHidden) sections[i].style.display = 'none';
+              }
             })
             .catch(function () { /* Supabase unreachable, skip client-side filter */ });
         } catch (_) {}
