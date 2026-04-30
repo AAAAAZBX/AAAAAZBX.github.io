@@ -1,6 +1,11 @@
 ---
+import { withBase } from "../lib/base-url";
+
 const {
   title = "Boxuan Zhang",
+  description: metaDescription = "Personal blog — algorithms, systems, and machine learning notes.",
+  /** Absolute or site-relative OG image path */
+  ogImage,
   isArticle = false,
   overlayNav = false,
   hideNav = false,
@@ -14,6 +19,13 @@ const logVisitorVisits = Boolean(
 const year = new Date().getFullYear();
 /** 与 public 资源、Service Worker 注册一致（支持子路径部署） */
 const baseUrl = import.meta.env.BASE_URL;
+const siteOrigin = Astro.site ?? new URL(import.meta.env.SITE || "https://aaaaazbx.github.io");
+const canonicalUrl = new URL(Astro.url.pathname, siteOrigin).href;
+const ogImageAbsolute = (() => {
+  if (!ogImage) return new URL(withBase(baseUrl, "site-profile.png"), siteOrigin).href;
+  if (ogImage.startsWith("http")) return ogImage;
+  return new URL(withBase(baseUrl, ogImage.replace(/^\/+/, "")), siteOrigin).href;
+})();
 ---
 
 <html lang="en">
@@ -21,6 +33,17 @@ const baseUrl = import.meta.env.BASE_URL;
     <meta charset="UTF-8" />
     <title>{title}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={metaDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content={isArticle ? "article" : "website"} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageAbsolute} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={ogImageAbsolute} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     
     <!-- 防止夜间模式闪烁的早期脚本 -->
@@ -34,8 +57,8 @@ const baseUrl = import.meta.env.BASE_URL;
     </script>
 
     <!-- Favicon - 使用头像作为标签栏图标 -->
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="shortcut icon" type="image/png" href="/logo.png" />
+    <link rel="icon" type="image/png" href={withBase(baseUrl, "logo.png")} />
+    <link rel="shortcut icon" type="image/png" href={withBase(baseUrl, "logo.png")} />
 
     <!-- 与 lynx-li.github.io 文章页一致：Bootstrap 栅格 + GitHub Markdown 底座，再由 global 覆盖主题 -->
     <link
@@ -46,7 +69,7 @@ const baseUrl = import.meta.env.BASE_URL;
       rel="stylesheet"
       href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css"
     />
-    <link rel="stylesheet" href="/styles/global.css" />
+    <link rel="stylesheet" href={withBase(baseUrl, "styles/global.css")} />
 
     <!-- 顶图 / 头像：预连接 + 预加载，首屏略快；后续页由 Service Worker 复用缓存 -->
     <link rel="preload" as="image" href={`${baseUrl}site-profile.png`} fetchpriority="high" />
@@ -154,27 +177,27 @@ const baseUrl = import.meta.env.BASE_URL;
           <div class="nav">
             <div class="nav-inner">
             <div class="nav-left">
-              <a href="/">B.X.Zhang</a>
+              <a href={withBase(baseUrl, "/")}>B.X.Zhang</a>
             </div>
             <nav class="nav-links">
-              <a href="/" class="nav-link-iconed">
+              <a href={withBase(baseUrl, "/")} class="nav-link-iconed">
                 <i class="iconfont icon-home-fill" aria-hidden="true"></i>
                 <span>Home</span>
               </a>
-              <a href="/archives" class="nav-link-iconed">
+              <a href={withBase(baseUrl, "archives")} class="nav-link-iconed">
                 <i class="iconfont icon-archive-fill" aria-hidden="true"></i>
                 <span>Archives</span>
               </a>
-              <a href="/categories" class="nav-link-iconed">
+              <a href={withBase(baseUrl, "categories")} class="nav-link-iconed">
                 <i class="iconfont icon-category-fill" aria-hidden="true"></i>
                 <span>Categories</span>
               </a>
               {/** Statistics 页不放入导航，仅自己记 URL `/statistics` 访问 */}
-              <a href="/about" class="nav-link-iconed">
+              <a href={withBase(baseUrl, "about")} class="nav-link-iconed">
                 <i class="iconfont icon-user-fill" aria-hidden="true"></i>
                 <span>About</span>
               </a>
-              <a href="/search" class="nav-search-link" title="Search" aria-label="Search">
+              <a href={withBase(baseUrl, "search")} class="nav-search-link" title="Search" aria-label="Search">
                 <i class="iconfont icon-search" aria-hidden="true"></i>
               </a>
               <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">

@@ -2,7 +2,7 @@
  * 轻量 Service Worker：预缓存全站常用顶图，并对同站图片请求使用 cache-first，
  * 减轻多页跳转时背景图重复下载（需 HTTPS 或 localhost）。
  */
-const CACHE_NAME = 'tremendous-assets-v1';
+const CACHE_NAME = 'tremendous-assets-v2';
 const swUrl = self.location.href;
 
 function resolveAsset(name) {

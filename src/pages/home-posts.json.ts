@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getAllMergedPosts, buildPostExcerpt, formatDateIso } from '../lib/content-posts';
+import { getMergedPosts, buildPostExcerpt, formatDateIso } from '../lib/content-posts';
 import {
   buildContentFolderDisplayMap,
   categoryIndexHref,
@@ -27,7 +27,7 @@ export const GET: APIRoute = async () => {
   try {
     const baseUrl = import.meta.env.BASE_URL;
     const folderDisplayMap = buildContentFolderDisplayMap();
-    const posts = await getAllMergedPosts();
+    const posts = await getMergedPosts();
 
     const payload: RuntimeHomePost[] = posts.map((post) => {
       const dirs = post.slug.split('/').filter(Boolean).slice(0, -1);
@@ -65,7 +65,7 @@ export const GET: APIRoute = async () => {
       status: 200,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'public, max-age=0, must-revalidate',
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
       },
     });
   } catch (error) {

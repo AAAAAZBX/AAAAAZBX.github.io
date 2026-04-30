@@ -1,0 +1,14 @@
+{
+  "description": "Directories under dist/ removed after astro build before pagefind (GitHub Pages public artifact).",
+  "removeTopLevelDirs": [
+    "api",
+    "admin",
+    "statistics",
+    "analytics",
+    "ai",
+    "fintech",
+    "quant",
+    "axi404.github.io-main",
+    "axi404.github.io-source"
+  ]
+}

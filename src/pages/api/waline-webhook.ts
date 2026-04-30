@@ -37,9 +37,16 @@ interface WalineWebhookEvent {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const expectedToken = import.meta.env.WALINE_WEBHOOK_TOKEN;
+    if (import.meta.env.PROD && !expectedToken) {
+      return new Response(JSON.stringify({ error: 'Webhook not configured' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // 验证请求来源（可选，增加安全性）
     const authHeader = request.headers.get('authorization');
-    const expectedToken = import.meta.env.WALINE_WEBHOOK_TOKEN;
     
     if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {

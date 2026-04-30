@@ -1,0 +1,55 @@
+{
+  "commits": [
+    {
+      "hash": "8434ce66578475f1713bce79a54aceaf2557de3b",
+      "date": "2026-04-29 15:12:07 +0800",
+      "message": "fix(home): backfill homepage pagination after hiding posts"
+    },
+    {
+      "hash": "2223273aaffc43ed3748cd9438edaec2be822879",
+      "date": "2026-04-29 14:26:35 +0800",
+      "message": "fix(visibility): unify hidden post filtering"
+    },
+    {
+      "hash": "6c0c65ad5c7b7e6ca9a7acb1e24b3fcfedc5c16c",
+      "date": "2026-04-29 13:48:01 +0800",
+      "message": "Revert to Supabase-preferred filtering, fall back to local only when Supabase is empty"
+    },
+    {
+      "hash": "89c986e2b52e47cd551ac33c00ad666608f08fde",
+      "date": "2026-04-29 11:34:28 +0800",
+      "message": "Clear hidden list and fix client-side filter to update pagination and empty categories"
+    },
+    {
+      "hash": "b4981862e1dce17d2bbe56c42ed2310ca6ab397f",
+      "date": "2026-04-29 11:13:56 +0800",
+      "message": "Merge local and Supabase hidden IDs instead of preferring Supabase alone"
+    },
+    {
+      "hash": "f87585c0c7d92b9dc0132d2cef43b4226d698e0b",
+      "date": "2026-04-29 11:01:21 +0800",
+      "message": "Remove PsiTrader article"
+    },
+    {
+      "hash": "a82f3aedd95f615fa1d81822ca658e65d0c4a330",
+      "date": "2026-04-29 10:16:55 +0800",
+      "message": "Add visibility persistence with Supabase sync and client-side filtering"
+    },
+    {
+      "hash": "9438a2ed1941a1d69375a010aa92816280e043a8",
+      "date": "2026-04-28 17:46:57 +0800",
+      "message": "Remove prerender=false from API routes to fix static build"
+    },
+    {
+      "hash": "51d92502aece2a176ad6363547ea399172786cbe",
+      "date": "2026-04-28 17:32:14 +0800",
+      "message": "Fix access panel toggle animation to be consistently smooth"
+    },
+    {
+      "hash": "0a194986875ca12b28b74ca6d8e8997e93569eaf",
+      "date": "2026-04-28 17:27:31 +0800",
+      "message": "Refine access panel with details/summary groups and smooth animation"
+    }
+  ],
+  "timestamp": "2026-04-30T03:35:51.755Z"
+}

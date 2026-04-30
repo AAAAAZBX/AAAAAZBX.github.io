@@ -167,7 +167,7 @@ async function main() {
     const { contributions, totalContributions, error } = await fetchGitHubContributions();
 
     // 保存到 public 目录
-    const outputPath = join(__dirname, '..', 'public', 'api', 'github-contributions.json');
+    const outputPath = join(__dirname, '..', 'public', 'data', 'github-contributions.json');
     const outputDir = dirname(outputPath);
     mkdirSync(outputDir, { recursive: true });
 

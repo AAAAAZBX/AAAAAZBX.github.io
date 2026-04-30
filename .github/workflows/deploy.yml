@@ -30,6 +30,7 @@ jobs:
       - name: Install, build, and upload your site
         uses: withastro/action@v5
         env:
+          # Secrets：不要在仓库里提交 PAT / service_role。Classic PAT 仅需最少权限（通常 repo contents）。
           # 均需在：仓库 Settings → Secrets and variables → Actions → New repository secret
           PUBLIC_WALINE_SERVER_URL: ${{ secrets.PUBLIC_WALINE_SERVER_URL }}
           PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}

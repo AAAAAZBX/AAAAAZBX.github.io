@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Search">
+<Layout title="Search" noindex description="Site search for Boxuan Zhang's blog posts.">
   <main style="max-width: 980px; margin: 0 auto; padding: 48px 16px;">
     <div style="margin-bottom: 24px;">
       <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 16px;">Search</h1>
@@ -15,6 +15,12 @@ import Layout from "../layouts/Layout.astro";
 
 <script is:inline>
   async function initSearch() {
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = String(text);
+      return div.innerHTML;
+    }
+
     const searchContainer = document.getElementById("search");
     if (!searchContainer) return;
     
@@ -265,6 +271,9 @@ import Layout from "../layouts/Layout.astro";
                   if (excerpt && !excerpt.endsWith('...')) {
                     excerpt = excerpt + '...';
                   }
+                  excerpt = excerpt.replace(/<\/?mark\b[^>]*>/gi, (m) =>
+                    m.toLowerCase().startsWith("</") ? "</mark>" : "<mark>"
+                  );
                 }
                 
                 return {
@@ -307,7 +316,10 @@ import Layout from "../layouts/Layout.astro";
             
             if (statusContainer) {
               statusContainer.style.display = "block";
-              statusContainer.innerHTML = `<span style="color: #d1242f;">Search error: ${error.message || "Unknown error"}. See the browser console for details.</span>`;
+              statusContainer.innerHTML =
+                '<span style="color: #d1242f;">Search error: ' +
+                escapeHtml(String(error.message || "Unknown error")) +
+                ". See the browser console for details.</span>";
             }
             if (resultsContainer) {
               resultsContainer.innerHTML = "";
@@ -410,12 +422,6 @@ import Layout from "../layouts/Layout.astro";
       <p style="color: #57606a; margin-bottom: 16px; font-size: 14px;">找到 ${results.results.length} 个结果</p>
       ${html}
     `;
-  }
-  
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
   
   // 页面加载后初始化搜索

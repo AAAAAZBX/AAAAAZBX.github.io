@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aaaaazbx.github.io/sitemap-index.xml

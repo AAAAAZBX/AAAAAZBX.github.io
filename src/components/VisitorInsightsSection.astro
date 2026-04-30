@@ -58,7 +58,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     </div>
 
     <div class="visitor-insights__section" aria-label="By city">
-      <h3 class="visitor-insights__h2">By City / Region (Visits, 5 per page)</h3>
+      <h3 class="visitor-insights__h2">By Country / Region (expandable)</h3>
       <div class="visitor-insights__table-wrap">
         <table class="visitor-insights__table" id="visit-by-city">
           <thead>
@@ -82,7 +82,6 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
           </tbody>
         </table>
       </div>
-      {configured && <div id="visit-city-pager" class="visitor-insights__pager" hidden aria-label="City table pagination" />}
     </div>
 
     <div class="visitor-insights__section" aria-label="Raw visits">
@@ -214,6 +213,33 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
   }
   .visitor-insights--embed .visitor-insights__table--wide {
     min-width: 640px;
+  }
+  .visitor-insights--embed .visitor-insights__group-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  .visitor-insights--embed .visitor-insights__group-toggle:hover {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--text-link) 45%, transparent);
+  }
+  .visitor-insights--embed .visitor-insights__group-caret {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    width: 1em;
+    display: inline-block;
+  }
+  .visitor-insights--embed .visitor-insights__child-row[hidden] {
+    display: none;
+  }
+  .visitor-insights--embed .visitor-insights__child-row td:nth-child(2) {
+    padding-left: 1.4rem;
   }
   /* Recent Visits: force one-line cells */
   .visitor-insights--embed #visit-raw {
@@ -396,7 +422,6 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
   const HYDRATE_TOTAL_BUDGET_MS = 12000;
   const TABLE_ROWS_PER_PAGE = 10;
   const RAW_PER_PAGE = TABLE_ROWS_PER_PAGE;
-  const CITY_PER_PAGE = 5;
   let ipProfileNotes: Record<string, string> = {};
 
   function getVisitorSupabaseConfig(): { url: string; anonKey: string } | null {
@@ -452,7 +477,6 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
   let rawVisits: VisitRow[] = [];
   let rawPageIndex = 1;
   let cityRowsAll: CityAggRow[] = [];
-  let cityPageIndex = 1;
   let visitLeafletMap: L.Map | null = null;
 
   function destroyVisitLeafletMap(): void {
@@ -519,6 +543,124 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     if (!flagHtml) return label;
     const title = escapeAttr(displayName);
     return `<span class="visitor-insights__country-cell" title="${title}"><span class="visitor-insights__flag-wrap" aria-hidden="true">${flagHtml}</span><span>${label}</span></span>`;
+  }
+
+  function countryGroupKey(country: string): string {
+    const t = String(country || "").trim().toLowerCase();
+    return t || "—";
+  }
+
+  type CountryGroup = {
+    country: string;
+    country_code: string | null;
+    totalUniqueVisitors: number;
+    totalVisits: number;
+    cities: CityAggRow[];
+  };
+
+  function buildCountryGroups(rows: CityAggRow[]): CountryGroup[] {
+    const groups = new Map<string, CountryGroup>();
+    for (const r of rows) {
+      const country = r.country || "—";
+      const key = countryGroupKey(country);
+      if (!groups.has(key)) {
+        groups.set(key, {
+          country,
+          country_code: r.country_code ?? null,
+          totalUniqueVisitors: 0,
+          totalVisits: 0,
+          cities: [],
+        });
+      }
+      const g = groups.get(key)!;
+      // prefer a non-null country_code if we later see one
+      if (!g.country_code && r.country_code) g.country_code = r.country_code;
+      g.totalUniqueVisitors += Number(r.uniqueIps) || 0;
+      g.totalVisits += Number(r.visitCount) || 0;
+      g.cities.push(r);
+    }
+
+    const arr = [...groups.values()];
+    // Sort: unknown at bottom, then by total visits desc
+    arr.sort((a, b) => {
+      const ua = isCityTablePlaceholder(a.country);
+      const ub = isCityTablePlaceholder(b.country);
+      if (ua !== ub) return ua ? 1 : -1;
+      if (b.totalVisits !== a.totalVisits) return b.totalVisits - a.totalVisits;
+      return a.country.localeCompare(b.country, "zh-CN");
+    });
+
+    for (const g of arr) {
+      g.cities.sort((x, y) => {
+        const ux = cityAggRowIsUnknown(x);
+        const uy = cityAggRowIsUnknown(y);
+        if (ux !== uy) return ux ? 1 : -1;
+        if (y.visitCount !== x.visitCount) return y.visitCount - x.visitCount;
+        if (y.uniqueIps !== x.uniqueIps) return y.uniqueIps - x.uniqueIps;
+        return x.city.localeCompare(y.city, "zh-CN");
+      });
+    }
+    return arr;
+  }
+
+  function renderCityGrouped(): void {
+    const rows = cityRowsAll;
+    const total = rows.length;
+    const cityTbody = document.querySelector("#visit-by-city tbody");
+    if (!cityTbody) return;
+    if (total === 0) {
+      cityTbody.innerHTML = `<tr><td colspan="4">No records</td></tr>`;
+      return;
+    }
+
+    const groups = buildCountryGroups(rows);
+    const html: string[] = [];
+    for (const g of groups) {
+      const groupId = `cg_${countryGroupKey(g.country).replace(/[^a-z0-9_]+/g, "_")}`;
+      const countryCellHtml = countryCellForByCityTable(g.country, g.country_code);
+      html.push(
+        `<tr class="visitor-insights__group-row" data-group-id="${escapeAttr(groupId)}">
+          <td>
+            <button type="button" class="visitor-insights__group-toggle" aria-expanded="false" data-group-toggle="${escapeAttr(groupId)}">
+              <span class="visitor-insights__group-caret" aria-hidden="true">▶</span>
+              ${countryCellHtml}
+            </button>
+          </td>
+          <td class="visitor-insights__muted">(${g.cities.length} cities)</td>
+          <td><strong>${g.totalUniqueVisitors}</strong></td>
+          <td><strong>${g.totalVisits}</strong></td>
+        </tr>`
+      );
+
+      for (const c of g.cities) {
+        const cityLabel = escapeHtml(isCityTablePlaceholder(c.city) ? "未知" : c.city);
+        html.push(
+          `<tr class="visitor-insights__child-row" data-group-child="${escapeAttr(groupId)}" hidden>
+            <td>${countryCellHtml}</td>
+            <td>${cityLabel}</td>
+            <td>${c.uniqueIps}</td>
+            <td>${c.visitCount}</td>
+          </tr>`
+        );
+      }
+    }
+    cityTbody.innerHTML = html.join("");
+  }
+
+  function onCountryGroupToggle(e: Event): void {
+    const btn = (e.target as HTMLElement).closest("button[data-group-toggle]") as HTMLButtonElement | null;
+    if (!btn) return;
+    const id = btn.getAttribute("data-group-toggle") || "";
+    if (!id) return;
+    const expanded = btn.getAttribute("aria-expanded") === "true";
+    const next = !expanded;
+    btn.setAttribute("aria-expanded", next ? "true" : "false");
+    const caret = btn.querySelector(".visitor-insights__group-caret") as HTMLElement | null;
+    if (caret) caret.textContent = next ? "▼" : "▶";
+    document.querySelectorAll(`tr[data-group-child="${CSS.escape(id)}"]`).forEach((tr) => {
+      if (next) tr.removeAttribute("hidden");
+      else tr.setAttribute("hidden", "");
+    });
   }
 
   /**
@@ -708,59 +850,11 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     }
   }
 
-  function renderCityPage(): void {
-    const rows = cityRowsAll;
-    const total = rows.length;
-    const totalPages = Math.max(1, Math.ceil(total / CITY_PER_PAGE) || 1);
-    cityPageIndex = Math.min(Math.max(1, cityPageIndex), totalPages);
-    const p = cityPageIndex;
-    const start = (p - 1) * CITY_PER_PAGE;
-    const slice = rows.slice(start, start + CITY_PER_PAGE);
-
-    const cityTbody = document.querySelector("#visit-by-city tbody");
-    if (cityTbody) {
-      if (total === 0) {
-        cityTbody.innerHTML = `<tr><td colspan="4">No records</td></tr>`;
-      } else {
-        cityTbody.innerHTML = slice
-          .map(
-            (x) =>
-              `<tr><td>${countryCellForByCityTable(x.country, x.country_code)}</td><td>${escapeHtml(isCityTablePlaceholder(x.city) ? "未知" : x.city)}</td><td>${x.uniqueIps}</td><td>${x.visitCount}</td></tr>`,
-          )
-          .join("");
-      }
-    }
-
-    const pager = document.getElementById("visit-city-pager");
-    if (!pager) return;
-    if (total === 0) {
-      pager.setAttribute("hidden", "");
-      pager.innerHTML = "";
-      return;
-    }
-    pager.removeAttribute("hidden");
-    const prevDis = p <= 1;
-    const nextDis = p >= totalPages;
-    pager.innerHTML = `<div class="visitor-insights__pager-inner">
-      <button type="button" class="visitor-insights__pager-btn" data-city-pager="prev" ${prevDis ? "disabled" : ""}>Prev</button>
-      <span class="visitor-insights__pager-info">Page ${p} / ${totalPages} (Total ${total}, ${CITY_PER_PAGE} per page)</span>
-      <button type="button" class="visitor-insights__pager-btn" data-city-pager="next" ${nextDis ? "disabled" : ""}>Next</button>
-    </div>`;
-  }
-
-  function onCityPagerClick(e: Event): void {
-    const t = (e.target as HTMLElement).closest("button[data-city-pager]");
-    if (!t) return;
-    const dir = t.getAttribute("data-city-pager");
-    const total = cityRowsAll.length;
-    const totalPages = Math.max(1, Math.ceil(total / CITY_PER_PAGE) || 1);
-    if (dir === "prev" && cityPageIndex > 1) {
-      cityPageIndex -= 1;
-      renderCityPage();
-    } else if (dir === "next" && cityPageIndex < totalPages) {
-      cityPageIndex += 1;
-      renderCityPage();
-    }
+  function bindCityGroupToggles(): void {
+    const cityTable = document.getElementById("visit-by-city");
+    if (!cityTable || (cityTable as any).dataset.groupBound === "1") return;
+    (cityTable as any).dataset.groupBound = "1";
+    cityTable.addEventListener("click", onCountryGroupToggle);
   }
 
   type CacheGeo = {
@@ -852,11 +946,6 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     if (cityTbody) {
       cityTbody.innerHTML = `<tr><td colspan="4">${escapeHtml(message)}</td></tr>`;
     }
-    const cityPagerErr = document.getElementById("visit-city-pager");
-    if (cityPagerErr) {
-      cityPagerErr.setAttribute("hidden", "");
-      cityPagerErr.innerHTML = "";
-    }
     cityRowsAll = [];
     const rawTbodyErr = document.querySelector("#visit-raw tbody");
     if (rawTbodyErr) {
@@ -913,13 +1002,8 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     });
 
     cityRowsAll = cityRows;
-    cityPageIndex = 1;
-    renderCityPage();
-    const cityPagerHost = document.getElementById("visit-city-pager");
-    if (cityPagerHost && !cityPagerHost.dataset.pagerBound) {
-      cityPagerHost.dataset.pagerBound = "1";
-      cityPagerHost.addEventListener("click", onCityPagerClick);
-    }
+    renderCityGrouped();
+    bindCityGroupToggles();
 
     rawVisits = list;
     rawPageIndex = 1;

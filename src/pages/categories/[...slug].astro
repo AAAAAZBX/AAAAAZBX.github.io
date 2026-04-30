@@ -17,9 +17,11 @@ import {
 import {
   getCollectionKeys,
   getCollectionLabel,
+  buildPostExcerpt,
   type ColKey,
 } from "../../lib/content-posts";
 import { isPostVisible, fetchHiddenPostKeys } from "../../lib/content-visibility";
+import { resolvePostId } from "../../lib/post-id";
 import { countapiHitUrl, getCountapiNamespace, countapiArticleKey } from "../../lib/site-stats";
 import { isVisitorLogConfigured } from "../../lib/visitor-env";
 
@@ -34,7 +36,9 @@ export async function getStaticPaths() {
   const buckets = await Promise.all(
     collectionKeys.map(async (collection) => {
       const posts = await getCollection(collection as never);
-      return posts.filter((post) => isPostVisible(post.data.id, hiddenKeys)).map((post) => ({
+      return posts
+        .filter((post) => isPostVisible(resolvePostId({ id: post.data.id, slug: post.id }), hiddenKeys))
+        .map((post) => ({
         params: { slug: `${collection}/${post.id}` },
         props: { collection, id: post.id } satisfies RouteProps,
       }));
@@ -46,7 +50,7 @@ export async function getStaticPaths() {
 const { collection, id } = Astro.props as RouteProps;
 const post = await getEntry(collection, id);
 const hiddenKeys = await fetchHiddenPostKeys();
-if (!post || !isPostVisible(post.data.id, hiddenKeys)) {
+if (!post || !isPostVisible(resolvePostId({ id: post.data.id, slug: post.id }), hiddenKeys)) {
   return new Response(null, {
     status: 404,
     statusText: "Not found",
@@ -71,9 +75,19 @@ const countArticlePageHitUrl = useSupabaseForArticleViews
       getCountapiNamespace(),
       countapiArticleKey(collection, id)
     );
+
+const metaDesc =
+  post.data.description?.trim() || buildPostExcerpt(post.body ?? "", 200);
+const ogHero = post.data.heroImage?.trim();
 ---
 
-<Layout title={`${post.data.title} | ${sectionTitle}`} overlayNav>
+<Layout
+  title={`${post.data.title} | ${sectionTitle}`}
+  overlayNav
+  isArticle
+  description={metaDesc}
+  ogImage={ogHero?.startsWith("http") ? ogHero : ogHero?.replace(/^\/+/, "")}
+>
   <FluidArticleHero
     title={post.data.title}
     author={author}

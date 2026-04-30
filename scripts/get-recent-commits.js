@@ -42,7 +42,7 @@ try {
   }
   
   // 保存到 public 目录
-  const outputPath = join(__dirname, '..', 'public', 'api', 'recent-commits.json');
+  const outputPath = join(__dirname, '..', 'public', 'data', 'recent-commits.json');
   const outputDir = dirname(outputPath);
   mkdirSync(outputDir, { recursive: true });
   

@@ -6,7 +6,15 @@ import { normalizeHiddenPostIds } from '../../lib/post-id';
 // (bypassing Node.js 24 bug) and stores them in globalThis.__hiddenFromUrl.
 // This API route reads them and syncs to Supabase.
 
-export const GET: APIRoute = async () => {
+function allowServiceRoleSync(request: Request): boolean {
+  if (import.meta.env.DEV) return true;
+  const secret = String(import.meta.env.VISIBILITY_SYNC_SECRET ?? '').trim();
+  if (!secret) return false;
+  const auth = request.headers.get('authorization')?.trim();
+  return auth === `Bearer ${secret}`;
+}
+
+export const GET: APIRoute = async ({ request }) => {
   try {
     const hidden: string[] = (globalThis as any).__hiddenFromUrl ?? [];
     const unique = normalizeHiddenPostIds(hidden);
@@ -15,7 +23,7 @@ export const GET: APIRoute = async () => {
     const supabaseUrl = String(import.meta.env.PUBLIC_SUPABASE_URL ?? '').trim();
     const serviceRoleKey = String(import.meta.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
 
-    if (supabaseUrl && serviceRoleKey) {
+    if (supabaseUrl && serviceRoleKey && allowServiceRoleSync(request)) {
       try {
         const supabase = createClient(supabaseUrl, serviceRoleKey);
         const { error } = await supabase

@@ -311,10 +311,14 @@
          */
         loadSounds: function () {
             if (!IS_IOS) {
+                var audioTemplateEl = document.getElementById(this.config.RESOURCE_TEMPLATE_ID);
+                if (!audioTemplateEl || audioTemplateEl.getAttribute('data-muted') === 'true') {
+                    return;
+                }
+
                 this.audioContext = new AudioContext();
 
-                var resourceTemplate =
-                    document.getElementById(this.config.RESOURCE_TEMPLATE_ID).content;
+                var resourceTemplate = audioTemplateEl.content;
 
                 for (var sound in Runner.sounds) {
                     var soundSrc =

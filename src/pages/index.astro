@@ -13,7 +13,11 @@ const totalPages = getHomeTotalPages(merged.length);
 const recentPosts = sliceHomePostsPage(merged, 1);
 ---
 
-<Layout title={`${siteTitle} — Home`} overlayNav>
+<Layout
+  title={`${siteTitle} — Home`}
+  overlayNav
+  description="Algorithms, systems, and machine learning notes — Boxuan Zhang."
+>
   <HomePageShell
     recentPosts={recentPosts}
     currentPage={1}

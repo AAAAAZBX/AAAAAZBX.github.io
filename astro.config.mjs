@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
@@ -34,6 +35,14 @@ function visibilityApiPlugin() {
 
 // https://astro.build/config
 export default defineConfig({
+  integrations: [
+    mdx(),
+    sitemap({
+      filter: (page) =>
+        !page.includes('/search') &&
+        !page.includes('/404'),
+    }),
+  ],
   redirects: {
     "/learning": "/categories",
     "/research": "/categories",

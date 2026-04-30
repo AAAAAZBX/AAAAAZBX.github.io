@@ -389,6 +389,8 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
       var perPage = Number(feed.getAttribute('data-home-posts-per-page') || homePostsPerPage) || homePostsPerPage;
 
       if (!endpoint) return;
+      // Without Supabase client config we cannot fetch runtime hidden list; keep SSR (matches getMergedPosts JSON).
+      if (!supabaseUrl || !supabaseKey) return;
 
       Promise.all([
         fetch(endpoint).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
