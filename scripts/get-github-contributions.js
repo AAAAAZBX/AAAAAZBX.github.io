@@ -1,5 +1,4 @@
 // 构建时获取GitHub贡献数据的脚本
-import { execSync } from 'child_process';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -14,9 +13,17 @@ async function fetchGitHubContributions() {
   try {
     console.log('[Build] Fetching GitHub contributions...');
 
-    // 使用 curl 获取 HTML 内容
-    const curlCommand = `curl -s -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "${githubUrl}"`;
-    const htmlText = execSync(curlCommand, { encoding: 'utf-8' });
+    const response = await fetch(githubUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub returned ${response.status} ${response.statusText}`);
+    }
+
+    const htmlText = await response.text();
 
     if (!htmlText || htmlText.length === 0) {
       throw new Error('Empty response from GitHub');
@@ -158,7 +165,7 @@ async function fetchGitHubContributions() {
 
   } catch (error) {
     console.error('[Build] Error fetching GitHub contributions:', error);
-    return { contributions: [], totalContributions: 0, error: error.message };
+    return { contributions: [], totalContributions: 0, error: `Unable to fetch contributions data (${error.message})` };
   }
 }
 

@@ -57,7 +57,7 @@ s = s.replace(
 )
 
 old_script = "<script is:inline>\n  (function() {"
-if old_script in s and "contributionsDataUrl" not in s:
+if old_script in s and "define:vars" not in s:
     s = s.replace(
         old_script,
         '<script is:inline define:vars={{ contributionsDataUrl }}>\n  (function() {',

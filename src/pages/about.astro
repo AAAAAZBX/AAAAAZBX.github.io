@@ -269,7 +269,7 @@ const profile = {
   }
 </style>
 
-<script is:inline>
+<script is:inline define:vars={{ contributionsDataUrl }}>
   (function() {
     'use strict';
   
@@ -314,7 +314,8 @@ const profile = {
 
         if (result.error) {
           console.error('[Contributions] API error:', result.error);
-          throw new Error(result.error);
+          graphEl.innerHTML = '<p style="color: #666; padding: 20px;">Unable to load contributions data. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>';
+          return;
         }
 
         if (!Array.isArray(contributions)) {
@@ -337,7 +338,7 @@ const profile = {
         
       } catch (error) {
         console.error('[Contributions] Error:', error);
-        graphEl.innerHTML = '<p style="color: #666; padding: 20px;">Error: ' + escapeHtml(error.message) + '. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>';
+        graphEl.innerHTML = '<p style="color: #666; padding: 20px;">Unable to load contributions data. <a href="https://github.com/AAAAAZBX" target="_blank">View on GitHub</a></p>';
         if (summaryEl) {
           summaryEl.textContent = '';
         }
