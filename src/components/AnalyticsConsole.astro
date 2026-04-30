@@ -117,6 +117,7 @@
         <tbody></tbody>
       </table>
     </div>
+    <div id="table-ip-pager" class="analytics-console__pager" hidden aria-label="IP portraits pagination"></div>
   </section>
 
   <section class="analytics-console__card" aria-label="Private routes status">
@@ -308,6 +309,25 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(56, 189, 248, 0.5) rgba(15, 23, 42, 0.38);
     scrollbar-gutter: stable;
+  }
+  .analytics-console__pager {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.2rem;
+  }
+  .analytics-console__pager[hidden] {
+    display: none;
+  }
+  .analytics-console__pager-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .analytics-console__pager-info {
+    color: var(--muted);
+    font-size: 0.82rem;
   }
   .analytics-console__table-wrap::-webkit-scrollbar {
     height: 10px;
@@ -566,8 +586,10 @@
   const PROFILE_NOTES_KEY = "analytics.ipProfileNotes.v1";
   const PROFILE_PASSWORD_HASH_KEY = "analytics.ipProfilePasswordHash.v1";
   const PROFILE_TABLE = "blog_visit_ip_profiles";
+  const IP_PORTRAITS_PER_PAGE = 10;
   let portraitUnlocked = false;
   let latestIpRows: IpPortrait[] = [];
+  let ipPortraitPageIndex = 1;
   let remoteProfileNotes: ProfileNotes = {};
   let analyticsSupabase: ReturnType<typeof createClient> | null = null;
 
@@ -755,7 +777,13 @@
     const tbody = document.querySelector("#table-ip tbody");
     if (!tbody) return;
     const notes = readProfileNotes();
-    tbody.innerHTML = latestIpRows
+    const total = latestIpRows.length;
+    const totalPages = Math.max(1, Math.ceil(total / IP_PORTRAITS_PER_PAGE) || 1);
+    ipPortraitPageIndex = Math.min(Math.max(1, ipPortraitPageIndex), totalPages);
+    const p = ipPortraitPageIndex;
+    const start = (p - 1) * IP_PORTRAITS_PER_PAGE;
+    const pageRows = latestIpRows.slice(start, start + IP_PORTRAITS_PER_PAGE);
+    tbody.innerHTML = pageRows
       .map((x) => {
         const note = notes[x.ip] || "";
         const profileCell = portraitUnlocked
@@ -777,6 +805,37 @@
         </tr>`;
       })
       .join("");
+
+    const pager = document.getElementById("table-ip-pager");
+    if (!pager) return;
+    if (total === 0) {
+      pager.setAttribute("hidden", "");
+      pager.innerHTML = "";
+      return;
+    }
+    pager.removeAttribute("hidden");
+    const prevDis = p <= 1;
+    const nextDis = p >= totalPages;
+    pager.innerHTML = `<div class="analytics-console__pager-inner">
+      <button type="button" class="analytics-console__btn analytics-console__btn--ghost" data-ip-pager="prev" ${prevDis ? "disabled" : ""}>Prev</button>
+      <span class="analytics-console__pager-info">Page ${p} / ${totalPages} (Total ${total}, ${IP_PORTRAITS_PER_PAGE} per page)</span>
+      <button type="button" class="analytics-console__btn analytics-console__btn--ghost" data-ip-pager="next" ${nextDis ? "disabled" : ""}>Next</button>
+    </div>`;
+  }
+
+  function onIpPagerClick(e: Event): void {
+    const t = (e.target as HTMLElement).closest("button[data-ip-pager]");
+    if (!t) return;
+    const dir = t.getAttribute("data-ip-pager");
+    const total = latestIpRows.length;
+    const totalPages = Math.max(1, Math.ceil(total / IP_PORTRAITS_PER_PAGE) || 1);
+    if (dir === "prev" && ipPortraitPageIndex > 1) {
+      ipPortraitPageIndex -= 1;
+      renderIpTable();
+    } else if (dir === "next" && ipPortraitPageIndex < totalPages) {
+      ipPortraitPageIndex += 1;
+      renderIpTable();
+    }
   }
 
   async function unlockPortraitNotes(password: string): Promise<void> {
@@ -813,6 +872,7 @@
       setLockStatus("Locked.");
       renderIpTable();
     });
+    document.getElementById("table-ip-pager")?.addEventListener("click", onIpPagerClick);
     document.getElementById("table-ip")?.addEventListener("click", (e) => {
       const target = e.target as HTMLElement;
       const saveIp = target.closest<HTMLElement>("[data-profile-save]")?.dataset.profileSave;
@@ -959,8 +1019,9 @@
     const topPath = topPaths[0] ? [topPaths[0].page_path, topPaths[0].views] as [string, number] : undefined;
     const topPathShare = topPath ? topPath[1] / Math.max(1, rows.length) : 0;
     const cityRows = [...cityCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
-    const ipRows = [...ipMap.values()].sort((a, b) => b.visits - a.visits).slice(0, 24);
+    const ipRows = [...ipMap.values()].sort((a, b) => b.visits - a.visits);
     latestIpRows = ipRows;
+    ipPortraitPageIndex = 1;
     const flowIndex = Math.min(
       100,
       Math.round(Math.min(45, dayRows.length / 2) + Math.min(25, uniqueIps.size * 2) + Math.min(20, peakRatio * 5) + Math.min(10, topPathShare * 20)),

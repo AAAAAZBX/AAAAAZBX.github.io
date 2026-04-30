@@ -6,7 +6,6 @@ import VisitorInsightsSection from "../components/VisitorInsightsSection.astro";
 import AnalyticsConsole from "../components/AnalyticsConsole.astro";
 import AiWorkbench from "../components/admin/AiWorkbench.astro";
 import QuantWorkbench from "../components/admin/QuantWorkbench.astro";
-import RuntimePanel from "../components/admin/RuntimePanel.astro";
 import { getMergedPosts } from "../lib/content-posts";
 import { countapiGetUrl, getCountapiNamespace, COUNTAPI_KEYS } from "../lib/site-stats";
 import { isVisitorLogConfigured } from "../lib/visitor-env";
@@ -44,7 +43,6 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
           <button class="admin-pager__tab" type="button" data-admin-tab="analytics">Analytics</button>
           <button class="admin-pager__tab" type="button" data-admin-tab="ai">AI</button>
           <button class="admin-pager__tab" type="button" data-admin-tab="quant">Quant</button>
-          <button class="admin-pager__tab" type="button" data-admin-tab="runtime">Runtime</button>
           <button class="admin-pager__tab" type="button" data-admin-tab="access">Access</button>
         </div>
 
@@ -90,10 +88,6 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
           <QuantWorkbench />
         </section>
 
-        <section class="admin-page" data-admin-page="runtime">
-          <RuntimePanel />
-        </section>
-
         <section class="admin-page" data-admin-page="access">
           <div class="access-panel">
             <div class="access-topbar">
@@ -102,8 +96,8 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
                 <p class="access-subtitle">Manage article visibility — hidden posts are excluded from public pages.</p>
               </div>
               <div class="access-actions">
-                <button class="access-btn access-btn--primary" id="access-save">Save visibility</button>
-                <button class="access-btn access-btn--secondary" id="access-reload">Reload</button>
+                <button type="button" class="access-btn access-btn--primary" id="access-save">Save visibility</button>
+                <button type="button" class="access-btn access-btn--secondary" id="access-reload">Reload</button>
               </div>
             </div>
             <div class="access-summary">
@@ -113,9 +107,9 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
             </div>
             <div class="access-toolbar">
               <input id="access-filter" type="search" placeholder="Search title, id, collection..." />
-              <button class="access-btn access-btn--secondary" id="access-show-all">Show all</button>
-              <button class="access-btn access-btn--secondary" id="access-hide-filtered">Hide filtered</button>
-              <button class="access-btn access-btn--secondary" id="access-show-filtered">Show filtered</button>
+              <button type="button" class="access-btn access-btn--secondary" id="access-show-all">Show all</button>
+              <button type="button" class="access-btn access-btn--secondary" id="access-hide-filtered">Hide filtered</button>
+              <button type="button" class="access-btn access-btn--secondary" id="access-show-filtered">Show filtered</button>
               <span class="access-toast" id="access-toast"></span>
             </div>
             <div class="access-groups" id="access-rows"></div>
@@ -328,7 +322,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
 
 <script>
   const API_BASE = "http://127.0.0.1:8000";
-  const VALID_TABS = ["statistics", "analytics", "ai", "quant", "runtime", "access"];
+  const VALID_TABS = ["statistics", "analytics", "ai", "quant", "access"];
 
   function bindQuantWorkbench() {
     const form = document.getElementById("backtest-form");
@@ -389,53 +383,6 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
         btn.textContent = "运行回测";
       }
     });
-  }
-
-  async function checkHealth() {
-    const indicator = document.getElementById("health-indicator");
-    const text = document.getElementById("health-text");
-    const jobList = document.getElementById("job-list");
-    if (!indicator || !text || !jobList) return;
-
-    indicator.className = "health-indicator";
-    text.textContent = "检测中...";
-
-    try {
-      const res = await fetch(`${API_BASE}/health`);
-      if (!res.ok) throw new Error("not ok");
-
-      indicator.classList.add("online");
-      text.textContent = "在线";
-      const jobsRes = await fetch(`${API_BASE}/backtests/recent`);
-      const jobs = await jobsRes.json();
-      if (jobs.length) {
-        jobList.innerHTML = jobs
-          .map(
-            (j) => `
-            <li class="job-item">
-              <span class="job-id">${j.job_id}</span>
-              <span>${j.strategy}</span>
-              <span class="job-status">${j.status}</span>
-            </li>
-          `,
-          )
-          .join("");
-      } else {
-        jobList.innerHTML = '<li class="job-item">暂无任务</li>';
-      }
-    } catch (e) {
-      indicator.classList.add("offline");
-      text.textContent = "离线 - 后端未启动";
-      jobList.innerHTML = '<li class="job-item">暂无任务</li>';
-    }
-  }
-
-  function bindRuntimePanel() {
-    const checkBtn = document.getElementById("check-health");
-    if (!checkBtn || checkBtn.dataset.bound === "true") return;
-    checkBtn.dataset.bound = "true";
-    checkBtn.addEventListener("click", checkHealth);
-    checkHealth();
   }
 
   let accessPosts = [];
@@ -532,18 +479,41 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   async function accessSave() {
     const btn = document.getElementById("access-save"), toast = document.getElementById("access-toast");
     if (!btn) return; btn.disabled = true;
-    try { const params = new URLSearchParams(); for (const id of accessHidden) params.append("hidden", id); const r = await fetch("/api/visibility?" + params.toString()); const d = await r.json(); if (!r.ok) throw new Error(d.reason || d.error || "Save failed"); if (toast) { toast.textContent = (d.synced !== false ? "Saved & synced." : "Saved locally.") + (d.rebuilt ? " Rebuild triggered." : ""); setTimeout(() => { if (toast) toast.textContent = ""; }, 2000); } } catch (e) { if (toast) toast.textContent = "Save failed: " + e.message; } finally { btn.disabled = false; }
+    try {
+      const hidden = Array.from(accessHidden);
+      const params = new URLSearchParams();
+      for (const id of hidden) params.append("hidden", id);
+      const r = await fetch("/api/visibility?" + params.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hidden }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.reason || d.error || "Save failed");
+      const savedHidden = Array.isArray(d.hidden) ? d.hidden : [];
+      const expectedHidden = [...hidden].map((id) => String(id).trim().toLowerCase()).sort();
+      const actualHidden = savedHidden.map((id) => String(id).trim().toLowerCase()).sort();
+      if (expectedHidden.join("\n") !== actualHidden.join("\n")) {
+        throw new Error("Saved visibility did not match the current selection.");
+      }
+      accessHidden = new Set(savedHidden);
+      accessRender();
+      if (toast) {
+        toast.textContent = d.synced !== false ? "Saved & synced." : "Saved locally.";
+        setTimeout(() => { if (toast) toast.textContent = ""; }, 2000);
+      }
+    } catch (e) { if (toast) toast.textContent = "Save failed: " + e.message; } finally { btn.disabled = false; }
   }
 
   function bindAccessPanel() {
     const container = document.getElementById("access-rows"); if (container && container.dataset.bound === "true") return; if (container) container.dataset.bound = "true";
     container?.addEventListener("change", e => { const i = e.target.closest("input[data-key]"); if (!i) return; if (i.checked) accessHidden.delete(i.dataset.key); else accessHidden.add(i.dataset.key); accessRender(); });
     document.getElementById("access-filter")?.addEventListener("input", e => { accessQuery = e.target.value.trim(); accessRender(); });
-    document.getElementById("access-reload")?.addEventListener("click", accessLoad);
-    document.getElementById("access-save")?.addEventListener("click", accessSave);
-    document.getElementById("access-show-all")?.addEventListener("click", () => { const f = document.getElementById("access-filter"); if (f) f.value = ""; accessQuery = ""; accessRender(); });
-    document.getElementById("access-hide-filtered")?.addEventListener("click", () => { for (const p of accessVisiblePosts()) accessHidden.add(p.id); accessRender(); });
-    document.getElementById("access-show-filtered")?.addEventListener("click", () => { for (const p of accessVisiblePosts()) accessHidden.delete(p.id); accessRender(); });
+    document.getElementById("access-reload")?.addEventListener("click", (e) => { e.preventDefault(); accessLoad(); });
+    document.getElementById("access-save")?.addEventListener("click", (e) => { e.preventDefault(); accessSave(); });
+    document.getElementById("access-show-all")?.addEventListener("click", (e) => { e.preventDefault(); const f = document.getElementById("access-filter"); if (f) f.value = ""; accessQuery = ""; accessRender(); });
+    document.getElementById("access-hide-filtered")?.addEventListener("click", (e) => { e.preventDefault(); for (const p of accessVisiblePosts()) accessHidden.add(p.id); accessRender(); });
+    document.getElementById("access-show-filtered")?.addEventListener("click", (e) => { e.preventDefault(); for (const p of accessVisiblePosts()) accessHidden.delete(p.id); accessRender(); });
     accessLoad().catch(e => { const t = document.getElementById("access-toast"); if (t) t.textContent = "Failed to load: " + e.message; });
   }
 
@@ -563,7 +533,6 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
       window.history[method]({}, "", url);
 
       if (nextId === "quant") bindQuantWorkbench();
-      if (nextId === "runtime") bindRuntimePanel();
       if (nextId === "access") bindAccessPanel();
     };
 

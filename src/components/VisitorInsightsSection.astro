@@ -87,6 +87,15 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
 
     <div class="visitor-insights__section" aria-label="Raw visits">
       <h3 class="visitor-insights__h2">Recent Visits (one page-open per row, 10 per page)</h3>
+      <div class="visitor-insights__toolbar" aria-label="Recent Visits filters">
+        <label class="visitor-insights__filter">
+          <span>Profile</span>
+          <select id="visit-raw-profile-filter">
+            <option value="all">All profiles</option>
+            <option value="exclude-admin">Exclude admin</option>
+          </select>
+        </label>
+      </div>
       <div class="visitor-insights__table-wrap">
         <table class="visitor-insights__table visitor-insights__table--wide" id="visit-raw">
           <thead>
@@ -193,6 +202,31 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     overflow-x: auto;
     border: 1px solid var(--border-color);
     border-radius: 8px;
+  }
+  .visitor-insights--embed .visitor-insights__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0 0 0.75rem;
+  }
+  .visitor-insights--embed .visitor-insights__filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.84rem;
+  }
+  .visitor-insights--embed .visitor-insights__filter span {
+    font-weight: 600;
+  }
+  .visitor-insights--embed .visitor-insights__filter select {
+    font: inherit;
+    min-width: 138px;
+    padding: 0.38rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+    background: var(--bg-tertiary, rgba(0, 0, 0, 0.05));
+    color: var(--text-primary, #1a1a1a);
   }
   .visitor-insights--embed .visitor-insights__table {
     width: 100%;
@@ -451,6 +485,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
 
   let rawVisits: VisitRow[] = [];
   let rawPageIndex = 1;
+  let rawProfileFilter: "all" | "exclude-admin" = "all";
   let cityRowsAll: CityAggRow[] = [];
   let cityPageIndex = 1;
   let visitLeafletMap: L.Map | null = null;
@@ -485,6 +520,19 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+  function resolveVisitProfile(ip: string): string {
+    return String(ipProfileNotes[ip] || "").trim();
+  }
+
+  function isAdminProfile(value: string): boolean {
+    return value.trim().toLowerCase() === "admin";
+  }
+
+  function getFilteredRawVisits(): VisitRow[] {
+    if (rawProfileFilter !== "exclude-admin") return rawVisits;
+    return rawVisits.filter((row) => !isAdminProfile(resolveVisitProfile(row.ip)));
   }
 
   /** 表格/气泡内：国旗 SVG + 国名；无 ISO 时仅文字 */
@@ -645,7 +693,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
   }
 
   function renderRawVisitPage(): void {
-    const list = rawVisits;
+    const list = getFilteredRawVisits();
     const total = list.length;
     const totalPages = Math.max(1, Math.ceil(total / RAW_PER_PAGE) || 1);
     rawPageIndex = Math.min(Math.max(1, rawPageIndex), totalPages);
@@ -656,7 +704,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     const rawTbody = document.querySelector("#visit-raw tbody");
     if (rawTbody) {
       if (total === 0) {
-        rawTbody.innerHTML = `<tr><td colspan="10">No records</td></tr>`;
+        rawTbody.innerHTML = `<tr><td colspan="10">${rawProfileFilter === "exclude-admin" ? "No non-admin records" : "No records"}</td></tr>`;
       } else {
         rawTbody.innerHTML = slice
           .map((r) => {
@@ -664,9 +712,10 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
             const label = pair.en || r.city || r.region || "—";
             const client = parseClientDisplay(r.user_agent);
             const route = String(r.page_path || "—").trim() || "—";
+            const profile = resolveVisitProfile(r.ip) || "—";
             return `<tr><td>${escapeHtml(fmtTime(r.created_at))}</td><td>${client.osCell}</td><td>${client.browserCell}</td><td>${client.deviceCell}</td><td><code>${escapeHtml(
               r.ip
-            )}</code></td><td>${escapeHtml(ipProfileNotes[r.ip] || "—")}</td><td>${countryCell(r.country, r.country_code)}</td><td>${escapeHtml(
+            )}</code></td><td>${escapeHtml(profile)}</td><td>${countryCell(r.country, r.country_code)}</td><td>${escapeHtml(
               label
             )}</td><td>${escapeHtml(
               r.region || "—"
@@ -697,7 +746,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     const t = (e.target as HTMLElement).closest("button[data-raw-pager]");
     if (!t) return;
     const dir = t.getAttribute("data-raw-pager");
-    const total = rawVisits.length;
+    const total = getFilteredRawVisits().length;
     const totalPages = Math.max(1, Math.ceil(total / RAW_PER_PAGE) || 1);
     if (dir === "prev" && rawPageIndex > 1) {
       rawPageIndex -= 1;
@@ -706,6 +755,14 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
       rawPageIndex += 1;
       renderRawVisitPage();
     }
+  }
+
+  function onRawProfileFilterChange(e: Event): void {
+    const target = e.target as HTMLSelectElement | null;
+    if (!target) return;
+    rawProfileFilter = target.value === "exclude-admin" ? "exclude-admin" : "all";
+    rawPageIndex = 1;
+    renderRawVisitPage();
   }
 
   function renderCityPage(): void {
@@ -924,6 +981,14 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
     rawVisits = list;
     rawPageIndex = 1;
     renderRawVisitPage();
+    const rawProfileFilterSelect = document.getElementById("visit-raw-profile-filter") as HTMLSelectElement | null;
+    if (rawProfileFilterSelect && rawProfileFilterSelect.dataset.bound !== "1") {
+      rawProfileFilterSelect.dataset.bound = "1";
+      rawProfileFilterSelect.addEventListener("change", onRawProfileFilterChange);
+    }
+    if (rawProfileFilterSelect) {
+      rawProfileFilterSelect.value = rawProfileFilter;
+    }
     const pagerHost = document.getElementById("visit-raw-pager");
     if (pagerHost && !pagerHost.dataset.pagerBound) {
       pagerHost.dataset.pagerBound = "1";

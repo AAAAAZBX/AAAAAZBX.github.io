@@ -11,3 +11,4 @@ quant
 quant_backend
 *.parquet
 src/content-visibility.json
+content-visibility.local.json

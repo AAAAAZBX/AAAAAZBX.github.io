@@ -4,6 +4,8 @@ import { getCollectionKeys } from '../../lib/content-posts';
 import { readHiddenPostIds } from '../../lib/content-visibility';
 import { resolvePostId } from '../../lib/post-id';
 
+export const prerender = false;
+
 export const GET: APIRoute = async () => {
   try {
     const hidden = await readHiddenPostIds();

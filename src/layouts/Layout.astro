@@ -464,21 +464,40 @@ const baseUrl = import.meta.env.BASE_URL;
       });
     </script>
 
-    <!-- Client-side visibility filter: reads hidden IDs from Supabase and hides posts -->
-    <script is:inline define:vars={{ supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL, supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
+    <!-- Client-side visibility filter: reads hidden IDs from the local API first, then Supabase, and hides posts -->
+    <script is:inline define:vars={{ visibilityEndpoint: `${baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`}api/visibility`, supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL, supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
       (function () {
+        var apiUrl = visibilityEndpoint;
         var url = supabaseUrl;
         var key = supabaseAnonKey;
-        if (!url || !key) return;
-        try {
-          fetch(url + "/rest/v1/content_visibility?select=hidden_posts&id=eq.1", {
-            headers: { apikey: key, Authorization: "Bearer " + key }
-          })
+        var requests = [
+          fetch(apiUrl, { cache: 'no-store' })
             .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-            .then(function (rows) {
-              var hidden = (Array.isArray(rows) && rows[0] && Array.isArray(rows[0].hidden_posts))
-                ? rows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })
+            .then(function (payload) {
+              return Array.isArray(payload && payload.hidden)
+                ? payload.hidden.map(function (s) { return String(s).trim().toLowerCase(); })
                 : [];
+            })
+            .catch(function () { return []; })
+        ];
+        if (url && key) {
+          requests.push(
+            fetch(url + "/rest/v1/content_visibility?select=hidden_posts&id=eq.1", {
+              headers: { apikey: key, Authorization: "Bearer " + key }
+            })
+              .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+              .then(function (rows) {
+                return (Array.isArray(rows) && rows[0] && Array.isArray(rows[0].hidden_posts))
+                  ? rows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })
+                  : [];
+              })
+              .catch(function () { return []; })
+          );
+        }
+        try {
+          Promise.all(requests)
+            .then(function (sources) {
+              var hidden = Array.from(new Set([].concat.apply([], sources)));
               var homeFeed = document.querySelector('.home-feed[data-home-runtime-endpoint]');
               if (hidden.length) {
                 hidden.forEach(function (id) {
@@ -503,7 +522,7 @@ const baseUrl = import.meta.env.BASE_URL;
                 if (allHidden) sections[i].style.display = 'none';
               }
             })
-            .catch(function () { /* Supabase unreachable, skip client-side filter */ });
+            .catch(function () { /* Visibility sources unreachable, skip client-side filter */ });
         } catch (_) {}
       })();
     </script>

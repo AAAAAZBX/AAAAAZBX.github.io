@@ -156,6 +156,7 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
               data-home-total-pages={totalPages}
               data-home-posts-per-page={HOME_POSTS_PER_PAGE}
               data-home-runtime-endpoint={baseJoin("home-posts.json")}
+              data-home-visibility-endpoint={baseJoin("api/visibility")}
               data-home-supabase-url={import.meta.env.PUBLIC_SUPABASE_URL ?? ""}
               data-home-supabase-key={import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? ""}
               data-home-base-url={baseUrl}
@@ -374,6 +375,39 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
       current.replaceWith(replacement);
     }
 
+    function fetchHiddenIds(feed, supabaseUrl, supabaseKey) {
+      var apiUrl = feed.getAttribute('data-home-visibility-endpoint') || '/api/visibility';
+      var requests = [
+        fetch(apiUrl, { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          .then(function (payload) {
+            return Array.isArray(payload && payload.hidden)
+              ? payload.hidden.map(function (s) { return String(s).trim().toLowerCase(); })
+              : [];
+          })
+          .catch(function () { return []; })
+      ];
+
+      requests.push(
+        (supabaseUrl && supabaseKey)
+          ? fetch(supabaseUrl + '/rest/v1/content_visibility?select=hidden_posts&id=eq.1', {
+              headers: { apikey: supabaseKey, Authorization: 'Bearer ' + supabaseKey }
+            })
+              .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+              .then(function (rows) {
+                return (Array.isArray(rows) && rows[0] && Array.isArray(rows[0].hidden_posts))
+                  ? rows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })
+                  : [];
+              })
+              .catch(function () { return []; })
+          : Promise.resolve([])
+      );
+
+      return Promise.all(requests).then(function (sources) {
+        return Array.from(new Set([].concat.apply([], sources)));
+      });
+    }
+
     function renderRuntimeHome() {
       var feed = document.querySelector('.home-feed[data-home-runtime-endpoint]');
       if (!feed) return;
@@ -392,18 +426,11 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
 
       Promise.all([
         fetch(endpoint).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
-        (supabaseUrl && supabaseKey)
-          ? fetch(supabaseUrl + '/rest/v1/content_visibility?select=hidden_posts&id=eq.1', {
-              headers: { apikey: supabaseKey, Authorization: 'Bearer ' + supabaseKey }
-            }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-          : Promise.resolve([])
+        fetchHiddenIds(feed, supabaseUrl, supabaseKey)
       ]).then(function (results) {
         var catalogRows = results[0];
-        var hiddenRows = results[1];
+        var hidden = Array.isArray(results[1]) ? results[1] : [];
         var catalog = Array.isArray(catalogRows && catalogRows.posts) ? catalogRows.posts : [];
-        var hidden = (Array.isArray(hiddenRows) && hiddenRows[0] && Array.isArray(hiddenRows[0].hidden_posts))
-          ? hiddenRows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })
-          : [];
         var hiddenSet = new Set(hidden);
         var visiblePosts = catalog.filter(function (post) {
           return !hiddenSet.has(String(post.sortId || '').trim().toLowerCase());
