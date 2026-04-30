@@ -4,7 +4,10 @@ import AdminGate from "../components/AdminGate.astro";
 import SiteStatisticsSection from "../components/SiteStatisticsSection.astro";
 import VisitorInsightsSection from "../components/VisitorInsightsSection.astro";
 import AnalyticsConsole from "../components/AnalyticsConsole.astro";
-import { getMergedPosts } from "../lib/content-posts";
+import KnowledgeGraphSection from "../components/admin/KnowledgeGraphSection.astro";
+import { getMergedPosts, getAllMergedPosts } from "../lib/content-posts";
+import { readHiddenPostIds } from "../lib/content-visibility";
+import { buildKnowledgeGraph } from "../lib/knowledge-graph";
 import { countapiGetUrl, getCountapiNamespace, COUNTAPI_KEYS } from "../lib/site-stats";
 import { isVisitorLogConfigured } from "../lib/visitor-env";
 import {
@@ -14,6 +17,9 @@ import {
 } from "../lib/statistics-build";
 
 const allPosts = await getMergedPosts();
+const graphPosts = await getAllMergedPosts();
+const graphHiddenIds = await readHiddenPostIds();
+const knowledgeGraph = buildKnowledgeGraph(graphPosts, graphHiddenIds, import.meta.env.BASE_URL);
 const countNs = getCountapiNamespace();
 const { totalPosts, pieItems } = buildCollectionPieStats(allPosts);
 const perArticleViewRows = buildPerArticleViewRows(allPosts, countNs);
@@ -39,6 +45,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
         <div class="admin-pager" aria-label="Console tabs">
           <button class="admin-pager__tab is-active" type="button" data-admin-tab="statistics">Statistics</button>
           <button class="admin-pager__tab" type="button" data-admin-tab="analytics">Analytics</button>
+          <button class="admin-pager__tab" type="button" data-admin-tab="graph">Graph</button>
           <button class="admin-pager__tab" type="button" data-admin-tab="access">Access</button>
         </div>
 
@@ -74,6 +81,10 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
 
         <section class="admin-page" data-admin-page="analytics">
           <AnalyticsConsole />
+        </section>
+
+        <section class="admin-page" data-admin-page="graph">
+          <KnowledgeGraphSection payload={knowledgeGraph} baseUrl={import.meta.env.BASE_URL} />
         </section>
 
         <section class="admin-page" data-admin-page="access">
@@ -118,7 +129,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
       radial-gradient(circle at 88% 10%, rgba(50, 86, 150, 0.14), transparent 38%),
       linear-gradient(155deg, #0b1220 0%, #0f172a 45%, #101b30 100%);
     color: #d8e3f2;
-    overflow-x: auto;
+    overflow-x: hidden;
   }
   .admin-shell {
     max-width: 1760px;
@@ -250,7 +261,7 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
 </style>
 
 <script>
-  const VALID_TABS = ["statistics", "analytics", "access"];
+  const VALID_TABS = ["statistics", "analytics", "graph", "access"];
 
   let accessPosts = [];
   let accessHidden = new Set();
