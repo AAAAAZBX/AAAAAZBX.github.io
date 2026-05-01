@@ -6,6 +6,7 @@ import {
   isAmapIpSuccess,
 } from "../lib/amap-ip";
 import { getVisitBehaviorPayload } from "../lib/visit-behavior";
+import { isOwnerIp } from "../lib/visitor-env";
 import { isOperatorConsolePath, siteRelativePathname } from "../lib/site-path";
 
 const TABLE = "blog_visits";
@@ -484,6 +485,24 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
     return;
   }
 
+  /* 本机标记：以下任一条件满足即跳过入库
+     - localStorage bx_owner_skip_visit_log=1 (admin 登录时写入)
+     - sessionStorage bx_admin_unlocked_v1=1 (AdminGate 当前标签页已解锁)
+  */
+  try {
+    var _ls = typeof localStorage !== "undefined" ? localStorage.getItem("bx_owner_skip_visit_log") : null;
+    var _ss = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("bx_admin_unlocked_v1") : null;
+    console.log("[visit-log] internal check: localStorage=" + _ls + " sessionStorage=" + _ss);
+    if (_ls === "1") {
+      console.log("[visit-log] skipped by localStorage flag");
+      return;
+    }
+    if (_ss === "1") {
+      console.log("[visit-log] skipped by sessionStorage flag");
+      return;
+    }
+  } catch (_) { /* ignore */ }
+
   const siteBase = options?.siteBasePath ?? "/";
   const pagePath =
     typeof window !== "undefined" && window.location?.pathname
@@ -533,6 +552,13 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
       row = mergeGeoPreferCurrent(row, cachedByRowIp);
     }
   }
+
+  if (isOwnerIp(row.ip)) {
+    console.log("[visit-log] skipped by PUBLIC_OWNER_IP match: " + row.ip);
+    return;
+  }
+
+  console.log("[visit-log] proceeding to insert visit record, ip=" + row.ip);
 
   const behavior = getVisitBehaviorPayload({ pagePath, userAgent: row.user_agent });
 

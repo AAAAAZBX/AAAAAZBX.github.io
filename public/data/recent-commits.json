@@ -1,6 +1,41 @@
 {
   "commits": [
     {
+      "hash": "a56b1deaabad3c4e5c655a0cf51dbaac68aef51f",
+      "date": "2026-05-01 19:37:27 +0800",
+      "message": "chore: drop legacy redirect pages, expand analytics route inventory"
+    },
+    {
+      "hash": "1d28e6ba51d57d4d6a79b7706fbb6cfb263e7003",
+      "date": "2026-05-01 17:15:05 +0800",
+      "message": "feat(ui): click ▶️ to start AI summary typewriter"
+    },
+    {
+      "hash": "543c8f3ff52491f597eb47f782239ec3d35b1ef5",
+      "date": "2026-05-01 16:58:00 +0800",
+      "message": "fix(ui): typewriter reads summary from data-text, placeholder styling"
+    },
+    {
+      "hash": "97ca9106912a542127302f0d2f316c4bdc3db6c1",
+      "date": "2026-05-01 16:44:22 +0800",
+      "message": "feat: build-time article summaries and Letter-style AI block"
+    },
+    {
+      "hash": "d563299ea0cb0bca130711830bfd4f0826e03870",
+      "date": "2026-04-30 21:17:04 +0800",
+      "message": "fix(build): fetch GitHub contributions without curl"
+    },
+    {
+      "hash": "64bdd3c2ffff2de9c75c1af8903707e1fc5a85d9",
+      "date": "2026-04-30 15:20:33 +0800",
+      "message": "feat(admin): add knowledge graph console"
+    },
+    {
+      "hash": "175abdfbfae58436ced50e5baf4a9c31445db69d",
+      "date": "2026-04-30 11:39:04 +0800",
+      "message": "Improve static site security, SEO, and admin console"
+    },
+    {
       "hash": "8434ce66578475f1713bce79a54aceaf2557de3b",
       "date": "2026-04-29 15:12:07 +0800",
       "message": "fix(home): backfill homepage pagination after hiding posts"
@@ -14,42 +49,7 @@
       "hash": "6c0c65ad5c7b7e6ca9a7acb1e24b3fcfedc5c16c",
       "date": "2026-04-29 13:48:01 +0800",
       "message": "Revert to Supabase-preferred filtering, fall back to local only when Supabase is empty"
-    },
-    {
-      "hash": "89c986e2b52e47cd551ac33c00ad666608f08fde",
-      "date": "2026-04-29 11:34:28 +0800",
-      "message": "Clear hidden list and fix client-side filter to update pagination and empty categories"
-    },
-    {
-      "hash": "b4981862e1dce17d2bbe56c42ed2310ca6ab397f",
-      "date": "2026-04-29 11:13:56 +0800",
-      "message": "Merge local and Supabase hidden IDs instead of preferring Supabase alone"
-    },
-    {
-      "hash": "f87585c0c7d92b9dc0132d2cef43b4226d698e0b",
-      "date": "2026-04-29 11:01:21 +0800",
-      "message": "Remove PsiTrader article"
-    },
-    {
-      "hash": "a82f3aedd95f615fa1d81822ca658e65d0c4a330",
-      "date": "2026-04-29 10:16:55 +0800",
-      "message": "Add visibility persistence with Supabase sync and client-side filtering"
-    },
-    {
-      "hash": "9438a2ed1941a1d69375a010aa92816280e043a8",
-      "date": "2026-04-28 17:46:57 +0800",
-      "message": "Remove prerender=false from API routes to fix static build"
-    },
-    {
-      "hash": "51d92502aece2a176ad6363547ea399172786cbe",
-      "date": "2026-04-28 17:32:14 +0800",
-      "message": "Fix access panel toggle animation to be consistently smooth"
-    },
-    {
-      "hash": "0a194986875ca12b28b74ca6d8e8997e93569eaf",
-      "date": "2026-04-28 17:27:31 +0800",
-      "message": "Refine access panel with details/summary groups and smooth animation"
     }
   ],
-  "timestamp": "2026-04-30T03:35:51.755Z"
+  "timestamp": "2026-05-01T12:26:17.193Z"
 }

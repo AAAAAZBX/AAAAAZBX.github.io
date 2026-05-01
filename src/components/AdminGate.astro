@@ -131,6 +131,10 @@ const gateId = `admin-gate-${Math.random().toString(36).slice(2)}`;
     const unlock = () => root.classList.add("is-unlocked");
 
     if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      try {
+        localStorage.setItem("bx_owner_skip_visit_log", "1");
+        localStorage.setItem(SESSION_KEY, "1");
+      } catch (_) { /* ignore */ }
       unlock();
       return;
     }
@@ -141,6 +145,10 @@ const gateId = `admin-gate-${Math.random().toString(36).slice(2)}`;
       const hash = await sha256(password);
       if (hash === ADMIN_HASH) {
         sessionStorage.setItem(SESSION_KEY, "1");
+        try {
+          localStorage.setItem("bx_owner_skip_visit_log", "1");
+          localStorage.setItem(SESSION_KEY, "1");
+        } catch (_) { /* ignore */ }
         unlock();
       } else if (status) {
         status.textContent = "Wrong password.";

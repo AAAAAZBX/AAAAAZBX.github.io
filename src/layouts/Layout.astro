@@ -241,10 +241,33 @@ const ogImageAbsolute = (() => {
 
     {
       logVisitorVisits && (
-        <script>
-          import { runVisitLog } from "../scripts/visit-logger.ts";
-          void runVisitLog({ siteBasePath: import.meta.env.BASE_URL });
-        </script>
+        <>
+          <script is:inline>
+            (function() {
+              try {
+                var ls = localStorage.getItem("bx_owner_skip_visit_log");
+                var ss = sessionStorage.getItem("bx_admin_unlocked_v1");
+                window.__bx_skip_log = ls === "1" || ss === "1";
+                console.log("[visit-log] inline check: localStorage=" + ls + " sessionStorage=" + ss + " skip=" + window.__bx_skip_log);
+              } catch(_) {
+                window.__bx_skip_log = false;
+                console.log("[visit-log] inline check: error, skip=false");
+              }
+            })();
+          </script>
+          <script>
+            console.log("[visit-log] module script: __bx_skip_log=" + window.__bx_skip_log);
+            if (!window.__bx_skip_log) {
+              console.log("[visit-log] loading visit-logger module...");
+              import("../scripts/visit-logger.ts").then(function(m) {
+                console.log("[visit-log] module loaded, calling runVisitLog");
+                m.runVisitLog({ siteBasePath: import.meta.env.BASE_URL });
+              });
+            } else {
+              console.log("[visit-log] skipped: owner flag detected");
+            }
+          </script>
+        </>
       )
     }
 

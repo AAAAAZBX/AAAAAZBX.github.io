@@ -37,24 +37,65 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
     <div class="stat-dashboard__rim">
       <div class="stat-dashboard__kpi">
         <div class="stat-kpi">
-          <span class="stat-kpi__label">Days online</span>
-          <span class="stat-kpi__value" id="days-online">-</span>
+          <span class="stat-kpi__glyph stat-kpi__glyph--sky" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3.5" y="5" width="17" height="15" rx="2"></rect>
+              <path d="M8 3.5v3M16 3.5v3M3.5 10.5h17"></path>
+            </svg>
+          </span>
+          <div class="stat-kpi__body">
+            <span class="stat-kpi__label">Days online</span>
+            <span class="stat-kpi__value" id="days-online">-</span>
+          </div>
         </div>
         <div class="stat-kpi">
-          <span class="stat-kpi__label">Last update</span>
-          <span class="stat-kpi__value stat-kpi__value--text" id="last-updated">-</span>
+          <span class="stat-kpi__glyph stat-kpi__glyph--violet" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="7.5"></circle>
+              <path d="M12 8.25v4l2.75 1.5"></path>
+            </svg>
+          </span>
+          <div class="stat-kpi__body">
+            <span class="stat-kpi__label">Last update</span>
+            <span class="stat-kpi__value stat-kpi__value--text" id="last-updated">-</span>
+          </div>
         </div>
         <div class="stat-kpi">
-          <span class="stat-kpi__label">Site page views</span>
-          <span class="stat-kpi__value" id="stat-site-views">-</span>
+          <span class="stat-kpi__glyph stat-kpi__glyph--cyan" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2.25 12s3.5-6 9.75-6 9.75 6 9.75 6-3.5 6-9.75 6S2.25 12 2.25 12z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </span>
+          <div class="stat-kpi__body">
+            <span class="stat-kpi__label">Site page views</span>
+            <span class="stat-kpi__value" id="stat-site-views">-</span>
+          </div>
         </div>
         <div class="stat-kpi">
-          <span class="stat-kpi__label">Word count</span>
-          <span class="stat-kpi__value" id="total-words">-</span>
+          <span class="stat-kpi__glyph stat-kpi__glyph--emerald" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8.25 4.5h-3a1.5 1.5 0 0 0-1.5 1.5v13.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-9"></path>
+              <path d="M10.5 13.5 21 3M15 3h6v6"></path>
+            </svg>
+          </span>
+          <div class="stat-kpi__body">
+            <span class="stat-kpi__label">Word count</span>
+            <span class="stat-kpi__value" id="total-words">-</span>
+          </div>
         </div>
-        <div class="stat-kpi">
-          <span class="stat-kpi__label">Total article views</span>
-          <span class="stat-kpi__value" id="stat-article-views-sum">—</span>
+        <div class="stat-kpi stat-kpi--span">
+          <span class="stat-kpi__glyph stat-kpi__glyph--amber" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5V6a1.5 1.5 0 0 1 1.5-1.5h9L20 10v9.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5z"></path>
+              <path d="M14.25 4.5V9H19"></path>
+              <path d="M8 13h8M8 16.5h5"></path>
+            </svg>
+          </span>
+          <div class="stat-kpi__body">
+            <span class="stat-kpi__label">Total article views</span>
+            <span class="stat-kpi__value" id="stat-article-views-sum">—</span>
+          </div>
         </div>
       </div>
 
@@ -129,6 +170,7 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
     /* 与 about 页一致：数字改为站点正文 sans 字体栈 */
     --stat-number-font: var(
       --font-family-sans-serif,
+      system-ui,
       -apple-system,
       BlinkMacSystemFont,
       "Segoe UI",
@@ -136,31 +178,28 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
       "Helvetica Neue",
       Arial,
       "Noto Sans",
-      "Liberation Sans",
+      "PingFang SC",
+      "Microsoft YaHei",
       sans-serif
     );
   }
 
   .stat-scope .about-h2 {
-    font-size: 1.35rem;
+    font-size: 1.28rem;
     font-weight: 600;
     margin: 0 0 14px;
     color: var(--text-primary);
-    line-height: 1.3;
+    line-height: 1.28;
+    letter-spacing: -0.015em;
   }
 
   .stat-scope .stat-dashboard {
-    border-radius: 12px;
-    border: 1px solid color-mix(in srgb, var(--text-link) 18%, var(--border-color));
-    background: linear-gradient(
-      160deg,
-      color-mix(in srgb, var(--bg-tertiary) 88%, #0a0e14) 0%,
-      var(--bg-secondary) 45%,
-      var(--bg-tertiary) 100%
-    );
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--text-link) 22%, var(--border-color));
+    background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.04),
-      0 8px 28px rgba(0, 0, 0, 0.08);
+      inset 0 1px 0 rgba(255, 255, 255, 0.055),
+      0 12px 36px rgba(0, 0, 0, 0.1);
     overflow: hidden;
   }
 
@@ -168,47 +207,137 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
     padding: 18px 20px 22px;
   }
 
+  /* 最小列宽约等于「图标 + 间距 + 标签单行」，避免左侧窄栏里强行四列挤成竖排字 */
   .stat-scope .stat-dashboard__kpi {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px 14px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 168px), 1fr));
+    gap: 12px;
     margin-bottom: 20px;
   }
 
+  .stat-scope .stat-kpi--span {
+    grid-column: 1 / -1;
+  }
+
   .stat-scope .stat-kpi {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 10px 12px 12px;
-    background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+    border-radius: 12px;
+    padding: 12px 14px 14px;
+    background: color-mix(in srgb, var(--bg-primary) 32%, transparent);
     font-family: var(--stat-number-font);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 4px 14px rgba(0, 0, 0, 0.06);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .stat-scope .stat-kpi:hover {
+    border-color: color-mix(in srgb, var(--text-link) 35%, var(--border-color));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 8px 22px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stat-scope .stat-kpi {
+      transition: none;
+    }
+
+    .stat-scope .stat-kpi:hover {
+      transform: none;
+    }
+  }
+
+  .stat-scope .stat-kpi__glyph {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  .stat-scope .stat-kpi__glyph svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .stat-scope .stat-kpi__glyph--sky {
+    background: linear-gradient(145deg, rgba(56, 189, 248, 0.35), rgba(14, 165, 233, 0.14));
+  }
+
+  .stat-scope .stat-kpi__glyph--violet {
+    background: linear-gradient(145deg, rgba(167, 139, 250, 0.38), rgba(139, 92, 246, 0.16));
+  }
+
+  .stat-scope .stat-kpi__glyph--cyan {
+    background: linear-gradient(145deg, rgba(34, 211, 238, 0.32), rgba(6, 182, 212, 0.14));
+  }
+
+  .stat-scope .stat-kpi__glyph--emerald {
+    background: linear-gradient(145deg, rgba(52, 211, 153, 0.34), rgba(16, 185, 129, 0.14));
+  }
+
+  .stat-scope .stat-kpi__glyph--amber {
+    background: linear-gradient(145deg, rgba(251, 191, 36, 0.36), rgba(245, 158, 11, 0.14));
+  }
+
+  .stat-scope .stat-kpi__body {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
 
   .stat-scope .stat-kpi__label {
     display: block;
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.065em;
     text-transform: uppercase;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
+    color: color-mix(in srgb, var(--text-secondary) 92%, transparent);
+    line-height: 1.25;
+    word-break: normal;
+    overflow-wrap: break-word;
   }
 
   .stat-scope .stat-kpi__value {
-    font-size: 1.35rem;
+    font-size: 1.375rem;
     font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    color: color-mix(in srgb, var(--text-primary) 97%, #0f172a);
+    line-height: 1.14;
+    letter-spacing: -0.022em;
+    word-break: normal;
+    overflow-wrap: break-word;
   }
 
   .stat-scope .stat-kpi__value--text {
-    font-size: 0.88rem;
-    font-weight: 600;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.012em;
+    color: color-mix(in srgb, var(--text-primary) 88%, var(--text-secondary));
+    line-height: 1.35;
   }
 
   .stat-scope .stat-panel {
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 16px 16px 18px;
-    background: var(--bg-primary);
+    background: color-mix(in srgb, var(--bg-primary) 35%, transparent);
   }
 
   .stat-scope .stat-panel + .stat-panel {
@@ -223,11 +352,11 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
   }
 
   .stat-scope .stat-panel__title {
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.055em;
     text-transform: uppercase;
-    color: var(--text-secondary);
+    color: color-mix(in srgb, var(--text-secondary) 93%, transparent);
   }
 
   .stat-scope .stat-panel__sub {
@@ -347,18 +476,21 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
   }
 
   .stat-scope .stat-pie__center-val {
-    font-size: 1.65rem;
+    font-size: 1.62rem;
     font-weight: 800;
-    color: var(--text-primary);
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    letter-spacing: -0.03em;
+    color: color-mix(in srgb, var(--text-primary) 98%, #020617);
     line-height: 1.1;
     font-family: var(--stat-number-font);
   }
 
   .stat-scope .stat-pie__center-lbl {
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
+    font-size: 0.6375rem;
+    font-weight: 500;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
-    color: var(--text-secondary);
+    color: color-mix(in srgb, var(--text-secondary) 90%, transparent);
   }
 
   .stat-scope .stat-legend {
@@ -384,9 +516,10 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
     align-items: center;
     justify-content: flex-start;
     gap: 6px 10px;
-    font-size: 0.86rem;
+    font-size: 0.875rem;
     margin: 6px 0;
-    color: var(--text-primary);
+    color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
+    font-weight: 500;
   }
 
   .stat-scope .stat-legend__sw {
@@ -405,9 +538,11 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
   }
 
   .stat-scope .stat-legend__n {
-    font-weight: 700;
+    font-weight: 600;
     font-family: var(--stat-number-font);
-    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    color: color-mix(in srgb, var(--text-secondary) 94%, transparent);
   }
 
   .stat-scope .stat-bar-load {
@@ -434,10 +569,11 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
 
   .stat-scope .stat-rank-title {
     margin: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #f5f9ff;
-    letter-spacing: 0.01em;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--text-primary) 97%, var(--text-secondary));
+    letter-spacing: -0.01em;
+    line-height: 1.25;
   }
 
   .stat-scope .stat-rank-list {
@@ -448,25 +584,28 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
   }
 
   .stat-scope .stat-rank-item {
-    color: #d9e4f5;
+    color: color-mix(in srgb, var(--text-primary) 82%, var(--text-secondary));
     line-height: 1.45;
-    font-size: 0.85rem;
+    font-size: 0.84375rem;
+    font-weight: 400;
   }
 
   .stat-scope .stat-rank-link {
-    color: #d9e4f5;
+    color: inherit;
     text-decoration: none;
   }
 
   .stat-scope .stat-rank-link:hover {
-    color: #f8fbff;
+    color: color-mix(in srgb, var(--text-primary) 94%, var(--text-secondary));
     text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .stat-scope .stat-rank-num {
-    color: #f8fafc;
+    color: color-mix(in srgb, var(--text-primary) 96%, transparent);
     font-family: var(--stat-number-font);
     font-weight: 600;
+    font-variant-numeric: tabular-nums;
     margin-left: 4px;
   }
 
@@ -488,22 +627,24 @@ const walineServerUrl = String(import.meta.env.PUBLIC_WALINE_SERVER_URL ?? "").t
     margin: 0;
     padding: 0;
     line-height: 1.45;
-    font-size: 0.82rem;
-    color: #d9e4f5;
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--text-primary) 82%, var(--text-secondary));
+    font-weight: 400;
   }
 
   .stat-scope .stat-comment-link {
-    color: #d9e4f5;
+    color: inherit;
     text-decoration: none;
   }
 
   .stat-scope .stat-comment-link:hover {
-    color: #f8fbff;
+    color: color-mix(in srgb, var(--text-primary) 94%, var(--text-secondary));
     text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .stat-scope .stat-comment-author {
-    color: #f8fafc;
+    color: color-mix(in srgb, var(--text-primary) 96%, transparent);
     font-weight: 600;
     margin-right: 6px;
   }
