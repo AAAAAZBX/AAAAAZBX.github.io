@@ -1,6 +1,11 @@
 {
   "commits": [
     {
+      "hash": "4dd5742cbb2d66aadf1c8af359cbef4258b2ef5c",
+      "date": "2026-05-02 02:47:05 +0800",
+      "message": "feat(about): align contribution heatmap with GitHub levels and polish UI"
+    },
+    {
       "hash": "909950b913342aa4adf9902bbe637865571d2a71",
       "date": "2026-05-02 02:29:40 +0800",
       "message": "feat(about): GitHub-style contribution levels from maxDaily buckets"
@@ -44,12 +49,7 @@
       "hash": "64bdd3c2ffff2de9c75c1af8903707e1fc5a85d9",
       "date": "2026-04-30 15:20:33 +0800",
       "message": "feat(admin): add knowledge graph console"
-    },
-    {
-      "hash": "175abdfbfae58436ced50e5baf4a9c31445db69d",
-      "date": "2026-04-30 11:39:04 +0800",
-      "message": "Improve static site security, SEO, and admin console"
     }
   ],
-  "timestamp": "2026-05-01T18:40:41.562Z"
+  "timestamp": "2026-05-01T18:59:22.224Z"
 }
