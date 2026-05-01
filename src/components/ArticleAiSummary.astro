@@ -18,8 +18,8 @@ const model = "deepseek-v4";
       <div class="article-prompt-card__content">
         <b class="article-prompt-card__prompt">{promptLine}</b><br />
         <span class="article-prompt-card__model-line">
-          <b>{model}</b>: ▶️ <span id="ai-summary-body" class:list={["article-prompt-card__body", { "article-prompt-card__body--placeholder": !text }]}>
-            {text || "尚未生成摘要，运行 node scripts/generate-article-summaries.mjs"}
+          <b>{model}</b>: ▶️ <span id="ai-summary-body" data-text={text || undefined} class:list={["article-prompt-card__body", { "article-prompt-card__body--placeholder": !text }]}>
+            {text ? "" : "尚未生成摘要，运行 node scripts/generate-article-summaries.mjs"}
           </span>
         </span>
       </div>
@@ -31,10 +31,9 @@ const model = "deepseek-v4";
   (function() {
     var el = document.getElementById("ai-summary-body");
     if (!el) return;
-    var fullText = el.textContent || "";
-    // 非摘要内容（占位文字）不触发打字机效果
-    if (fullText.includes("尚未生成摘要")) return;
-    el.textContent = "";
+    var fullText = el.getAttribute("data-text") || "";
+    if (!fullText) return; // 占位文字或空内容不触发打字机
+    el.removeAttribute("data-text");
     var i = 0;
     var speed = 40;
     function type() {
@@ -93,5 +92,12 @@ const model = "deepseek-v4";
     color: #334155;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+  }
+
+  .article-prompt-card__body--placeholder {
+    white-space: normal;
+    color: #475569;
+    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-weight: 400;
   }
 </style>
