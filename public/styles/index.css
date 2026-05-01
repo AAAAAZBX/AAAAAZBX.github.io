@@ -372,14 +372,14 @@ strong {
   border-radius: 2px;
   cursor: pointer;
   transition: outline 0.1s;
-  /* GitHub 风格的边框效果 */
-  outline: 1px solid rgba(27, 31, 35, 0.06);
-  outline-offset: -1px;
+  /* GitHub 风格的细描边（略浅于 1px，观感更细） */
+  outline: 0.5px solid rgba(27, 31, 35, 0.07);
+  outline-offset: -0.5px;
 }
 
 .contribution-square:hover {
-  outline: 1px solid rgba(27, 31, 35, 0.3);
-  outline-offset: -1px;
+  outline: 0.5px solid rgba(27, 31, 35, 0.28);
+  outline-offset: -0.5px;
 }
 
 .contribution-square.empty {
@@ -405,9 +405,8 @@ strong {
   width: 11px;
   height: 11px;
   border-radius: 2px;
-  /* GitHub 风格的边框效果 */
-  outline: 1px solid rgba(27, 31, 35, 0.06);
-  outline-offset: -1px;
+  outline: 0.5px solid rgba(27, 31, 35, 0.07);
+  outline-offset: -0.5px;
 }
 
 .contributions-summary {

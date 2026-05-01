@@ -30,37 +30,35 @@ async function fetchGitHubContributions() {
     }
 
     // 解析 GitHub 贡献图数据
-    // GitHub 2024+ 新结构：
-    // - <td> 元素包含 data-date 和 id
-    // - <tool-tip> 元素包含精确贡献数，通过 for 属性关联到 td 的 id
+    // GitHub 2024+：<td> 含 data-date、id、data-level（0–4，与官网热力颜色一致）
+    // <tool-tip> 提供精确贡献数
 
+    /** @type {Map<string, { count: number, level: number | null }>} */
     const contributionsMap = new Map();
     let match;
 
-    // 步骤1: 解析所有 <td> 元素，建立 id -> date 的映射
-    const idToDateMap = new Map();
-    const tdPattern = /<td[^>]*data-date="([^"]+)"[^>]*id="([^"]+)"[^>]*>/g;
-    
-    while ((match = tdPattern.exec(htmlText)) !== null) {
-      const date = match[1];
-      const id = match[2];
-      idToDateMap.set(id, date);
-      // 初始化贡献数为 0
+    function ensureContributionEntry(date) {
       if (!contributionsMap.has(date)) {
-        contributionsMap.set(date, 0);
+        contributionsMap.set(date, { count: 0, level: null });
       }
+      return contributionsMap.get(date);
     }
 
-    // 也尝试 id 在 data-date 之前的情况
-    const tdPatternAlt = /<td[^>]*id="([^"]+)"[^>]*data-date="([^"]+)"[^>]*>/g;
-    while ((match = tdPatternAlt.exec(htmlText)) !== null) {
-      const id = match[1];
-      const date = match[2];
-      if (!idToDateMap.has(id)) {
-        idToDateMap.set(id, date);
-        if (!contributionsMap.has(date)) {
-          contributionsMap.set(date, 0);
-        }
+    const idToDateMap = new Map();
+
+    // 步骤1：扫描每个 <td ...>（属性顺序任意），取 date / id / data-level
+    const tdOpenRe = /<td\b([^>]*)>/g;
+    while ((match = tdOpenRe.exec(htmlText)) !== null) {
+      const attrs = match[1];
+      const date = /data-date="([^"]+)"/.exec(attrs)?.[1];
+      const id = /id="([^"]+)"/.exec(attrs)?.[1];
+      if (!date || !id) continue;
+      idToDateMap.set(id, date);
+      const row = ensureContributionEntry(date);
+      const levelRaw = /data-level="([^"]+)"/.exec(attrs)?.[1];
+      if (levelRaw !== undefined && levelRaw !== '') {
+        const lv = parseInt(levelRaw, 10);
+        if (Number.isFinite(lv) && lv >= 0 && lv <= 4) row.level = lv;
       }
     }
 
@@ -81,7 +79,8 @@ async function fetchGitHubContributions() {
         // 通过 id 找到对应的日期
         const date = idToDateMap.get(forId);
         if (date) {
-          contributionsMap.set(date, count);
+          const row = ensureContributionEntry(date);
+          row.count = count;
         }
       }
     }
@@ -106,13 +105,17 @@ async function fetchGitHubContributions() {
           }
         }
         
-        contributionsMap.set(date, count);
+        ensureContributionEntry(date).count = count;
       }
     }
 
-    // 转换为数组并按日期排序
+    // 转换为数组并按日期排序（附带 GitHub 官方 level，便于前端与官网同色）
     const contributions = Array.from(contributionsMap.entries())
-      .map(([date, count]) => ({ date, count }))
+      .map(([date, row]) => {
+        const o = { date, count: row.count };
+        if (row.level != null) o.level = row.level;
+        return o;
+      })
       .sort((a, b) => a.date.localeCompare(b.date));
 
     // 如果没有找到数据，尝试旧的 table 格式作为备选
@@ -137,14 +140,16 @@ async function fetchGitHubContributions() {
           }
         }
         
-        // 注意：不再使用 data-level 估算
-
-        contributionsMap.set(date, count);
+        ensureContributionEntry(date).count = count;
       }
 
       // 重新生成排序后的数组
       const fallbackContributions = Array.from(contributionsMap.entries())
-        .map(([date, count]) => ({ date, count }))
+        .map(([date, row]) => {
+          const o = { date, count: row.count };
+          if (row.level != null) o.level = row.level;
+          return o;
+        })
         .sort((a, b) => a.date.localeCompare(b.date));
 
       if (fallbackContributions.length > 0) {

@@ -112,7 +112,11 @@ const profile = {
         <section class="content-section">
           <h2 class="about-h2">Contributions</h2>
           <div class="contributions-container">
-            <div class="contributions-graph" id="contributions-graph">
+            <div
+              class="contributions-graph"
+              id="contributions-graph"
+              data-contributions-url={contributionsDataUrl}
+            >
               <!-- 贡献图将通过 JavaScript 生成 -->
             </div>
             <div class="contributions-legend">
@@ -269,7 +273,7 @@ const profile = {
   }
 </style>
 
-<script define:vars={{ contributionsDataUrl }}>
+<script>
   import {
     githubContributionFillColor,
     githubContributionLevel,
@@ -294,9 +298,15 @@ const profile = {
       }
       
       graphEl.innerHTML = '<p style="color: #666; padding: 20px;">Loading contributions...</p>';
-      
+
+      const apiUrl = (graphEl.getAttribute("data-contributions-url") || "").trim();
+      if (!apiUrl) {
+        graphEl.innerHTML =
+          '<p style="color: #666; padding: 20px;">Contributions data URL is missing.</p>';
+        return;
+      }
+
       try {
-        const apiUrl = contributionsDataUrl;
         const response = await fetch(apiUrl, {
           method: 'GET',
           headers: {
@@ -469,7 +479,7 @@ const profile = {
         }
       }
 
-      /** 与 GitHub 一致：颜色深浅相对「窗口内单日最大贡献数」四档划分（见 github-contribution-level.ts）。 */
+      /** 有 GitHub 官方 `level`（0–4）时直接用；否则按窗口内 maxDaily 估算（github-contribution-level.ts）。 */
       let maxDaily = 0;
       for (let d = 0; d < 7; d++) {
         if (!gridData[d]) continue;
@@ -502,12 +512,22 @@ const profile = {
         }
       }
 
-      // 渲染月份标签
-      monthLabels.forEach(({ week, month }) => {
+      // 月份标签：按列对齐（11px + gap 3px = 14px），相邻换月周可能落在相邻列，须推开避免重叠
+      const cellStepPx = 14;
+      const minLabelGapPx = 32;
+      const labelSlots = monthLabels.map(({ week, month }) => ({
+        month,
+        left: week * cellStepPx,
+      }));
+      for (let i = 1; i < labelSlots.length; i++) {
+        const minLeft = labelSlots[i - 1].left + minLabelGapPx;
+        if (labelSlots[i].left < minLeft) labelSlots[i].left = minLeft;
+      }
+      labelSlots.forEach(({ left, month }) => {
         const label = document.createElement('div');
         label.textContent = months[month];
         label.style.position = 'absolute';
-        label.style.left = `${week * 14}px`; // 每个方块 11px + 间距 3px = 14px
+        label.style.left = `${left}px`;
         label.style.fontSize = '0.75rem';
         label.style.color = '#666';
         label.style.height = '20px';
@@ -551,8 +571,14 @@ const profile = {
           const count = item?.count || 0;
           const date = item?.date || null;
 
-          const level = githubContributionLevel(count, maxDaily);
-          square.style.backgroundColor = githubContributionFillColor(level);
+          let fillLevel = 0;
+          const ghLevel = item?.level;
+          if (typeof ghLevel === 'number' && ghLevel >= 0 && ghLevel <= 4) {
+            fillLevel = ghLevel;
+          } else {
+            fillLevel = githubContributionLevel(count, maxDaily);
+          }
+          square.style.backgroundColor = githubContributionFillColor(fillLevel);
 
           // 设置提示
           if (date) {

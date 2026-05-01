@@ -1,6 +1,21 @@
 {
   "commits": [
     {
+      "hash": "909950b913342aa4adf9902bbe637865571d2a71",
+      "date": "2026-05-02 02:29:40 +0800",
+      "message": "feat(about): GitHub-style contribution levels from maxDaily buckets"
+    },
+    {
+      "hash": "229be95b1c7e165dee2ac57d0f05e2a6546fcb3f",
+      "date": "2026-05-02 02:02:18 +0800",
+      "message": "feat: dev local IP filtering, IPv6 Amap v5 proxy, visit purge API"
+    },
+    {
+      "hash": "8e37e78fcd07de9b5b653cbadd05162baea571af",
+      "date": "2026-05-01 20:27:41 +0800",
+      "message": "fix: skip visit logging for owner browser"
+    },
+    {
       "hash": "a56b1deaabad3c4e5c655a0cf51dbaac68aef51f",
       "date": "2026-05-01 19:37:27 +0800",
       "message": "chore: drop legacy redirect pages, expand analytics route inventory"
@@ -34,22 +49,7 @@
       "hash": "175abdfbfae58436ced50e5baf4a9c31445db69d",
       "date": "2026-04-30 11:39:04 +0800",
       "message": "Improve static site security, SEO, and admin console"
-    },
-    {
-      "hash": "8434ce66578475f1713bce79a54aceaf2557de3b",
-      "date": "2026-04-29 15:12:07 +0800",
-      "message": "fix(home): backfill homepage pagination after hiding posts"
-    },
-    {
-      "hash": "2223273aaffc43ed3748cd9438edaec2be822879",
-      "date": "2026-04-29 14:26:35 +0800",
-      "message": "fix(visibility): unify hidden post filtering"
-    },
-    {
-      "hash": "6c0c65ad5c7b7e6ca9a7acb1e24b3fcfedc5c16c",
-      "date": "2026-04-29 13:48:01 +0800",
-      "message": "Revert to Supabase-preferred filtering, fall back to local only when Supabase is empty"
     }
   ],
-  "timestamp": "2026-05-01T12:26:17.193Z"
+  "timestamp": "2026-05-01T18:40:41.562Z"
 }
