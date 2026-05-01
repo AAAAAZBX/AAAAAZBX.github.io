@@ -245,10 +245,23 @@ const ogImageAbsolute = (() => {
           <script is:inline>
             (function() {
               try {
+                // 一次性跳过：访问 ?noslog=1 自动设置 cookie + localStorage，然后清理 URL
+                var urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('noslog') === '1') {
+                  localStorage.setItem("bx_owner_skip_visit_log", "1");
+                  document.cookie = "bx_skip_log=1; path=/; max-age=" + (365*24*60*60) + "; SameSite=Lax";
+                  try {
+                    var url = new URL(window.location);
+                    url.searchParams.delete('noslog');
+                    window.history.replaceState(null, '', url);
+                  } catch (_) {}
+                }
+
                 var ls = localStorage.getItem("bx_owner_skip_visit_log");
                 var ss = sessionStorage.getItem("bx_admin_unlocked_v1");
-                window.__bx_skip_log = ls === "1" || ss === "1";
-                console.log("[visit-log] inline check: localStorage=" + ls + " sessionStorage=" + ss + " skip=" + window.__bx_skip_log);
+                var ck = document.cookie.match(/(?:^|;\s*)bx_skip_log=1/);
+                window.__bx_skip_log = ls === "1" || ss === "1" || !!ck;
+                console.log("[visit-log] inline check: localStorage=" + ls + " sessionStorage=" + ss + " cookie=" + !!ck + " skip=" + window.__bx_skip_log);
               } catch(_) {
                 window.__bx_skip_log = false;
                 console.log("[visit-log] inline check: error, skip=false");

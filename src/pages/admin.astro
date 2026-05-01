@@ -60,8 +60,9 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
               <p class="stats-console__subtitle">Landscape dashboard for content and visitor insights</p>
             </div>
             <div class="stats-console__meta">
-              <span class="stats-console__pill">Posts {totalPosts}</span>
-              <span class="stats-console__pill">Source {useSupabaseArticleStats ? "Supabase" : "CountAPI"}</span>
+              <span class="stats-console__ip-pill" id="admin-ip-pill" title="Your current public IP">
+                <span class="ip-seg ip-seg--loading">Detecting…</span>
+              </span>
             </div>
           </div>
           <div class="stats-console__grid">
@@ -201,10 +202,43 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
     text-transform: uppercase;
     opacity: 0.9;
   }
+  .stats-console__ip-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    color: #e0f2fe;
+    font-size: 0.85rem;
+    text-transform: none;
+    letter-spacing: normal;
+    opacity: 0.96;
+  }
+  .ip-seg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .ip-seg--ip {
+    font-family: "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.92rem;
+    color: #38bdf8;
+    font-weight: 600;
+  }
+  .ip-seg--city {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+  }
+  .ip-seg--country {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+  }
+  .ip-seg--loading {
+    color: #64748b;
+  }
   /* 左侧 Statistics 不要太扁（原先 0.72fr 下 KPI 四列常被压到不可用宽度） */
   .stats-console__grid {
     display: grid;
-    grid-template-columns: minmax(340px, 1fr) minmax(560px, 2fr);
+    grid-template-columns: minmax(280px, 0.75fr) minmax(560px, 2fr);
     gap: 12px;
     align-items: start;
   }
@@ -227,8 +261,9 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   .stats-console-main .stat-scope .stat-kpi {
     background: rgba(15, 23, 42, 0.52) !important;
     border: 1px solid rgba(148, 163, 184, 0.18) !important;
-    border-radius: 12px !important;
-    padding: 12px 14px 14px !important;
+    border-radius: 8px !important;
+    padding: 5px 8px 6px !important;
+    gap: 4px;
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.05),
       0 4px 16px rgba(0, 0, 0, 0.2) !important;
@@ -268,23 +303,42 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
   }
 
   /* Statistics 区块：标签偏冷灰、数字偏雪白带轻微青 tint，层次更清晰 */
+  .stats-console-main .stat-scope .stat-kpi__glyph {
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 6px !important;
+  }
+  .stats-console-main .stat-scope .stat-kpi__glyph svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  .stats-console-main .stat-scope .stat-dashboard__kpi {
+    gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  }
+  .stats-console-main .stat-scope .stat-dashboard__rim {
+    padding: 10px 12px 12px;
+  }
+  .stats-console-main .stat-scope .stat-kpi__body {
+    gap: 3px;
+  }
   .stats-console-main .stat-scope .stat-kpi__label {
     color: rgba(148, 163, 184, 0.92) !important;
     font-weight: 500;
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
   }
   .stats-console-main .stat-scope .stat-kpi__value {
     color: #f1f5f9 !important;
     font-weight: 700;
-    font-size: 1.375rem;
+    font-size: 1.25rem;
     letter-spacing: -0.028em;
     text-shadow: 0 1px 14px rgba(15, 23, 42, 0.35);
   }
   .stats-console-main .stat-scope .stat-kpi__value--text {
     color: rgba(226, 232, 240, 0.96) !important;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 0.72rem;
     letter-spacing: 0.015em;
     text-shadow: none;
   }
@@ -516,5 +570,105 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
       const current = new URL(window.location.href).searchParams.get("tab") ?? "statistics";
       activate(current, { replace: true });
     });
+  })();
+</script>
+
+<script>
+  import { mergeIpToFrontOfStorage } from "../lib/local-admin-ip";
+
+  window.__bx_mergeAdminIp = (ip: string) => mergeIpToFrontOfStorage(ip);
+</script>
+
+<script is:inline>
+  (function detectAndStoreAdminIp() {
+    const pill = document.getElementById("admin-ip-pill");
+    if (!pill) return;
+
+    const STORAGE_KEY = "bx_admin_ips";
+    const MAX_IPS = 10;
+
+    function flagImg(countryCode) {
+      if (!countryCode || countryCode.length !== 2) return "";
+      var cc = countryCode.toLowerCase();
+      return '<img src="https://flagcdn.com/' + cc + '.svg" width="24" height="16" alt="' + cc + '" style="vertical-align:middle;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,0.15)">';
+    }
+
+    function addIpToStore(ip) {
+      try {
+        if (typeof window.__bx_mergeAdminIp === "function") {
+          window.__bx_mergeAdminIp(ip);
+          return;
+        }
+        var ips = [];
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          try { ips = JSON.parse(raw); } catch (_) { ips = raw.split(",").map(function(s) { return s.trim(); }); }
+        }
+        if (!Array.isArray(ips)) ips = [];
+        ips = ips.filter(function(x) { return x && x !== ip; });
+        ips.unshift(ip);
+        if (ips.length > MAX_IPS) ips.length = MAX_IPS;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(ips));
+      } catch (_) {}
+    }
+
+    async function fetchIpInfo(url, timeout) {
+      var ctrl = new AbortController();
+      var tid = setTimeout(function() { ctrl.abort(); }, timeout);
+      try {
+        var r = await fetch(url, { mode: "cors", credentials: "omit", signal: ctrl.signal });
+        if (!r.ok) return null;
+        return await r.json();
+      } catch (_) {
+        return null;
+      } finally {
+        clearTimeout(tid);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function(ch) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[ch];
+      });
+    }
+
+    function seg(cls, content) {
+      return '<span class="ip-seg ' + cls + '">' + content + '</span>';
+    }
+
+    async function detect() {
+      var info = await fetchIpInfo("https://ipapi.co/json/", 4000);
+      if (info && info.ip && !info.error) {
+        var parts = [];
+        // IP with globe emoji
+        parts.push(seg("ip-seg--ip", "&#127758; " + escapeHtml(info.ip)));
+        // City with pin emoji
+        var loc = info.city || info.region || "";
+        if (loc) parts.push(seg("ip-seg--city", "&#128205; " + escapeHtml(loc)));
+        // Country with flag
+        var flag = flagImg(info.country_code);
+        if (info.country_name) parts.push(seg("ip-seg--country", (flag ? flag + " " : "") + escapeHtml(info.country_name)));
+        pill.innerHTML = parts.join("");
+        pill.title = "Your current public IP — auto-skip visits from this IP";
+        addIpToStore(info.ip);
+        return;
+      }
+      // Fallback: ip.sb
+      var info2 = await fetchIpInfo("https://api.ip.sb/geoip", 4000);
+      if (info2 && info2.ip) {
+        var p = [];
+        p.push(seg("ip-seg--ip", "&#127758; " + escapeHtml(info2.ip)));
+        if (info2.city) p.push(seg("ip-seg--city", "&#128205; " + escapeHtml(info2.city)));
+        var f = flagImg(info2.country_code);
+        if (info2.country) p.push(seg("ip-seg--country", (f ? f + " " : "") + escapeHtml(info2.country)));
+        pill.innerHTML = p.join("");
+        pill.title = "Your current public IP — auto-skip visits from this IP";
+        addIpToStore(info2.ip);
+        return;
+      }
+      pill.innerHTML = '<span class="ip-seg ip-seg--loading">Not detected</span>';
+    }
+
+    detect();
   })();
 </script>

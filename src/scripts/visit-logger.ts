@@ -6,6 +6,8 @@ import {
   isAmapIpSuccess,
 } from "../lib/amap-ip";
 import { getVisitBehaviorPayload } from "../lib/visit-behavior";
+import { ensurePrimedOnDevLocalhost } from "../lib/dev-local-public-ip";
+import { ipMatchesAnyStored, parseStoredAdminIps } from "../lib/local-admin-ip";
 import { isOwnerIp } from "../lib/visitor-env";
 import { isOperatorConsolePath, siteRelativePathname } from "../lib/site-path";
 
@@ -311,8 +313,10 @@ async function writeGeoCache(supabase: SupabaseClient, row: VisitRow): Promise<v
   }
 }
 
+/** 高德 v3 `/ip` 主要覆盖 IPv4；IPv6 国内地址改走 v5（同源 `/api/amap-ip-location` 代理），在 runVisitLog 末尾统一校正 */
+
 /**
- * 国内 IP 优先高德 v3；ipapi 可用时走 ipapi；不可用（超时/拦截）时用 ip.sb 按公网 IP 补地理，避免只有 IP 没有国家城市。
+ * 国内 IP 优先高德 v3（仅 IPv4）；ipapi 可用时走 ipapi；不可用（超时/拦截）时用 ip.sb 按公网 IP 补地理。
  */
 async function buildVisitRow(): Promise<VisitRow> {
   const data = await fetchIpapi();
@@ -335,7 +339,7 @@ async function buildVisitRow(): Promise<VisitRow> {
     if (fromSb) {
       const isCn = fromSb.country_code === "CN" || /中国/.test(String(fromSb.country || ""));
       const amapKey = getAmapKey();
-      if (amapKey && isCn) {
+      if (amapKey && isCn && !ip.includes(":")) {
         try {
           const a = await fetchAmapV3IpByJsonp(amapKey, ip);
           if (isAmapIpSuccess(a)) {
@@ -394,7 +398,7 @@ async function buildVisitRow(): Promise<VisitRow> {
     (base.country && /china|中国/i.test(base.country));
   const amapKey = getAmapKey();
 
-  if (!amapKey || !isCn) {
+  if (!amapKey || !isCn || data.ip.includes(":")) {
     return base;
   }
 
@@ -432,6 +436,89 @@ async function buildVisitRow(): Promise<VisitRow> {
     console.warn("[visit-log] amap fallback to ipapi", e);
     return base;
   }
+}
+
+type AmapV5ProxyOk = {
+  ok: true;
+  province: string | null;
+  city: string | null;
+  district: string | null;
+  lat: number | null;
+  lon: number | null;
+};
+
+async function fetchAmapV5GeoViaSameOrigin(
+  siteBase: string,
+  ip: string,
+): Promise<AmapV5ProxyOk | null> {
+  if (typeof window === "undefined" || !ip.includes(":")) return null;
+  const path = `${String(siteBase).replace(/\/?$/, "/")}api/amap-ip-location?ip=${encodeURIComponent(ip)}`;
+  try {
+    const href = new URL(path, window.location.origin).href;
+    const r = await fetch(href, { credentials: "same-origin" });
+    if (!r.ok) {
+      console.warn("[visit-log] amap v5 proxy http", r.status);
+      return null;
+    }
+    const j = (await r.json()) as {
+      ok?: boolean;
+      province?: string | null;
+      city?: string | null;
+      district?: string | null;
+      lat?: number | null;
+      lon?: number | null;
+      reason?: string;
+    };
+    if (!j.ok) {
+      console.warn("[visit-log] amap v5 proxy declined:", j.reason ?? "unknown");
+      return null;
+    }
+    return {
+      ok: true,
+      province: j.province ?? null,
+      city: j.city ?? null,
+      district: j.district ?? null,
+      lat: typeof j.lat === "number" ? j.lat : null,
+      lon: typeof j.lon === "number" ? j.lon : null,
+    };
+  } catch (e) {
+    console.warn("[visit-log] amap v5 proxy fetch error", e);
+    return null;
+  }
+}
+
+function visitRowPatchFromAmapV5Proxy(p: AmapV5ProxyOk): Partial<VisitRow> {
+  const cityDisplay =
+    (p.city && String(p.city).trim()) ||
+    (p.district && String(p.district).trim()) ||
+    (p.province && String(p.province).trim()) ||
+    null;
+  return {
+    city: cityDisplay,
+    region: p.province ? String(p.province).trim() || null : null,
+    country: "China",
+    country_code: "CN",
+    lat: p.lat,
+    lon: p.lon,
+  };
+}
+
+async function applyAmapV5CnIpv6Row(
+  row: VisitRow,
+  siteBase: string,
+): Promise<{ row: VisitRow; refined: boolean }> {
+  const ip = row.ip?.trim();
+  if (!ip?.includes(":")) return { row, refined: false };
+  if (!getAmapKey()) return { row, refined: false };
+  const cc = (row.country_code || "").toUpperCase();
+  const isCn = cc === "CN" || /中国/.test(String(row.country || ""));
+  if (!isCn) return { row, refined: false };
+
+  const proxied = await fetchAmapV5GeoViaSameOrigin(siteBase, ip);
+  if (!proxied) return { row, refined: false };
+
+  const patch = visitRowPatchFromAmapV5Proxy(proxied);
+  return { row: { ...row, ...patch }, refined: true };
 }
 
 const OPTIONAL_VISIT_COLS = [
@@ -492,7 +579,8 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
   try {
     var _ls = typeof localStorage !== "undefined" ? localStorage.getItem("bx_owner_skip_visit_log") : null;
     var _ss = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("bx_admin_unlocked_v1") : null;
-    console.log("[visit-log] internal check: localStorage=" + _ls + " sessionStorage=" + _ss);
+    var _ck = typeof document !== "undefined" ? document.cookie.match(/(?:^|;\s*)bx_skip_log=1/) : null;
+    console.log("[visit-log] internal check: localStorage=" + _ls + " sessionStorage=" + _ss + " cookie=" + !!_ck);
     if (_ls === "1") {
       console.log("[visit-log] skipped by localStorage flag");
       return;
@@ -501,7 +589,13 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
       console.log("[visit-log] skipped by sessionStorage flag");
       return;
     }
+    if (_ck) {
+      console.log("[visit-log] skipped by cookie");
+      return;
+    }
   } catch (_) { /* ignore */ }
+
+  await ensurePrimedOnDevLocalhost();
 
   const siteBase = options?.siteBasePath ?? "/";
   const pagePath =
@@ -553,8 +647,21 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
     }
   }
 
+  const v5Applied = await applyAmapV5CnIpv6Row(row, siteBase);
+  row = v5Applied.row;
+  const ipv6GeoRefinedWithV5 = v5Applied.refined;
+
   if (isOwnerIp(row.ip)) {
     console.log("[visit-log] skipped by PUBLIC_OWNER_IP match: " + row.ip);
+    return;
+  }
+
+  const currentIp = (row.ip || "").trim();
+  const adminIps = parseStoredAdminIps(
+    typeof localStorage !== "undefined" ? localStorage.getItem("bx_admin_ips") : null,
+  );
+  if (currentIp && !/^local-/i.test(currentIp) && ipMatchesAnyStored(currentIp, adminIps)) {
+    console.log("[visit-log] skipped by bx_admin_ips (canonical match): " + currentIp);
     return;
   }
 
@@ -580,7 +687,8 @@ export async function runVisitLog(options?: { siteBasePath?: string }): Promise<
   if (!ok) {
     return;
   }
-  if (!usedCacheGeo) {
+
+  if (!usedCacheGeo || ipv6GeoRefinedWithV5) {
     await writeGeoCache(supabase, row);
   }
 }

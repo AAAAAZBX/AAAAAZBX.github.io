@@ -1,3 +1,5 @@
+import { ipsEquivalentCanonically } from "./local-admin-ip";
+
 /** 仅当存在 URL 与 anon key 时启用前端记访问（写入 blog_visits） */
 export function isVisitorLogConfigured(): boolean {
   const u = String(import.meta.env.PUBLIC_SUPABASE_URL ?? "").trim();
@@ -15,11 +17,11 @@ export function getOwnerIps(): string[] {
     .filter(Boolean);
 }
 
-/** 检查 ip 是否匹配本机 IP 列表中的任意一个 */
+/** 检查 ip 是否匹配本机 IP 列表中的任意一个（IPv6 写法规范化后比较） */
 export function isOwnerIp(ip: string): boolean {
   if (!ip) return false;
   const ownerIps = getOwnerIps();
-  return ownerIps.length > 0 && ownerIps.includes(ip);
+  return ownerIps.some((o) => ipsEquivalentCanonically(ip, o));
 }
 
 export function getSupabaseClientConfig(): { url: string; anonKey: string } | null {

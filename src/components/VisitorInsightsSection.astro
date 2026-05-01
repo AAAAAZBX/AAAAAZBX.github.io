@@ -435,8 +435,16 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
 <script>
   import { createClient } from "@supabase/supabase-js";
   import L from "leaflet";
+  import { ensurePrimedOnDevLocalhost } from "../lib/dev-local-public-ip";
   import { formatCityPair, resolveCityBilingual } from "../lib/city-bilingual";
   import { flagImgHtml, resolveCountryAlpha2 } from "../lib/country-flag";
+  import {
+    ADMIN_IP_STORAGE_KEY,
+    ipMatchesAnyStored,
+    ipsEquivalentCanonically,
+    parseStoredAdminIps,
+  } from "../lib/local-admin-ip";
+  import { getOwnerIps } from "../lib/visitor-env";
 
   /** 与 define:vars 分离：define:vars 会把脚本打成非 module 内联 IIFE，内仍含 import → 浏览器直接语法错误，整段不执行 */
   const visitorBrandBase = import.meta.env.BASE_URL;
@@ -1223,6 +1231,7 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
 
     // Load IP profile names
     await loadIpProfileNotes(supabase);
+    await ensurePrimedOnDevLocalhost();
 
     let rows: unknown;
     let error: { message?: string } | null = null;
@@ -1271,8 +1280,39 @@ const visitorSupabaseAnon = String(import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "
 
     try {
     const rawList = (rows ?? []) as VisitRow[];
-    paintVisitorInsightsFromList(rawList, note, " 正在从 IP 缓存补齐地理信息…");
-    const list = await hydrateGeoFromCache(supabase, rawList, HYDRATE_TOTAL_BUDGET_MS);
+
+    const adminIpsSnap = parseStoredAdminIps(
+      typeof localStorage !== "undefined" ? localStorage.getItem(ADMIN_IP_STORAGE_KEY) : null,
+    );
+    const ownerEnvSnap = getOwnerIps();
+
+    function rowIsOwnVisit(row: VisitRow): boolean {
+      if (ipMatchesAnyStored(row.ip, adminIpsSnap)) return true;
+      return ownerEnvSnap.some((o) => ipsEquivalentCanonically(row.ip, o));
+    }
+
+    const ownVisitRows = rawList.filter(rowIsOwnVisit);
+    const filteredList = rawList.filter((r) => !rowIsOwnVisit(r));
+
+    if (ownVisitRows.length > 0 && import.meta.env.DEV) {
+      const ids = ownVisitRows.map((r) => r.id).filter(Boolean);
+      const purgeUrl = `${visitorBrandBase.replace(/\/?$/, "/")}api/blog-visits-delete-ids`;
+      void fetch(purgeUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            const t = await r.text().catch(() => "");
+            console.warn("[visitor-insights] purge own visits failed", r.status, t);
+          }
+        })
+        .catch((e) => console.warn("[visitor-insights] purge own visits", e));
+    }
+
+    paintVisitorInsightsFromList(filteredList, note, " 正在从 IP 缓存补齐地理信息…");
+    const list = await hydrateGeoFromCache(supabase, filteredList, HYDRATE_TOTAL_BUDGET_MS);
     paintVisitorInsightsFromList(list, note, "");
     } catch (e) {
       const err = e as Error;
