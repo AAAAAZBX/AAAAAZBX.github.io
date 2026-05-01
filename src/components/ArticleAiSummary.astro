@@ -18,7 +18,7 @@ const model = "deepseek-v4";
       <div class="article-prompt-card__content">
         <b class="article-prompt-card__prompt">{promptLine}</b><br />
         <span class="article-prompt-card__model-line">
-          <b>{model}</b>: ▶️ <span id="ai-summary-body" data-text={text || undefined} class:list={["article-prompt-card__body", { "article-prompt-card__body--placeholder": !text }]}>
+          <b>{model}</b>: <button id="ai-summary-trigger" class="article-prompt-card__trigger" aria-label="播放摘要">▶️</button><span id="ai-summary-body" data-text={text || undefined} class:list={["article-prompt-card__body", { "article-prompt-card__body--placeholder": !text }]}>
             {text ? "" : "尚未生成摘要，运行 node scripts/generate-article-summaries.mjs"}
           </span>
         </span>
@@ -34,16 +34,32 @@ const model = "deepseek-v4";
     var fullText = el.getAttribute("data-text") || "";
     if (!fullText) return; // 占位文字或空内容不触发打字机
     el.removeAttribute("data-text");
+
+    var trigger = document.getElementById("ai-summary-trigger");
     var i = 0;
     var speed = 40;
+    var done = false;
+
     function type() {
       if (i < fullText.length) {
         el.textContent += fullText.charAt(i);
         i++;
         setTimeout(type, speed);
+      } else {
+        done = true;
+        if (trigger) trigger.style.display = "none";
       }
     }
-    type();
+
+    function start() {
+      if (done || i > 0) return;
+      if (trigger) trigger.style.cursor = "default";
+      type();
+    }
+
+    if (trigger) {
+      trigger.addEventListener("click", start);
+    }
   })();
 </script>
 
@@ -84,6 +100,15 @@ const model = "deepseek-v4";
     line-height: 1.58;
     font-weight: 700;
     color: #1e293b;
+  }
+
+  .article-prompt-card__trigger {
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
   }
 
   .article-prompt-card__body {
