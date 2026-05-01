@@ -5,6 +5,7 @@ import SiteStatisticsSection from "../components/SiteStatisticsSection.astro";
 import VisitorInsightsSection from "../components/VisitorInsightsSection.astro";
 import AnalyticsConsole from "../components/AnalyticsConsole.astro";
 import KnowledgeGraphSection from "../components/admin/KnowledgeGraphSection.astro";
+import { withBase } from "../lib/base-url";
 import { getMergedPosts, getAllMergedPosts } from "../lib/content-posts";
 import { readHiddenPostIds } from "../lib/content-visibility";
 import { buildKnowledgeGraph } from "../lib/knowledge-graph";
@@ -40,7 +41,10 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
 
 <Layout title="Admin - Boxuan Zhang" overlayNav hideNav noindex lockPageDarkTheme>
   <AdminGate title="Private Console">
-    <main class="admin-main">
+    <main
+      class="admin-main"
+      style={`--admin-bg-url: url('${withBase(import.meta.env.BASE_URL, "site-profile.png")}')`}
+    >
       <section class="admin-shell">
         <div class="admin-pager" aria-label="Console tabs">
           <button class="admin-pager__tab is-active" type="button" data-admin-tab="statistics">Statistics</button>
@@ -124,10 +128,11 @@ const useSupabaseArticleStats = isVisitorLogConfigured();
     min-height: 100vh;
     width: 100%;
     padding: 16px;
-    background:
-      radial-gradient(circle at 12% 8%, rgba(48, 169, 222, 0.15), transparent 34%),
-      radial-gradient(circle at 88% 10%, rgba(50, 86, 150, 0.14), transparent 38%),
-      linear-gradient(155deg, #0b1220 0%, #0f172a 45%, #101b30 100%);
+    background-image: var(--admin-bg-url);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
     color: #d8e3f2;
     overflow-x: hidden;
   }

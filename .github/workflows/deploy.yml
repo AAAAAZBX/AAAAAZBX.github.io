@@ -37,6 +37,10 @@ jobs:
           PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
           # 可选：国内 IP 用高德，不设则只走 ipapi
           PUBLIC_AMAP_WEB_KEY: ${{ secrets.PUBLIC_AMAP_WEB_KEY }}
+          # 可选：构建时生成文章 AI 摘要（不设则 prebuild 内脚本静默跳过）
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+          ANTHROPIC_MODEL: ${{ secrets.ANTHROPIC_MODEL }}
         # 如果以后改用 pnpm / bun，可以在这里配置 package-manager
         # with:
         #   package-manager: pnpm@9

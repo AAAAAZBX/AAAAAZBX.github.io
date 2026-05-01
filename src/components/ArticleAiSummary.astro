@@ -1,0 +1,97 @@
+---
+interface Props {
+  summary: string;
+  modelLabel?: string;
+}
+
+const { summary } = Astro.props;
+const text = typeof summary === "string" ? summary.trim() : "";
+
+const promptLine = "Prompt: 请用简要概括这篇文章的主要内容与要点。";
+const model = "deepseek-v4";
+---
+
+{
+  (
+    <div class="article-prompt-card" aria-label="文章摘要">
+      <span class="article-prompt-card__emoji" aria-hidden="true">💬</span>
+      <div class="article-prompt-card__content">
+        <b class="article-prompt-card__prompt">{promptLine}</b><br />
+        <span class="article-prompt-card__model-line">
+          <b>{model}</b>: ▶️ <span id="ai-summary-body" class:list={["article-prompt-card__body", { "article-prompt-card__body--placeholder": !text }]}>
+            {text || "尚未生成摘要，运行 node scripts/generate-article-summaries.mjs"}
+          </span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  (function() {
+    var el = document.getElementById("ai-summary-body");
+    if (!el) return;
+    var fullText = el.textContent || "";
+    // 非摘要内容（占位文字）不触发打字机效果
+    if (fullText.includes("尚未生成摘要")) return;
+    el.textContent = "";
+    var i = 0;
+    var speed = 40;
+    function type() {
+      if (i < fullText.length) {
+        el.textContent += fullText.charAt(i);
+        i++;
+        setTimeout(type, speed);
+      }
+    }
+    type();
+  })();
+</script>
+
+<style>
+  .article-prompt-card {
+    margin: 0 0 1.75rem;
+    padding: 16px;
+    background: #faf5ff;
+    border-radius: 12px;
+    color: #334155;
+    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    border: 1px solid #d8b4fe;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* clearfix for float */
+  }
+
+  .article-prompt-card__emoji {
+    float: left;
+    font-size: 2.25rem;
+    line-height: 1;
+    margin-right: 0.75rem;
+    margin-top: 0.125rem;
+  }
+
+  .article-prompt-card__content {
+    font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", serif;
+  }
+
+  .article-prompt-card__prompt {
+    font-size: 0.98rem;
+    line-height: 1.55;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .article-prompt-card__model-line {
+    font-size: 0.98rem;
+    line-height: 1.58;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .article-prompt-card__body {
+    margin: 0;
+    font-weight: 400;
+    color: #334155;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+</style>

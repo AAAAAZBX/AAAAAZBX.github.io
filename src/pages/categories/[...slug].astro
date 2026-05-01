@@ -5,6 +5,8 @@ import FluidArticleBoard from "../../components/FluidArticleBoard.astro";
 import FluidToc from "../../components/FluidToc.astro";
 import WalineComment from "../../components/WalineComment.astro";
 import FluidArticleHero from "../../components/FluidArticleHero.astro";
+import ArticleAiSummary from "../../components/ArticleAiSummary.astro";
+import articleSummaries from "../../generated/article-summaries.json";
 import {
   DEFAULT_SITE_AUTHOR,
   estimateReadingUnits,
@@ -79,6 +81,12 @@ const countArticlePageHitUrl = useSupabaseForArticleViews
 const metaDesc =
   post.data.description?.trim() || buildPostExcerpt(post.body ?? "", 200);
 const ogHero = post.data.heroImage?.trim();
+
+const summaryKey = `${collection}:${id}`;
+type SummaryStore = { items?: Record<string, { summaryZh?: string }> };
+const store = articleSummaries as SummaryStore;
+const aiSummaryZh = String(store.items?.[summaryKey]?.summaryZh ?? "").trim();
+const aiModelLabel = "deepseek-v4";
 ---
 
 <Layout
@@ -100,6 +108,7 @@ const ogHero = post.data.heroImage?.trim();
   <main id="article-main" class="fluid-article-page-main">
     <FluidArticleBoard seoTitle={post.data.title}>
       <FluidToc slot="toc" />
+      <ArticleAiSummary slot="lead" summary={aiSummaryZh} modelLabel={aiModelLabel} />
       <Content />
       <div
         slot="after"

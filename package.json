@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "content:admin": "node scripts/content-admin.js",
-    "prebuild": "node scripts/get-recent-commits.js && node scripts/get-github-contributions.js",
+    "prebuild": "node scripts/get-recent-commits.js && node scripts/get-github-contributions.js && node scripts/generate-article-summaries.mjs",
     "build": "astro build && node scripts/prune-dist-for-pages.js && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro"

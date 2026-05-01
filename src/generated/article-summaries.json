@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-01T08:38:46.165Z",
+  "items": {
+    "Algorithms:competition/2026杭电春季联赛-第二场": {
+      "title": "2026“钉耙编程”中国大学生算法设计春季联赛 - 第二场",
+      "summaryZh": "提供的正文节选仅有“ongoing”一词，未包含任何具体的比赛描述、赛况或要点信息，因此无法从中概括出该篇报道的主要内容与实质内容。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "057e768040b13ed11a6db8d5c4112928e15ebe0767e54db781e6866ccb446fc9",
+      "updatedAt": "2026-05-01T08:34:36.844Z"
+    },
+    "Algorithms:competition/2026杭电春季联赛-第三场": {
+      "title": "2026“钉耙编程”中国大学生算法设计春季联赛 - 第三场",
+      "summaryZh": "该节选来自2026年“钉耙编程”中国大学生算法设计春季联赛第三场的赛事信息。文中只出现了一道编号为1001、题名为“河城杂货”的题目。该题目的状态标注为“ongoing”，表明其在当前阶段仍处于进行中或尚未结束。除此之外，节选未提供题目描述、解题要求或其他更多细节。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "396c396f612a425e87e87eb29b28bb8ad9b40aaea04025609cbf7764792e4f91",
+      "updatedAt": "2026-05-01T08:34:47.602Z"
+    },
+    "Algorithms:competition/2026杭电春季联赛-第一场": {
+      "title": "2026“钉耙编程”中国大学生算法设计春季联赛 - 第一场",
+      "summaryZh": "抱歉，您提供的正文节选内容为空，无法进行概括。请补充文章正文，以便我按要求总结。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "021003a5af189f6d21da7e8d6b79edc62357a8c3549b3699458c4443819cd31e",
+      "updatedAt": "2026-05-01T08:35:02.265Z"
+    },
+    "Algorithms:competition/2026杭电春季联赛-热身赛": {
+      "title": "2026“钉耙编程”中国大学生算法设计春季联赛 - 热身赛",
+      "summaryZh": "这次热身赛的题解涵盖了数论、数据结构与模拟等多类问题。第一道通过因子遍历求最大公约数。第二题利用集合映射和启发式合并处理大量数字的批量变更，以减小空间占用与操作开销。第三题借助网格图形观察，推导出最少初始长草数量的简洁公式。第四题注意到质数跨度限制，通过预处理与ST表二分跳跃来寻找最大幸运值。最后一题将等差数列判定转化为维护相邻“1”位置差值的连续段，并使用线段树合并区间信息并支持区间赋值操作。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "837a73eaeecc9d133fca8a6f073fbd35be0b101032236e7df9badce858d377a7",
+      "updatedAt": "2026-05-01T08:35:24.643Z"
+    },
+    "Algorithms:knowledge/matrix": {
+      "title": "矩阵相关算法总结",
+      "summaryZh": "文章节选总结了矩阵乘法和线性基两类算法的应用。矩阵乘法部分，从斐波那契平方的线性递推出发，推导出转移矩阵，进而用线段树维护区间矩阵乘积以支持单点修改与区间查询。另一题得到相同递推式，并引入光速幂预处理优化大量矩阵幂运算。线性基部分，通过熄灯问题展示用高斯消元求解异或方程组的方法，又借助线性基维护前缀异或和来实现子段异或和不为零的最大划分。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "72b159a4cad2727e6d451b5d1d4fa8a9df56cd245f0d71dac87e50ac679f54c1",
+      "updatedAt": "2026-05-01T08:35:42.575Z"
+    },
+    "Algorithms:knowledge/segmenttree": {
+      "title": "Codeforces Edu学习 (ITMO Academy: pilot course) SegmentTree part 1-2 全",
+      "summaryZh": "本文是作者学习Codeforces EDU线段树专题Part 1的个人复习笔记，记录了从2023年9月到2025年6月断断续续完成全部题目并AK的过程。内容涵盖三个步骤：步骤一实现线段树维护区间和、最小值及最小值个数；步骤二进阶到最大子段和以及线段树上的二分查找，用于定位第k个1或第一个不小于给定值的元素；步骤三则利用线段树处理排列的逆序对问题，包括计算逆序个数和根据逆序数组恢复原排列。每道题均附有题意说明和完整的C++代码实现，展示了线段树从基础区间操作到复杂查询与应用的递进。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "00496d4ae91d8d9b31fa7ea5533cdadc3ef0d7f3331d61ba15f1d7c33fdf2152",
+      "updatedAt": "2026-05-01T08:36:02.623Z"
+    },
+    "Life Moments:2026-icpc-invitational-shenzhen": {
+      "title": "2026年ICPC深圳邀请赛游记",
+      "summaryZh": "作者记录了参加2026年ICPC深圳邀请赛的行程。首日抵达环境优美的港中深领取物资，次日比赛获铜首，赛后与队友吃潮汕牛肉火锅。第三天逛了校内食堂、华强北电子市场和前海石公园，晚上改毕设并写游记。最后一日赴香港游览香港大学、坚尼地城等地，因电话卡问题未能办理银行卡，仅在市区观光。整体感受到深圳侧重科技，香港侧重金融但科技和通信信号相对落后。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "0561032b8dfb99ed37230dd9d81cdb2b33d82c85a7359c46933126ba4ef8d78b",
+      "updatedAt": "2026-05-01T08:36:15.204Z"
+    },
+    "Life Moments:保研经验贴": {
+      "title": "2025年（26届）211计算机保研回忆录（北航SE，北航CS，南软，厦大ASC，东南PALM）",
+      "summaryZh": "一位末流211背景、成绩前5%、竞赛经历丰富但科研较弱的计算机专业学生，最终保研至南京大学软件学院。作者详细记录了其在夏令营与预推免阶段大量被拒、少数入营的申请历程，其中夏令营竞争尤为激烈。文章核心分享了实用的保研准备经验，包括材料清单、套磁信写法（强调正文直接可读、标题突出亮点）、以及如何通过公开信息自行定位而非依赖付费服务。作者重点描述了北航软院、北航计院、南大软院等院校的机试与面试细节，指出不同学校对编程语言和考察重点的差异，并强调机试需扎实刷题。最后总结了多条关键心得，如科研经历重要性上升、弱com院校必须提前联系导师、以及信息获取与材料细节的重要性。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "e71fb1ef69c343ab03f38443c6eab8657f44da736db6e5b228418ded8e79878a",
+      "updatedAt": "2026-05-01T08:36:31.563Z"
+    },
+    "LLM:neural-networks-zero-to-hero---andrej-karpathy/makemore": {
+      "title": "构建语言模型（building makemore）",
+      "summaryZh": "您提供的内容中，“正文节选”部分为空，没有可供总结的文章内容。请补充完整的正文节选，以便我按要求进行概括。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "22069b7273cc17b4364323452554ed25d8ce5da0eb2fb4dfddd7334ba55aedd8",
+      "updatedAt": "2026-05-01T08:36:39.921Z"
+    },
+    "LLM:neural-networks-zero-to-hero---andrej-karpathy/mytorch": {
+      "title": "从零实现myTorch（building micrograd）",
+      "summaryZh": "本项目实现了一个模仿PyTorch的自动梯度引擎，核心是构建能记录运算关系与计算图的Tensor数据结构。通过重载运算符，每次运算都会保存子节点和操作类型，并定义局部梯度回传函数，利用链式法则按拓扑逆序累积梯度实现反向传播。文章从数值扰动实验引出偏导概念，逐步加入加法、乘法、ReLU等操作，演示如何构建简单神经元并可视化计算图。最后以tanh激活函数为例，对比直接求导与拆分为基本运算两种方式得到的梯度结果一致，验证了自动梯度实现的正确性。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "a475ada932406b169fd81c46d19528dfedf4258e9616d580ec189369ab38a035",
+      "updatedAt": "2026-05-01T08:36:49.428Z"
+    },
+    "LLM:pytorch/pytorch搭建神经网络": {
+      "title": "神经网络的搭建——torch.nn",
+      "summaryZh": "文章介绍了PyTorch中搭建神经网络的基础模块：所有网络需继承nn.Module父类并实现初始化和前向传播。torch.nn.functional提供了卷积操作conv2d，需指定输入、卷积核、步长和填充等参数。nn.Conv2d可直接构建卷积层，示例显示对CIFAR10数据集卷积后尺寸变化。最大池化层MaxPool2d通过保留局部最大值来降维提效，ceil_mode控制边缘处理，池化后图像变模糊。非线性激活层如ReLU和Sigmoid引入非线性，ReLU的inplace参数决定是否直接修改输入。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "2a2cbd072355a03dfe1611e87ea49d6f094e9fe538c12cd8aaf258f2977a5934",
+      "updatedAt": "2026-05-01T08:37:03.631Z"
+    },
+    "LLM:pytorch/pytorch模型训练套路总结": {
+      "title": "PyTorch模型训练套路总结",
+      "summaryZh": "文章介绍了使用PyTorch训练模型的标准化流程，包括加载CIFAR10数据集、利用DataLoader分批读取、定义卷积神经网络、设置交叉熵损失和SGD优化器。训练阶段在循环中逐批计算损失并反向传播更新参数，每轮结束后在测试集上评估整体损失，并通过argmax比较预测与目标计算分类正确率。同时利用TensorBoard记录训练损失、测试损失和准确率等指标，并在每轮保存模型。此外，说明了将模型、数据和损失函数调用`.cuda()`迁移至GPU以加速训练的方法，最后给出了完整的`model.py`与`train.py`代码示例。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "a6e940e3c0d2be30bc3739f4fff6b7ee8585137fefa6b6a3ff528a7d201c1a61",
+      "updatedAt": "2026-05-01T08:37:40.648Z"
+    },
+    "LLM:pytorch/pytorch学习笔记": {
+      "title": "PyTorch入门",
+      "summaryZh": "本节选介绍了三种Python代码运行方式：PyCharm文件（整体运行，适合大型项目但需从头运行）、Python控制台（按行运行，方便查看变量但不利阅读修改）与Jupyter notebook（可切分代码块，利于阅读但需预先配置）。接着讲解了PyTorch中Dataset类的作用——提供获取每个数据及其标签的方法与数据集大小，以及Dataloader用于输出不同数据形式。通过代码实战演示了继承Dataset自定义数据集类，需重写`__init__`、`__getitem__`和`__len__`方法，并将多个类别的图片数据集合并为一个训练集。最后介绍了Tensorboard可视化工具中的SummaryWriter类，它负责将标量、音频等数据异步写入事件文件，供TensorBoard读取展示，并给出了其初始化参数与使用示例。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "da93ba42244b59a42222f0211c43cf46e37c3e5692c71c1c2fade82ba9f25280",
+      "updatedAt": "2026-05-01T08:37:54.973Z"
+    },
+    "Math:stochastic-processes/随机过程第二章": {
+      "title": "《随机过程》第二章-马尔科夫链（Markov chain）",
+      "summaryZh": "本文介绍了离散时间、有限状态空间的马尔科夫链，其核心是马氏性（将来只与现在有关，与过去无关）与时齐性（转移概率恒定）。转移概率非负且每行和为1，构成转移矩阵；通过赌徒破产、埃伦费斯特链和库存链等实例展示了吸收态与各类转移矩阵的构造。多步转移概率由转移矩阵的幂及查普曼‑柯尔莫哥洛夫方程给出，可用于分析极限稳态，如赌徒吸收概率。为进行瞬态与稳态分析，需对状态分类，并定义首次返回时间等停时。文章最后指出停时具有强马氏性，即停时后的演化等同于从该状态重新出发的马氏链。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "e4daf09c71c1e694e5171209b2d684fa58acfd44f0e94cf132b23f2d1ffb8285",
+      "updatedAt": "2026-05-01T08:38:24.358Z"
+    },
+    "Math:stochastic-processes/随机过程第一章": {
+      "title": "《随机过程》第一章-基础概念",
+      "summaryZh": "本文介绍了概率论与随机过程的基础概念。首先定义了试验、样本空间与概率空间，明确了事件作为σ-代数的性质以及概率满足非负、完备和可列可加性的公理，并给出了条件概率与全概率、贝叶斯等公式。在此基础上，引入随机变量及其分布函数，进而定义了随机过程，即参数集上的一族随机变量，并说明了样本轨道、状态空间等概念。文中还分析了离散与连续型随机变量的期望计算、独立变量之和的卷积公式，以及用于求矩的概率母函数和矩母函数，最后指出特征函数能克服矩母函数不收敛的局限。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "800d264e20283d7a0eea8ef2e2fdf6f514962258a1b99a0f928658a5cf68ccd9",
+      "updatedAt": "2026-05-01T08:38:38.375Z"
+    },
+    "Tools:linux相关语法": {
+      "title": "Linux相关语法",
+      "summaryZh": "该文章系统介绍了Linux环境下常用的命令行操作与开发工具。首先讲解文件管理命令（如ls、cd、cp、rm等）以及终端复用工具tmux的分屏与会话管理。接着详述了vim文本编辑器的三种模式与常用操作，并补充了异常处理方法。然后介绍了Shell脚本基础语法，包括变量、注释、字符串操作、运行方式等。此外，还说明了SSH远程登录与scp文件传输的配置技巧、Git版本控制的基本工作流与常用命令，以及管道、环境变量等系统概念。最后简要提及了Thrift框架的用途，整体内容面向开发者基础操作。",
+      "model": "DeepSeek-V4-pro",
+      "contentSha256": "666bef31ea7babc6b658fb3aaed351e6782aa403208d9738effa20aefb88a5fe",
+      "updatedAt": "2026-05-01T08:38:46.165Z"
+    }
+  }
+}
