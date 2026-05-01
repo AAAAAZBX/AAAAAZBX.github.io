@@ -127,14 +127,22 @@
       </thead>
       <tbody>
         <tr><td><code>/</code></td><td>Home</td><td><span class="route-badge route-badge--public">public</span></td><td>首页</td></tr>
-        <tr><td><code>/about</code></td><td>About</td><td><span class="route-badge route-badge--public">public</span></td><td>关于</td></tr>
-        <tr><td><code>/archives</code></td><td>Archives</td><td><span class="route-badge route-badge--public">public</span></td><td>归档</td></tr>
-        <tr><td><code>/admin</code></td><td>Admin</td><td><span class="route-badge route-badge--protected">protected</span></td><td>管理后台 (需密码)</td></tr>
-        <tr><td><code>/statistics</code></td><td>Statistics</td><td><span class="route-badge route-badge--protected">protected</span></td><td>统计 (需密码)</td></tr>
-        <tr><td><code>/analytics</code></td><td>Analytics</td><td><span class="route-badge route-badge--protected">protected</span></td><td>分析 (需密码)</td></tr>
-        <tr><td><code>/ai</code></td><td>AI Redirect</td><td><span class="route-badge route-badge--redirect">redirect</span></td><td>重定向到 /admin?tab=quant</td></tr>
-        <tr><td><code>/fintech</code></td><td>FinTech Redirect</td><td><span class="route-badge route-badge--redirect">redirect</span></td><td>重定向到 /admin?tab=quant</td></tr>
-        <tr><td><code>/quant</code></td><td>Quant Redirect</td><td><span class="route-badge route-badge--redirect">redirect</span></td><td>重定向到 /admin?tab=quant</td></tr>
+        <tr><td><code>/about</code></td><td>About</td><td><span class="route-badge route-badge--public">public</span></td><td>关于页</td></tr>
+        <tr><td><code>/archives</code></td><td>Archives</td><td><span class="route-badge route-badge--public">public</span></td><td>归档列表</td></tr>
+        <tr><td><code>/categories</code></td><td>Categories</td><td><span class="route-badge route-badge--public">public</span></td><td>分类列表</td></tr>
+        <tr><td><code>/categories/[...slug]</code></td><td>Category Post</td><td><span class="route-badge route-badge--public">public</span></td><td>分类文章页 (SSG)</td></tr>
+        <tr><td><code>/tags</code></td><td>Tags</td><td><span class="route-badge route-badge--public">public</span></td><td>标签列表</td></tr>
+        <tr><td><code>/tags/[tag]</code></td><td>Tag Posts</td><td><span class="route-badge route-badge--public">public</span></td><td>标签文章页 (SSG)</td></tr>
+        <tr><td><code>/search</code></td><td>Search</td><td><span class="route-badge route-badge--public">public</span></td><td>Pagefind 全文搜索</td></tr>
+        <tr><td><code>/page/[page]</code></td><td>Pagination</td><td><span class="route-badge route-badge--public">public</span></td><td>首页分页 (SSG)</td></tr>
+        <tr><td><code>/rss.xml</code></td><td>RSS Feed</td><td><span class="route-badge route-badge--public">public</span></td><td>RSS 订阅源</td></tr>
+        <tr><td><code>/admin</code></td><td>Admin</td><td><span class="route-badge route-badge--protected">protected</span></td><td>管理后台 (需密码, tabs: statistics/analytics/graph/access)</td></tr>
+        <tr><td><code>/api/posts</code></td><td>API: Posts</td><td><span class="route-badge route-badge--protected">protected</span></td><td>文章列表 API</td></tr>
+        <tr><td><code>/api/visibility</code></td><td>API: Visibility</td><td><span class="route-badge route-badge--protected">protected</span></td><td>可见性管理 API</td></tr>
+        <tr><td><code>/api/ai-summary</code></td><td>API: AI Summary</td><td><span class="route-badge route-badge--protected">protected</span></td><td>AI 摘要生成 API</td></tr>
+        <tr><td><code>/api/github-contributions</code></td><td>API: GitHub</td><td><span class="route-badge route-badge--protected">protected</span></td><td>GitHub 贡献数据代理</td></tr>
+        <tr><td><code>/api/waline-webhook</code></td><td>API: Waline</td><td><span class="route-badge route-badge--public">public</span></td><td>Waline 评论 Webhook</td></tr>
+        <tr><td><code>/home-posts.json</code></td><td>Home Posts JSON</td><td><span class="route-badge route-badge--public">public</span></td><td>首页文章数据 JSON</td></tr>
       </tbody>
     </table>
   </section>
