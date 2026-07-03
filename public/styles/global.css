@@ -1972,7 +1972,7 @@ main.fluid-board-page .home-pagination-link {
   color: var(--text-link);
   text-decoration: none;
   border: 1px solid var(--fluid-line-color);
-  border-radius: 6px;
+  border-radius: 999px;
   background: var(--bg-secondary);
   transition:
     border-color 0.15s ease,
