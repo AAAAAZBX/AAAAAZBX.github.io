@@ -14,7 +14,7 @@ const { payload, baseUrl } = Astro.props;
     <div>
       <h2 class="kg__title">Knowledge graph</h2>
       <p class="kg__subtitle">
-        Obsidian-style link view: internal links, <code>[[wikilinks]]</code>, and filtered shared-tag bridges.
+        Each node is an article. Shared keywords connect articles with labeled edges.
       </p>
     </div>
     <div class="kg__stats">
@@ -30,7 +30,7 @@ const { payload, baseUrl } = Astro.props;
     </label>
     <label class="kg__chk"><input type="checkbox" id="kg-kind-md" checked /> Markdown</label>
     <label class="kg__chk"><input type="checkbox" id="kg-kind-wiki" checked /> Wikilink</label>
-    <label class="kg__chk"><input type="checkbox" id="kg-kind-tag" checked /> Shared tags</label>
+    <label class="kg__chk"><input type="checkbox" id="kg-kind-tag" checked /> Shared keywords</label>
     <button type="button" class="kg__btn" id="kg-reset">Reset layout</button>
     <span class="kg__hint">Drag nodes · Wheel zoom · Drag canvas pan</span>
   </div>
@@ -40,7 +40,7 @@ const { payload, baseUrl } = Astro.props;
     <div class="kg__legend">
       <span><i class="kg__dot kg__dot--md"></i>Markdown / HTML link</span>
       <span><i class="kg__dot kg__dot--wiki"></i>Wikilink</span>
-      <span><i class="kg__dot kg__dot--tag"></i>Shared tag</span>
+      <span><i class="kg__dot kg__dot--tag"></i>Shared keyword</span>
       <span><i class="kg__dot kg__dot--hid"></i>Hidden post</span>
     </div>
   </div>
@@ -240,7 +240,7 @@ const { payload, baseUrl } = Astro.props;
     if (!ctx) return;
 
     /** @typedef {{ id: string; title: string; collection: string; tags: string[]; hidden: boolean; x: number; y: number; vx: number; vy: number; }} SimNode */
-    /** @typedef {{ source: string; target: string; kinds: string[] }} PayloadEdge */
+    /** @typedef {{ source: string; target: string; kinds: string[]; labels: string[] }} PayloadEdge */
 
     /** @type {SimNode[]} */
     let nodes = [];
@@ -770,6 +770,40 @@ const { payload, baseUrl } = Astro.props;
         ctx.setLineDash(kinds.includes("tag") && kinds.length === 1 ? [5 / scale, 4 / scale] : []);
         ctx.stroke();
         ctx.setLineDash([]);
+
+        // Draw shared keyword labels at edge midpoint
+        const elabels = e.labels || [];
+        if (!faded && scale >= 0.62 && elabels.length > 0) {
+          const mx = (a.x + b.x) / 2;
+          const my = (a.y + b.y) / 2;
+          const labelText = elabels.join(" · ");
+          const labelFontSize = Math.max(9, 10.5 / Math.sqrt(Math.max(0.6, scale)));
+          ctx.save();
+          ctx.font = `${labelFontSize}px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          const tw = ctx.measureText(labelText).width;
+          const padX = 5 / scale;
+          const padY = 3 / scale;
+          // Background pill for readability
+          ctx.fillStyle = "rgba(15, 23, 42, 0.82)";
+          const rx = 5 / scale;
+          const bw = tw + padX * 2;
+          const bh = labelFontSize + padY * 2;
+          ctx.beginPath();
+          ctx.moveTo(mx - bw / 2 + rx, my - bh / 2);
+          ctx.arcTo(mx + bw / 2, my - bh / 2, mx + bw / 2, my + bh / 2, rx);
+          ctx.arcTo(mx + bw / 2, my + bh / 2, mx - bw / 2, my + bh / 2, rx);
+          ctx.arcTo(mx - bw / 2, my + bh / 2, mx - bw / 2, my - bh / 2, rx);
+          ctx.arcTo(mx - bw / 2, my - bh / 2, mx + bw / 2, my - bh / 2, rx);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = kinds.includes("tag") && kinds.length === 1
+            ? "rgba(203, 213, 225, 0.90)"
+            : "rgba(148, 163, 184, 0.78)";
+          ctx.fillText(labelText, mx, my);
+          ctx.restore();
+        }
       }
 
       for (const n of nodes) {

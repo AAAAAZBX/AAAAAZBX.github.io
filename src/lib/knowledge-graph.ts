@@ -15,6 +15,7 @@ export type KnowledgeGraphEdge = {
   source: string;
   target: string;
   kinds: GraphEdgeKind[];
+  labels: string[];
 };
 
 export type KnowledgeGraphPayload = {
@@ -45,10 +46,11 @@ function dedupeTags(tags: string[] | undefined): string[] {
 }
 
 function mergeEdgeKinds(
-  map: Map<string, { source: string; target: string; kinds: Set<GraphEdgeKind> }>,
+  map: Map<string, { source: string; target: string; kinds: Set<GraphEdgeKind>; labels: Set<string> }>,
   sourceCanon: string,
   targetCanon: string,
-  kind: GraphEdgeKind
+  kind: GraphEdgeKind,
+  label?: string
 ) {
   const la = sourceCanon.trim().toLowerCase();
   const lb = targetCanon.trim().toLowerCase();
@@ -60,10 +62,11 @@ function mergeEdgeKinds(
   const tgt = la < lb ? targetCanon : sourceCanon;
   let row = map.get(key);
   if (!row) {
-    row = { source: src, target: tgt, kinds: new Set() };
+    row = { source: src, target: tgt, kinds: new Set(), labels: new Set() };
     map.set(key, row);
   }
   row.kinds.add(kind);
+  if (label) row.labels.add(label);
 }
 
 export function buildKnowledgeGraph(
@@ -181,14 +184,14 @@ export function buildKnowledgeGraph(
 
   const edgeMap = new Map<
     string,
-    { source: string; target: string; kinds: Set<GraphEdgeKind> }
+    { source: string; target: string; kinds: Set<GraphEdgeKind>; labels: Set<string> }
   >();
 
-  function addEdge(fromId: string, toId: string, kind: GraphEdgeKind) {
+  function addEdge(fromId: string, toId: string, kind: GraphEdgeKind, label?: string) {
     const ca = canonLower.get(fromId.trim().toLowerCase());
     const cb = canonLower.get(toId.trim().toLowerCase());
     if (!ca || !cb || ca === cb) return;
-    mergeEdgeKinds(edgeMap, ca, cb, kind);
+    mergeEdgeKinds(edgeMap, ca, cb, kind, label);
   }
 
   for (const p of posts) {
@@ -231,7 +234,9 @@ export function buildKnowledgeGraph(
       const a = posts[i];
       const b = posts[j];
       const shared = (a.tags ?? []).filter((t) => (b.tags ?? []).includes(t) && allowedTags.has(t));
-      if (shared.length) addEdge(a.sortId, b.sortId, "tag");
+      for (const tag of shared) {
+        addEdge(a.sortId, b.sortId, "tag", tag);
+      }
     }
   }
 
@@ -239,6 +244,7 @@ export function buildKnowledgeGraph(
     source: row.source,
     target: row.target,
     kinds: [...row.kinds],
+    labels: [...row.labels],
   }));
 
   return { nodes, edges };
