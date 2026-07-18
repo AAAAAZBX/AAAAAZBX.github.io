@@ -1,6 +1,26 @@
 {
   "commits": [
     {
+      "hash": "2d7a75c874fb6a3739149f14944767de28b353e6",
+      "date": "2026-07-04 23:39:33 +0800",
+      "message": "feat(graph): label shared keywords on edges between article nodes"
+    },
+    {
+      "hash": "18cece84b3a02d41203b0b762883b8afba99dbe4",
+      "date": "2026-07-03 17:53:51 +0800",
+      "message": "分页按钮圆角 6px → 999px，改为胶囊形"
+    },
+    {
+      "hash": "9a5ffb15ce0b20bae7618e6c09d64c873069309d",
+      "date": "2026-07-03 17:50:47 +0800",
+      "message": "更新主页标语：Algorithms, Systems, and Machine Learning → I don't know what I'm doing."
+    },
+    {
+      "hash": "0d75196cec4679c61646ea4642de7c7350e74234",
+      "date": "2026-05-02 03:01:15 +0800",
+      "message": "fix(about): keep scripts inside Layout for GitHub Pages"
+    },
+    {
       "hash": "4dd5742cbb2d66aadf1c8af359cbef4258b2ef5c",
       "date": "2026-05-02 02:47:05 +0800",
       "message": "feat(about): align contribution heatmap with GitHub levels and polish UI"
@@ -29,27 +49,7 @@
       "hash": "1d28e6ba51d57d4d6a79b7706fbb6cfb263e7003",
       "date": "2026-05-01 17:15:05 +0800",
       "message": "feat(ui): click ▶️ to start AI summary typewriter"
-    },
-    {
-      "hash": "543c8f3ff52491f597eb47f782239ec3d35b1ef5",
-      "date": "2026-05-01 16:58:00 +0800",
-      "message": "fix(ui): typewriter reads summary from data-text, placeholder styling"
-    },
-    {
-      "hash": "97ca9106912a542127302f0d2f316c4bdc3db6c1",
-      "date": "2026-05-01 16:44:22 +0800",
-      "message": "feat: build-time article summaries and Letter-style AI block"
-    },
-    {
-      "hash": "d563299ea0cb0bca130711830bfd4f0826e03870",
-      "date": "2026-04-30 21:17:04 +0800",
-      "message": "fix(build): fetch GitHub contributions without curl"
-    },
-    {
-      "hash": "64bdd3c2ffff2de9c75c1af8903707e1fc5a85d9",
-      "date": "2026-04-30 15:20:33 +0800",
-      "message": "feat(admin): add knowledge graph console"
     }
   ],
-  "timestamp": "2026-05-01T18:59:22.224Z"
+  "timestamp": "2026-07-09T13:21:31.929Z"
 }

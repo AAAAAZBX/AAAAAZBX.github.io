@@ -1,192 +1,209 @@
 import type { APIRoute } from 'astro';
 
-export const GET: APIRoute = async () => {
-  const username = 'AAAAAZBX';
+const USERNAME = 'AAAAAZBX';
+
+// GitHub GraphQL 返回的颜色 → level (0–4) 映射
+const COLOR_TO_LEVEL: Record<string, number> = {
+  '#ebedf0': 0,
+  '#9be9a8': 1,
+  '#40c463': 2,
+  '#30a14e': 3,
+  '#216e39': 4,
+};
+
+/**
+ * 通过 GitHub GraphQL API 获取贡献数据（含私有贡献，需认证）。
+ * 返回 null 表示失败，调用方应回退到 HTML 抓取。
+ */
+async function fetchViaGraphQL(): Promise<{
+  contributions: { date: string; count: number; level: number }[];
+  totalContributions: number;
+} | null> {
+  const token = import.meta.env.GITHUB_TOKEN;
+  if (!token) {
+    console.log('[API] No GITHUB_TOKEN, skipping GraphQL API');
+    return null;
+  }
+
+  const query = `
+    query($username: String!) {
+      user(login: $username) {
+        contributionsCollection {
+          contributionCalendar {
+            totalContributions
+            weeks {
+              contributionDays {
+                date
+                contributionCount
+                color
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
 
   try {
-    // 从 GitHub 获取贡献图 HTML
-    const githubUrl = `https://github.com/users/${username}/contributions`;
-    const response = await fetch(githubUrl, {
+    console.log('[API] Fetching contributions via GitHub GraphQL API...');
+    const response = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Referer': 'https://github.com/',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'tremendous-matter-blog',
       },
+      body: JSON.stringify({ query, variables: { username: USERNAME } }),
     });
 
     if (!response.ok) {
-      throw new Error(`GitHub returned ${response.status}: ${response.statusText}`);
+      const body = await response.text().catch(() => '');
+      throw new Error(`GraphQL API returned ${response.status}: ${body.slice(0, 200)}`);
     }
 
-    const htmlText = await response.text();
-    if (!htmlText || htmlText.length === 0) {
-      throw new Error('Empty response from GitHub');
+    const json = await response.json();
+    if (json.errors) {
+      throw new Error(`GraphQL errors: ${json.errors.map((e: any) => e.message).join('; ')}`);
     }
 
-    // 调试：检查 HTML 中是否包含 SVG 或 table
-    const hasSvg = htmlText.includes('<svg');
-    const hasTable = htmlText.includes('<table');
-    const hasRect = htmlText.includes('<rect');
-    const hasTd = htmlText.includes('<td');
-    console.log('[API] HTML check:', { hasSvg, hasTable, hasRect, hasTd, htmlLength: htmlText.length });
-
-    // 解析 GitHub 贡献图：<td> 含 data-date、id、data-level（0–4）；<tool-tip> 给精确 count
-
-    type Row = { count: number; level: number | null };
-    const contributionsMap = new Map<string, Row>();
-    let match;
-
-    function ensureContributionEntry(date: string): Row {
-      let row = contributionsMap.get(date);
-      if (!row) {
-        row = { count: 0, level: null };
-        contributionsMap.set(date, row);
-      }
-      return row;
+    const calendar = json.data?.user?.contributionsCollection?.contributionCalendar;
+    if (!calendar) {
+      throw new Error('Unexpected GraphQL response structure');
     }
 
-    const idToDateMap = new Map<string, string>();
-
-    const tdOpenRe = /<td\b([^>]*)>/g;
-    while ((match = tdOpenRe.exec(htmlText)) !== null) {
-      const attrs = match[1];
-      const date = /data-date="([^"]+)"/.exec(attrs)?.[1];
-      const id = /id="([^"]+)"/.exec(attrs)?.[1];
-      if (!date || !id) continue;
-      idToDateMap.set(id, date);
-      const row = ensureContributionEntry(date);
-      const levelRaw = /data-level="([^"]+)"/.exec(attrs)?.[1];
-      if (levelRaw !== undefined && levelRaw !== '') {
-        const lv = parseInt(levelRaw, 10);
-        if (Number.isFinite(lv) && lv >= 0 && lv <= 4) row.level = lv;
+    const contributions: { date: string; count: number; level: number }[] = [];
+    for (const week of calendar.weeks) {
+      for (const day of week.contributionDays) {
+        contributions.push({
+          date: day.date,
+          count: day.contributionCount,
+          level: COLOR_TO_LEVEL[day.color] ?? 0,
+        });
       }
     }
 
-    console.log('[API] Found', idToDateMap.size, 'td elements with data-date');
+    contributions.sort((a, b) => a.date.localeCompare(b.date));
 
-    // 步骤2: 解析所有 <tool-tip> 元素，提取贡献数并关联到日期
-    const tooltipPattern = /<tool-tip[^>]*for="([^"]+)"[^>]*>([^<]*)<\/tool-tip>/g;
-    
-    while ((match = tooltipPattern.exec(htmlText)) !== null) {
-      const forId = match[1];
-      const tooltipText = match[2];
-      
-      // 从 tooltip 文本中提取贡献数
-      const contributionMatch = tooltipText.match(/(\d+)\s+contribution/i);
-      if (contributionMatch) {
-        const count = parseInt(contributionMatch[1], 10) || 0;
-        
-        // 通过 id 找到对应的日期
-        const date = idToDateMap.get(forId);
-        if (date) {
-          ensureContributionEntry(date).count = count;
-        }
-      }
+    console.log(`[API] GraphQL: ${contributions.length} days, total: ${calendar.totalContributions}`);
+    return { contributions, totalContributions: calendar.totalContributions };
+  } catch (error: any) {
+    console.error('[API] GraphQL failed:', error.message);
+    return null;
+  }
+}
+
+/**
+ * 回退方案：从 GitHub 公开贡献页面抓取 HTML 并解析。
+ */
+async function fetchViaHtmlScraping(): Promise<{
+  contributions: { date: string; count: number; level?: number }[];
+  totalContributions: number;
+}> {
+  const githubUrl = `https://github.com/users/${USERNAME}/contributions`;
+
+  console.log('[API] Falling back to HTML scraping...');
+
+  const response = await fetch(githubUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Referer': 'https://github.com/',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub returned ${response.status}: ${response.statusText}`);
+  }
+
+  const htmlText = await response.text();
+  if (!htmlText || htmlText.length === 0) {
+    throw new Error('Empty response from GitHub');
+  }
+
+  type Row = { count: number; level: number | null };
+  const contributionsMap = new Map<string, Row>();
+  let match;
+
+  function ensureContributionEntry(date: string): Row {
+    let row = contributionsMap.get(date);
+    if (!row) {
+      row = { count: 0, level: null };
+      contributionsMap.set(date, row);
     }
+    return row;
+  }
 
-    // 如果新格式没有匹配到数据，尝试旧的 rect 格式作为备选
-    if (contributionsMap.size === 0) {
-      console.log('[API] No td elements found, trying rect format...');
-      
-      const rectPattern = /<rect[^>]*data-date="([^"]+)"[^>]*>([\s\S]*?)<\/rect>/g;
-      while ((match = rectPattern.exec(htmlText)) !== null) {
-        const date = match[1];
-        const innerContent = match[2];
-        
-        if (contributionsMap.has(date)) continue;
+  const idToDateMap = new Map<string, string>();
 
-        let count = 0;
-        const titleMatch = innerContent.match(/<title>([^<]*)<\/title>/);
-        if (titleMatch) {
-          const contributionMatch = titleMatch[1].match(/(\d+)\s+contribution/i);
-          if (contributionMatch) {
-            count = parseInt(contributionMatch[1], 10) || 0;
-          }
-        }
+  const tdOpenRe = /<td\b([^>]*)>/g;
+  while ((match = tdOpenRe.exec(htmlText)) !== null) {
+    const attrs = match[1];
+    const date = /data-date="([^"]+)"/.exec(attrs)?.[1];
+    const id = /id="([^"]+)"/.exec(attrs)?.[1];
+    if (!date || !id) continue;
+    idToDateMap.set(id, date);
+    const row = ensureContributionEntry(date);
+    const levelRaw = /data-level="([^"]+)"/.exec(attrs)?.[1];
+    if (levelRaw !== undefined && levelRaw !== '') {
+      const lv = parseInt(levelRaw, 10);
+      if (Number.isFinite(lv) && lv >= 0 && lv <= 4) row.level = lv;
+    }
+  }
 
+  console.log('[API] Found', idToDateMap.size, 'td elements with data-date');
+
+  const tooltipPattern = /<tool-tip[^>]*for="([^"]+)"[^>]*>([^<]*)<\/tool-tip>/g;
+  while ((match = tooltipPattern.exec(htmlText)) !== null) {
+    const forId = match[1];
+    const tooltipText = match[2];
+    const contributionMatch = tooltipText.match(/(\d+)\s+contribution/i);
+    if (contributionMatch) {
+      const count = parseInt(contributionMatch[1], 10) || 0;
+      const date = idToDateMap.get(forId);
+      if (date) {
         ensureContributionEntry(date).count = count;
       }
     }
+  }
 
-    const contributions: { date: string; count: number; level?: number }[] = Array.from(
-      contributionsMap.entries(),
-    )
-      .map(([date, row]) => {
-        const o: { date: string; count: number; level?: number } = { date, count: row.count };
-        if (row.level != null) o.level = row.level;
-        return o;
-      })
-      .sort((a, b) => a.date.localeCompare(b.date));
+  const contributions: { date: string; count: number; level?: number }[] = Array.from(
+    contributionsMap.entries(),
+  )
+    .map(([date, row]) => {
+      const o: { date: string; count: number; level?: number } = { date, count: row.count };
+      if (row.level != null) o.level = row.level;
+      return o;
+    })
+    .sort((a, b) => a.date.localeCompare(b.date));
 
-    // 如果没有找到数据，尝试旧的 table 格式作为备选
-    if (contributions.length === 0) {
-      // 匹配 td 元素，尝试从 title 属性获取精确贡献数
-      const tdPattern = /<td[^>]*data-date="([^"]+)"[^>]*>/g;
-      while ((match = tdPattern.exec(htmlText)) !== null) {
-        const tdTag = match[0];
-        const date = match[1];
+  if (contributions.length === 0) {
+    throw new Error('No contribution data found in HTML');
+  }
 
-        if (contributionsMap.has(date)) continue;
+  const totalContributions = contributions.reduce((sum, c) => sum + c.count, 0);
+  console.log(`[API] HTML scraping: ${contributions.length} days, total: ${totalContributions}`);
 
-        let count = 0;
-        
-        // 尝试从 title 属性获取精确数值
-        const titleAttrMatch = tdTag.match(/title="([^"]*)"/);
-        if (titleAttrMatch) {
-          const titleStr = titleAttrMatch[1];
-          const contributionMatch = titleStr.match(/(\d+)\s+contribution/i);
-          if (contributionMatch) {
-            count = parseInt(contributionMatch[1], 10) || 0;
-          }
-        }
-        
-        ensureContributionEntry(date).count = count;
-      }
+  return { contributions, totalContributions };
+}
 
-      const fallbackContributions: { date: string; count: number; level?: number }[] = Array.from(
-        contributionsMap.entries(),
-      )
-        .map(([date, row]) => {
-          const o: { date: string; count: number; level?: number } = { date, count: row.count };
-          if (row.level != null) o.level = row.level;
-          return o;
-        })
-        .sort((a, b) => a.date.localeCompare(b.date));
-
-      if (fallbackContributions.length > 0) {
-        contributions.length = 0;
-        contributions.push(...fallbackContributions);
-      }
+export const GET: APIRoute = async () => {
+  try {
+    // 优先使用 GraphQL API（含私有贡献）
+    const graphqlResult = await fetchViaGraphQL();
+    if (graphqlResult && graphqlResult.contributions.length > 0) {
+      return new Response(JSON.stringify(graphqlResult), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=3600',
+        },
+      });
     }
 
-    if (contributions.length === 0) {
-      // 输出部分 HTML 用于调试
-      const svgMatch = htmlText.match(/<svg[^>]*>[\s\S]{0,5000}/);
-      const tableMatch = htmlText.match(/<table[^>]*>[\s\S]{0,5000}/);
-      const rectMatch = htmlText.match(/<rect[^>]*data-date[^>]*>[\s\S]{0,1000}/);
-      console.error('[API] No contributions found. HTML length:', htmlText.length);
-      console.error('[API] SVG snippet:', svgMatch ? svgMatch[0].substring(0, 500) : 'No SVG');
-      console.error('[API] Table snippet:', tableMatch ? tableMatch[0].substring(0, 500) : 'No table');
-      console.error('[API] Rect snippet:', rectMatch ? rectMatch[0].substring(0, 500) : 'No rect');
-
-      // 尝试查找所有包含 data-date 的内容
-      const allDataDates = htmlText.match(/data-date="([^"]+)"/g);
-      console.error('[API] Found data-date attributes:', allDataDates ? allDataDates.length : 0);
-      if (allDataDates && allDataDates.length > 0) {
-        console.error('[API] First 5 data-date values:', allDataDates.slice(0, 5));
-      }
-
-      throw new Error('No contribution data found in HTML');
-    }
-
-    const totalContributions = contributions.reduce((sum, c) => sum + c.count, 0);
-    console.log(`[API] Parsed ${contributions.length} contribution days, total: ${totalContributions}`);
-
-    return new Response(JSON.stringify({
-      contributions,
-      totalContributions
-    }), {
+    // 回退到 HTML 抓取
+    const htmlResult = await fetchViaHtmlScraping();
+    return new Response(JSON.stringify(htmlResult), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -198,7 +215,7 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify({
       contributions: [],
       error: error?.message || 'Unknown error',
-      totalContributions: 0
+      totalContributions: 0,
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
