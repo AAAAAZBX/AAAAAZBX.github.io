@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-01T17:26:30.755Z",
+  "generatedAt": "2026-09-10T14:54:23.294Z",
   "items": {
     "Algorithms:competition/2026杭电春季联赛-第二场": {
       "title": "2026“钉耙编程”中国大学生算法设计春季联赛 - 第二场",
@@ -113,6 +113,13 @@
       "model": "DeepSeek-V4-pro",
       "contentSha256": "666bef31ea7babc6b658fb3aaed351e6782aa403208d9738effa20aefb88a5fe",
       "updatedAt": "2026-05-01T08:38:46.165Z"
+    },
+    "Invest:期权基础知识笔记": {
+      "title": "期权基础知识：Deribit Options Course 第 1–11 章笔记",
+      "summaryZh": "这篇讲义按 Deribit Options Course 第 1–11 章重构，介绍期权买方付权利金获得权利、卖方收权利金承担义务，以及 Call/Put 的到期收益、盈亏平衡和最大盈亏。随后说明 Deribit 的 BTC 反向期权以 BTC 作抵押、权利金和结算，美元内在价值需除以到期价格，因此公式、盈亏平衡与风险会随计价单位呈现非线性。文章还讲解波动率、历史与隐含波动率、内在与外在价值、波动率微笑偏斜和期限结构，以及 BSM 的输入、假设与局限。最后以 Delta、Theta 等 Greeks 说明方向、时间与波动率风险，强调 Delta 中性只是暂时的一阶中性，仍暴露于 Gamma、Vega、Theta 和模型风险。",
+      "model": "deepseek-v4-flash",
+      "contentSha256": "f80e7af499037544504894f6cc39a03149ee3a0f9195e698de7b2a977af7e877",
+      "updatedAt": "2026-09-10T14:54:23.294Z"
     }
   }
 }
