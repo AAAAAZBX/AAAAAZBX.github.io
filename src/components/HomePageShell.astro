@@ -86,6 +86,11 @@ function toRuntimePost(post: MergedPost): RuntimeHomePost {
 
 const initialRuntimePosts = recentPosts.map(toRuntimePost);
 const showPagination = totalPages > 1;
+// The endpoint is statically generated. Include the current page's post IDs so
+// a browser cannot reuse an older cached catalog after a new article is deployed.
+const runtimeEndpoint = `${baseJoin("home-posts.json")}?v=${encodeURIComponent(
+  `${currentPage}-${recentPosts.map((post) => post.sortId).join(",")}`
+)}`;
 const prevHref = currentPage > 1 ? homePageHref(currentPage - 1) : null;
 const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null;
 ---
@@ -154,7 +159,7 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
               data-home-page={currentPage}
               data-home-total-pages={totalPages}
               data-home-posts-per-page={HOME_POSTS_PER_PAGE}
-              data-home-runtime-endpoint={baseJoin("home-posts.json")}
+              data-home-runtime-endpoint={runtimeEndpoint}
               data-home-supabase-url={import.meta.env.PUBLIC_SUPABASE_URL ?? ""}
               data-home-supabase-key={import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? ""}
               data-home-base-url={baseUrl}
