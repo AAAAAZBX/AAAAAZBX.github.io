@@ -106,7 +106,7 @@ const aiModelLabel = "deepseek-v4";
     readMinutes={readMinutes}
   />
   <main id="article-main" class="fluid-article-page-main">
-    <FluidArticleBoard seoTitle={post.data.title}>
+    <FluidArticleBoard seoTitle={post.data.title} updated={post.data.updated?.trim() || post.data.date}>
       <FluidToc slot="toc" />
       <ArticleAiSummary slot="lead" summary={aiSummaryZh} modelLabel={aiModelLabel} />
       <Content />

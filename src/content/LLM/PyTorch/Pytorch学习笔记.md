@@ -2,6 +2,7 @@
 title: "PyTorch入门"
 id: "2025-12-06-01"
 date: "2025-12-06"
+updated: "2025-12-06"
 description: "PyTorch入门学习笔记，包括开发环境配置、基础语法和常用操作"
 tags: ["AI", "PyTorch"]
 ---

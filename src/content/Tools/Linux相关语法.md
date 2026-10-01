@@ -2,6 +2,7 @@
 title: "Linux相关语法"
 id: "2025-12-01"
 date: "2025-12-01"
+updated: "2025-12-01"
 description: "Linux常用命令和语法总结，包括文件管理、权限控制等基础操作"
 tags: ["Tools", "linux", "系统"]
 ---

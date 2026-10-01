@@ -7,6 +7,7 @@ const postSchema = z.object({
   title: z.string(),
   id: z.string().optional(),
   date: z.string().optional(),
+  updated: z.string().optional(),
   description: z.string().optional(),
   tags: z.array(z.string()).optional(),
   author: z.string().optional(),

@@ -2,6 +2,7 @@
 title: "从零实现myTorch（building micrograd）"
 id: "2026-04-07"
 date: "2026-04-07"
+updated: "2026-04-07"
 description: "尝试从零开始复现PyTorch,理解自动求导的过程"
 tags: ["PyTorch", "自动求导"]
 ---
