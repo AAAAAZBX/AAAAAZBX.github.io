@@ -44,6 +44,7 @@ export default defineConfig({
     }),
   ],
   redirects: {
+    "/categories/Life Moments/保研上岸一周年纪": "/categories/Life Moments/研一开学小记/",
     "/learning": "/categories",
     "/research": "/categories",
   },
