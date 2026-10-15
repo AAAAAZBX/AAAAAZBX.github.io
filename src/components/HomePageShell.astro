@@ -1,4 +1,5 @@
 ---
+import visibility from "../content-visibility.json";
 import type { MergedPost } from "../lib/content-posts";
 import { buildPostExcerpt, formatDateIso } from "../lib/content-posts";
 import {
@@ -156,6 +157,7 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
           <div class="fluid-col-12 fluid-col-md-10 fluid-m-auto">
             <div
               class="home-feed"
+              data-home-local-hidden={JSON.stringify(visibility.hidden)}
               data-home-page={currentPage}
               data-home-total-pages={totalPages}
               data-home-posts-per-page={HOME_POSTS_PER_PAGE}
@@ -397,7 +399,7 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
       if (!supabaseUrl || !supabaseKey) return;
 
       Promise.all([
-        fetch(endpoint).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
+        fetch(endpoint, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
         (supabaseUrl && supabaseKey)
           ? fetch(supabaseUrl + '/rest/v1/content_visibility?select=hidden_posts&id=eq.1', {
               headers: { apikey: supabaseKey, Authorization: 'Bearer ' + supabaseKey }
@@ -410,7 +412,10 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
         var hidden = (Array.isArray(hiddenRows) && hiddenRows[0] && Array.isArray(hiddenRows[0].hidden_posts))
           ? hiddenRows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })
           : [];
-        var hiddenSet = new Set(hidden);
+        var localHidden = JSON.parse(feed.getAttribute('data-home-local-hidden') || '[]');
+        var hiddenSet = new Set(hidden.concat(localHidden).map(function (id) {
+          return String(id).trim().toLowerCase();
+        }));
         var visiblePosts = catalog.filter(function (post) {
           return !hiddenSet.has(String(post.sortId || '').trim().toLowerCase());
         });

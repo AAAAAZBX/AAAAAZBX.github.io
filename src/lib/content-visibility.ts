@@ -23,6 +23,7 @@ function readLocalHidden(): string[] {
 }
 
 export async function readHiddenPostIds(): Promise<string[]> {
+  const localHidden = readLocalHidden();
   const supabase = getSupabase();
   if (supabase) {
     try {
@@ -32,13 +33,14 @@ export async function readHiddenPostIds(): Promise<string[]> {
         .eq("id", 1)
         .single();
       if (!error && data && Array.isArray(data.hidden_posts)) {
-        return normalizeHiddenPostIds(data.hidden_posts);
+        // A stale remote row must not republish posts hidden in the deployed source.
+        return normalizeHiddenPostIds([...localHidden, ...data.hidden_posts]);
       }
     } catch {
       // Supabase unreachable, use local file
     }
   }
-  return readLocalHidden();
+  return localHidden;
 }
 
 export async function fetchHiddenPostKeys(): Promise<Set<string>> {
