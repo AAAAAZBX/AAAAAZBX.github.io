@@ -1,0 +1,95 @@
+---
+import { withBase } from '../lib/base-url';
+const { overlay = false, home = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<header class:list={['site-header', !overlay && 'is-solid']}>
+  <a class="wordmark" href={withBase(base, '')} aria-label="AAAAAZBX 首页">
+    <span class="wordmark-mark" aria-hidden="true">✳</span>
+    <span>AAAAAZBX<span class="wordmark-dot">.</span></span>
+  </a>
+  <nav aria-label="主导航">
+    <a class="nav-current" href={home ? '#notes' : withBase(base, '#notes')}>Articles</a>
+    <a href={withBase(base, 'categories/')}>Categories</a>
+    <a href={withBase(base, 'archives/')}>Archives</a>
+    <a href={withBase(base, 'about/')}>About</a>
+  </nav>
+  <div class="header-tools">
+    <a class="icon-button" href={withBase(base, 'search/')} aria-label="搜索文章" title="Search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></svg>
+    </a>
+    <button id="theme-toggle" class="icon-button theme-button" type="button" aria-label="切换深色模式" aria-pressed="false" title="Switch theme">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 1v3m0 16v3M1 12h3m16 0h3M4.2 4.2l2.2 2.2m11.2 11.2 2.2 2.2M4.2 19.8l2.2-2.2M17.6 6.4l2.2-2.2" /></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20.4 14A8.6 8.6 0 0 1 10 3.6 8.6 8.6 0 1 0 20.4 14Z" /></svg>
+    </button>
+    <a class="icon-button rss-link" href={withBase(base, 'rss.xml')} aria-label="RSS 订阅" title="RSS">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4a15 15 0 0 1 15 15M5 10a9 9 0 0 1 9 9" /><circle cx="5.5" cy="18.5" r="1.2" fill="currentColor" stroke="none" /></svg>
+    </a>
+  </div>
+</header>
+{!overlay && <div class="site-header-space" aria-hidden="true"></div>}
+
+<script>
+  const root = document.documentElement;
+  const header = document.querySelector<HTMLElement>('.site-header');
+  if (header) {
+    const updateHeader = () => header.classList.toggle('is-scrolled', window.scrollY > 40);
+    window.addEventListener('scroll', updateHeader, { passive: true });
+    updateHeader();
+    const updateOffset = () => {
+      const height = `${Math.ceil(header.getBoundingClientRect().height) + 16}px`;
+      root.style.setProperty('--header-offset', height);
+      root.style.setProperty('--sticky-top-offset', height);
+    };
+    new ResizeObserver(updateOffset).observe(header);
+    updateOffset();
+  }
+  const button = document.querySelector<HTMLButtonElement>('.theme-button');
+  function applyTheme(dark: boolean) {
+    root.dataset.theme = dark ? 'dark' : 'light';
+    root.classList.toggle('dark', dark);
+    document.body.classList.toggle('dark', dark);
+    button?.setAttribute('aria-pressed', String(dark));
+    button?.setAttribute('aria-label', dark ? '切换浅色模式' : '切换深色模式');
+  }
+  applyTheme(root.dataset.theme === 'dark');
+  button?.addEventListener('click', () => {
+    applyTheme(root.dataset.theme !== 'dark');
+    try { localStorage.setItem('preferred-theme', root.dataset.theme!); } catch {}
+  });
+</script>
+
+<style>
+  header.site-header { position: fixed; inset: 0 0 auto; z-index: 1000; width: 100%; max-width: none; margin: 0; padding: 42px max(36px, calc((100vw - 1120px) / 2)); display: flex; align-items: center; gap: 58px; color: #fff; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; line-height: normal; letter-spacing: normal; transition: padding .25s ease, background-color .25s ease, box-shadow .25s ease; }
+  header.site-header:is(.is-scrolled, .is-solid) { padding-top: 16px; padding-bottom: 16px; background: rgba(20,39,61,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1px 0 rgba(183,207,231,.16), 0 5px 22px rgba(10,24,41,.12); }
+  .site-header-space { height: var(--header-offset, 152px); }
+  .site-header a { color: inherit; text-decoration: none; }
+  .site-header :is(a, button):focus-visible { outline: 3px solid #b7cfe7; outline-offset: 5px; border-radius: 3px; }
+  .wordmark { display: inline-flex; align-items: center; gap: 9px; font-size: 24px; font-weight: 800; letter-spacing: -.9px; white-space: nowrap; }
+  .wordmark-mark { font-size: 29px; font-weight: 400; color: #b7cfe7; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+  .wordmark:hover .wordmark-mark { transform: rotate(100deg); }
+  .wordmark-dot { color: #b7cfe7; }
+  nav { display: flex; gap: 31px; align-items: center; }
+  nav a { font-size: 16px; font-weight: 500; opacity: .82; position: relative; padding: 8px 0; }
+  nav a::after { content: ''; position: absolute; bottom: 1px; left: 0; width: 100%; height: 2px; background: #b7cfe7; transform: scaleX(0); transform-origin: left; transition: transform .2s; }
+  nav a:hover { opacity: 1; }
+  nav a:hover::after { transform: scaleX(1); }
+  .header-tools { margin-left: auto; display: flex; gap: 11px; }
+  .icon-button { display: grid; place-items: center; width: 34px; height: 36px; padding: 0; color: inherit; background: none; border: 0; border-radius: 50%; cursor: pointer; transition: color .2s, background .2s, transform .2s; }
+  .icon-button:hover { color: #d5e6f5; background: #ffffff12; transform: translateY(-2px); }
+  .icon-button svg { width: 20px; height: 20px; }
+  .moon { display: none; }
+  :global([data-theme='dark']) .sun { display: none; }
+  :global([data-theme='dark']) .moon { display: block; }
+  @media (max-width: 1000px) { header.site-header { gap: 32px; padding: 32px; } nav { gap: 22px; } }
+  @media (max-width: 760px) {
+    header.site-header { flex-wrap: wrap; gap: 22px 16px; padding: 26px 24px; }
+    .wordmark { font-size: 23px; }
+    .header-tools { order: 1; gap: 6px; }
+    nav { order: 2; width: 100%; justify-content: space-between; gap: 16px; }
+    nav a { font-size: 15px; }
+  }
+  @media (max-width: 370px) { header.site-header { padding-inline: 18px; } .rss-link { display: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>

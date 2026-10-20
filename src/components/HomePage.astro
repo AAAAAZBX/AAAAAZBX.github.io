@@ -1,0 +1,334 @@
+---
+import SiteHeader from './SiteHeader.astro';
+import ThemeInit from './ThemeInit.astro';
+import VisitorScripts from './VisitorScripts.astro';
+import { getAllMergedPosts, buildPostExcerpt, formatDateIso } from '../lib/content-posts';
+import { readHiddenPostIds } from '../lib/content-visibility';
+import { defaultHeroImage, heroImageSrcSet } from '../lib/site-images';
+import { withBase } from '../lib/base-url';
+
+const { preview = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const hiddenPostIds = await readHiddenPostIds();
+const hiddenPostSet = new Set(hiddenPostIds);
+const posts = (await getAllMergedPosts()).filter(post => !hiddenPostSet.has(post.sortId));
+const topics = [...new Set(posts.map(post => post.collection))];
+const topicLabels: Record<string, string> = {
+  Algorithms: 'Algorithms', LLM: 'Machine Learning', Math: 'Mathematics',
+  Invest: 'Investing', Tools: 'Tools', 'Life Moments': 'Life Moments',
+};
+const explorations = posts.filter(post => ['LLM', 'Math', 'Algorithms'].includes(post.collection)).slice(0, 4);
+const title = "Welcome to AAAAAZBX's Blog";
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {preview && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="description" content="Boxuan Zhang 的个人博客：算法、机器学习、数学与生活笔记。" />
+    <title>{preview ? 'AAAAAZBX — Homepage Preview' : 'Boxuan Zhang — Home'}</title>
+    <link rel="canonical" href={new URL(base, Astro.site ?? 'https://aaaaazbx.github.io').href} />
+    <meta property="og:title" content="AAAAAZBX — Boxuan Zhang" />
+    <meta property="og:description" content="算法、机器学习、数学与生活笔记。" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={new URL(base, Astro.site ?? 'https://aaaaazbx.github.io').href} />
+    <meta property="og:image" content={new URL(defaultHeroImage(base), Astro.site ?? 'https://aaaaazbx.github.io').href} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href={withBase(base, 'logo.png')} />
+    <ThemeInit />
+  </head>
+  <body>
+    <a class="skip-link" href="#notes">跳转到文章</a>
+
+    <SiteHeader overlay home />
+
+    <section class="hero" aria-label="欢迎来到我的博客">
+      <img class="hero-photo" src={defaultHeroImage(base)} srcset={heroImageSrcSet(base)} sizes="100vw" width="1440" height="1080" alt="" fetchpriority="high" />
+      <div class="hero-shade" aria-hidden="true"></div>
+
+      <div class="hero-content">
+        <p class="hero-eyebrow"><span></span> A LITTLE CORNER OF THE INTERNET</p>
+        <h1 aria-label={title}>Welcome to<br /><span class="hero-name">AAAAAZBX's Blog<span class="hero-period">.</span></span></h1>
+        <div class="hero-rule" aria-hidden="true"><span></span><svg viewBox="0 0 24 24" fill="none"><path d="m12 1 2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6Z" fill="currentColor" /></svg><span></span></div>
+      </div>
+
+      <a class="scroll-cue" href="#notes"><span>SCROLL TO EXPLORE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3v17m-6-6 6 6 6-6" /></svg></a>
+      <div class="hero-coordinate" aria-hidden="true">NOTES, IDEAS & THE IN-BETWEEN</div>
+      <svg class="hero-wave" viewBox="0 0 1440 180" preserveAspectRatio="none" aria-hidden="true">
+        <path class="wave-back" d="M0 100C170 35 235 125 385 72S610 23 785 95s205-60 350-45 225 50 305-15V180H0Z" />
+        <path class="wave-middle" d="M0 130C180 65 310 65 475 126s185 2 350-49 250-12 365 40 180-80 250-50V180H0Z" />
+        <path class="wave-front" d="M0 145C145 80 300 80 460 133s205 61 360 8 235-46 365-14 190-38 255-55V180H0Z" />
+      </svg>
+    </section>
+
+    <main id="notes" class="content-wrap"
+      data-hidden-posts={JSON.stringify(hiddenPostIds)}
+      data-visibility-endpoint={import.meta.env.DEV ? withBase(base, 'api/posts') : ''}
+      data-supabase-url={import.meta.env.PUBLIC_SUPABASE_URL ?? ''}
+      data-supabase-key={import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? ''}
+    >
+      <div class="main-column">
+        <div class="section-heading"><h2>ARTICLES & NOTES</h2><span class="article-count" aria-live="polite">{posts.length} notes</span></div>
+        <div class="filter-state" hidden><span></span><button type="button">查看全部 ×</button></div>
+        <div class="article-list">
+          {posts.map((post, index) => (
+            <article class="post" data-topic={post.collection} data-post-id={post.sortId} hidden={index >= 6}>
+              <div class="post-meta"><span>{topicLabels[post.collection] ?? post.collection}</span><span class="meta-dot">·</span><time datetime={post.date}>{formatDateIso(post.date)}</time></div>
+              <h3><a href={withBase(base, post.href)}>{post.title}</a></h3>
+              <p class="post-excerpt">{buildPostExcerpt(post.body)}</p>
+              <a class="read-more" href={withBase(base, post.href)}>继续阅读 <span aria-hidden="true">→</span></a>
+            </article>
+          ))}
+        </div>
+        <p class="empty-state" hidden>这个分类还没有文章。</p>
+        <button class="more-button" type="button" hidden={posts.length <= 6}>更多文章 <span aria-hidden="true">↓</span></button>
+      </div>
+
+      <aside class="sidebar" aria-label="分类和作者信息">
+        <section class="topic-section">
+          <h2 class="section-label">BROWSE BY TOPIC</h2>
+          <div class="topic-list">
+            <button class="topic active" type="button" data-filter="" aria-pressed="true">All notes <span>{posts.length}</span></button>
+            {topics.map(topic => <button class="topic" type="button" data-filter={topic} aria-pressed="false">{topicLabels[topic] ?? topic}<span>{posts.filter(post => post.collection === topic).length}</span></button>)}
+          </div>
+        </section>
+
+        <section class="explore-section">
+          <h2 class="section-label">START EXPLORING</h2>
+          <ol class="explore-list">
+            {explorations.map(post => <li data-post-id={post.sortId}><a href={withBase(base, post.href)}><span aria-hidden="true">↗</span>{post.title}</a></li>)}
+          </ol>
+        </section>
+
+        <section class="author-note">
+          <svg class="note-spark" viewBox="0 0 40 40" aria-hidden="true"><path d="m20 1 4.5 14.5L39 20l-14.5 4.5L20 39l-4.5-14.5L1 20l14.5-4.5Z" fill="currentColor" /></svg>
+          <div class="author-heading"><img src={withBase(base, 'logo.png')} alt="" width="46" height="46" loading="lazy" /><div><strong>Hey, I'm Boxuan.</strong><span>也可以叫我 AAAAAZBX</span></div></div>
+          <p>在这里记录算法、机器学习、数学，以及生活中的一些想法。</p>
+          <a href={withBase(base, 'about/')}>More about me <span aria-hidden="true">↗</span></a>
+        </section>
+        <a class="back-to-top" href="#">Back to the skyline <span aria-hidden="true">↑</span></a>
+      </aside>
+    </main>
+
+    <footer class="site-footer"><a class="footer-brand" href={withBase(base, '')}>AAAAAZBX<span>.</span></a><p>© {new Date().getFullYear()} Boxuan Zhang</p><div><a href="https://github.com/AAAAAZBX" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href={withBase(base, 'rss.xml')}>RSS ↗</a></div></footer>
+
+    <script>
+      const articles = [...document.querySelectorAll<HTMLElement>('.post')];
+      const notes = document.querySelector<HTMLElement>('#notes');
+      const normalizeId = (id: unknown) => String(id ?? '').trim().toLowerCase();
+      const initialHidden: string[] = JSON.parse(notes?.dataset.hiddenPosts ?? '[]');
+      let hiddenPostIds = new Set(initialHidden.map(normalizeId));
+      const filters = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+      const moreButton = document.querySelector<HTMLButtonElement>('.more-button');
+      const count = document.querySelector<HTMLElement>('.article-count');
+      const filterState = document.querySelector<HTMLElement>('.filter-state');
+      const empty = document.querySelector<HTMLElement>('.empty-state');
+      let selected = '';
+      let limit = 6;
+      function renderPosts() {
+        const publicArticles = articles.filter(article => !hiddenPostIds.has(normalizeId(article.dataset.postId)));
+        if (selected && !publicArticles.some(article => article.dataset.topic === selected)) selected = '';
+        const matching = publicArticles.filter(article => !selected || article.dataset.topic === selected);
+        const visible = new Set(matching.slice(0, limit));
+        articles.forEach(article => { article.hidden = !visible.has(article); });
+        filters.forEach(button => {
+          const topic = button.dataset.filter;
+          const topicCount = publicArticles.filter(article => !topic || article.dataset.topic === topic).length;
+          button.hidden = Boolean(topic) && topicCount === 0;
+          const badge = button.querySelector('span');
+          if (badge) badge.textContent = String(topicCount);
+          const active = button.dataset.filter === selected;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        if (count) count.textContent = `${matching.length} notes`;
+        if (moreButton) moreButton.hidden = matching.length <= limit;
+        if (empty) empty.hidden = matching.length > 0;
+        if (filterState) {
+          filterState.hidden = !selected;
+          const label = filterState.querySelector('span');
+          if (label) label.textContent = filters.find(button => button.dataset.filter === selected)?.childNodes[0]?.textContent ?? selected;
+        }
+        const recommendations = [...document.querySelectorAll<HTMLElement>('.explore-list [data-post-id]')];
+        recommendations.forEach(item => { item.hidden = hiddenPostIds.has(normalizeId(item.dataset.postId)); });
+        const exploreSection = document.querySelector<HTMLElement>('.explore-section');
+        if (exploreSection) exploreSection.hidden = recommendations.every(item => item.hidden);
+      }
+      filters.forEach(button => button.addEventListener('click', () => {
+        selected = button.dataset.filter ?? '';
+        limit = 6;
+        renderPosts();
+      }));
+      filterState?.querySelector('button')?.addEventListener('click', () => { selected = ''; limit = 6; renderPosts(); });
+      moreButton?.addEventListener('click', () => { limit += 6; renderPosts(); });
+      renderPosts();
+
+      // Reuse the admin's read endpoint in local preview; use its public visibility row after deployment.
+      let refreshingVisibility = false;
+      async function refreshVisibility() {
+        if (!notes || refreshingVisibility) return;
+        const localEndpoint = notes.dataset.visibilityEndpoint;
+        const supabaseUrl = notes.dataset.supabaseUrl;
+        const key = notes.dataset.supabaseKey;
+        if (!localEndpoint && (!supabaseUrl || !key)) return;
+        refreshingVisibility = true;
+        try {
+          const sources: Array<{ url: string; remote: boolean }> = [];
+          if (localEndpoint) sources.push({ url: localEndpoint, remote: false });
+          if (supabaseUrl && key) sources.push({ url: `${supabaseUrl}/rest/v1/content_visibility?select=hidden_posts&id=eq.1`, remote: true });
+          // The browser may reach Supabase even when the local Node process cannot.
+          await Promise.allSettled(sources.map(async source => {
+            const response = await fetch(source.url, {
+              cache: 'no-store',
+              headers: source.remote ? { apikey: key!, Authorization: `Bearer ${key}` } : {},
+              signal: AbortSignal.timeout(10000),
+            });
+            if (!response.ok) throw new Error('Visibility unavailable');
+            const data = await response.json();
+            const hidden = source.remote ? data?.[0]?.hidden_posts : data.hidden;
+            if (!Array.isArray(hidden)) throw new Error('Invalid visibility response');
+            hidden.forEach(id => hiddenPostIds.add(normalizeId(id)));
+            renderPosts();
+          }));
+        } catch {
+          // Preserve the already-filtered server snapshot and any successfully received hidden IDs.
+        } finally {
+          refreshingVisibility = false;
+        }
+      }
+      void refreshVisibility();
+      window.addEventListener('focus', () => { void refreshVisibility(); });
+      window.addEventListener('pageshow', event => { if (event.persisted) void refreshVisibility(); });
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshVisibility(); });
+    </script>
+    {!preview && <VisitorScripts />}
+  </body>
+</html>
+
+<style>
+  :global(html) { --paper: #fff; --ink: #20334c; --muted: #566b82; --accent: #284e79; --heading: #243f61; --chip: #e8eff6; --line: #dce5ee; --note: #f1f5f9; --wave-back: #344f70; --wave-middle: #9bb0c6; color-scheme: light; scroll-behavior: smooth; scroll-padding-top: var(--header-offset, 152px); background: var(--paper); }
+  :global(html[data-theme='dark']) { --paper: #111c2b; --ink: #e4edf7; --muted: #a9bbd0; --accent: #9bc1e5; --heading: #bed3e9; --chip: #21364f; --line: #2d425b; --note: #192a40; --wave-back: #304962; --wave-middle: #1c3048; color-scheme: dark; }
+  :global(body) { margin: 0; color: var(--ink); background: var(--paper); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; -webkit-font-smoothing: antialiased; }
+  :global(*) { box-sizing: border-box; }
+  :global([hidden]) { display: none !important; }
+  :global(astro-dev-toolbar) { display: none; }
+  a { color: inherit; text-decoration: none; }
+  button { color: inherit; font: inherit; cursor: pointer; }
+  :is(a, button):focus-visible { outline: 3px solid var(--accent); outline-offset: 6px; border-radius: 3px; }
+  .skip-link { position: fixed; top: -80px; left: 16px; z-index: 10; background: var(--paper); color: var(--ink); padding: 12px 20px; border-radius: 8px; }
+  .skip-link:focus { top: 12px; }
+  .hero { position: relative; isolation: isolate; height: 100vh; height: 100svh; min-height: 540px; overflow: hidden; color: #fff; }
+  .hero-photo, .hero-shade { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; }
+  .hero-photo { object-fit: cover; object-position: center; }
+  .hero-shade { z-index: -1; background: linear-gradient(180deg, rgba(13,24,44,.4), rgba(15,23,41,.05) 35%, rgba(15,18,35,.28) 68%, rgba(10,13,30,.5)); }
+  .hero-content { position: absolute; top: 46%; left: 24px; right: 24px; transform: translateY(-50%); text-align: center; }
+  .hero-eyebrow { margin: 0 0 29px; color: #dbe8f4; font-size: 14px; font-weight: 600; letter-spacing: 2.4px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+  .hero-eyebrow > span { width: 5px; height: 5px; border-radius: 50%; background: #b5d0e8; box-shadow: 0 0 14px #b5d0e890; }
+  h1 { margin: 0; font-size: clamp(36px, 4.7vw, 68px); font-weight: 650; line-height: 1.2; letter-spacing: -2.5px; text-shadow: 0 3px 32px #0d203b40; }
+  .hero-name { display: inline-block; margin-top: 6px; }
+  .hero-period { color: #b4cde5; }
+  .hero-rule { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 37px; color: #d2e3f3; }
+  .hero-rule span { width: 45px; height: 1px; background: #d4e5f466; }
+  .hero-rule svg { width: 17px; height: 17px; }
+  .scroll-cue { position: absolute; bottom: 162px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; flex-direction: column; gap: 15px; opacity: .85; }
+  .scroll-cue span { font-size: 12px; letter-spacing: 2.2px; white-space: nowrap; }
+  .scroll-cue svg { width: 23px; height: 23px; transition: transform .25s; }
+  .scroll-cue:hover svg { transform: translateY(6px); }
+  .hero-coordinate { position: absolute; bottom: 173px; left: max(36px, calc((100vw - 1120px) / 2)); font-size: 12px; letter-spacing: 1.8px; color: #d4e2f0; }
+  .hero-wave { position: absolute; bottom: -1px; width: 100%; height: clamp(85px, 12.5vw, 180px); pointer-events: none; }
+  .wave-back { fill: var(--wave-back); opacity: .45; }
+  .wave-middle { fill: var(--wave-middle); opacity: .8; }
+  .wave-front { fill: var(--paper); }
+  .content-wrap { max-width: 1120px; padding: 72px 36px 112px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 640px) minmax(235px, 1fr); gap: 90px; align-items: start; }
+  .section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 45px; gap: 12px; }
+  .section-heading h2, .section-label { color: var(--heading); font-size: 14px; letter-spacing: 2px; line-height: 1.6; font-weight: 750; margin: 0; }
+  .article-count { color: var(--muted); font-size: 14px; white-space: nowrap; }
+  .post { margin-bottom: 40px; }
+  .post-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 13px; }
+  .post-meta > span:first-child { color: var(--accent); font-weight: 600; }
+  .meta-dot { opacity: .5; }
+  .post h3 { margin: 0 0 17px; font-size: 23px; font-weight: 750; line-height: 1.5; letter-spacing: -.45px; }
+  .post h3 a { transition: color .2s; background-image: linear-gradient(var(--accent), var(--accent)); background-size: 0 1px; background-position: left bottom; background-repeat: no-repeat; }
+  .post h3 a:hover { color: var(--accent); background-size: 100% 1px; }
+  .post-excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; margin: 0 0 14px; font-size: 16px; line-height: 1.85; overflow-wrap: anywhere; color: var(--ink); opacity: .85; }
+  .read-more { display: inline-flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; }
+  .read-more span { font-size: 18px; line-height: 1; color: var(--accent); transition: transform .2s; }
+  .read-more:hover span { transform: translateX(5px); }
+  .sidebar { padding-top: 0; }
+  .section-label { margin-bottom: 26px; }
+  .topic-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .topic { display: inline-flex; align-items: center; gap: 9px; border: 1px solid transparent; border-radius: 6px; padding: 8px 10px; background: var(--chip); font-size: 14px; line-height: 1.4; transition: transform .2s, background .2s, color .2s; }
+  .topic span { opacity: .8; font-size: 14px; }
+  .topic:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .topic.active { color: #fff; background: #284e79; }
+  .topic.active span { opacity: .75; }
+  .explore-section { margin-top: 49px; }
+  .explore-list { list-style: none; padding: 0; margin: 0; }
+  .explore-list li + li { margin-top: 19px; }
+  .explore-list a { display: grid; grid-template-columns: 18px 1fr; gap: 9px; font-size: 15px; line-height: 1.75; font-weight: 600; transition: color .2s; }
+  .explore-list a > span { color: var(--accent); font-size: 17px; transition: transform .2s; }
+  .explore-list a:hover { color: var(--accent); }
+  .explore-list a:hover > span { transform: translate(2px, -2px); }
+  .author-note { position: relative; margin-top: 53px; border-radius: 10px; background: var(--note); padding: 24px 21px; border: 1px solid var(--line); }
+  .note-spark { position: absolute; width: 29px; height: 29px; top: -15px; right: 18px; color: var(--accent); transform: rotate(13deg); }
+  .author-heading { display: flex; align-items: center; gap: 12px; }
+  .author-heading img { border-radius: 50%; object-fit: cover; }
+  .author-heading strong { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
+  .author-heading div > span { display: block; font-size: 14px; color: var(--muted); margin-top: 5px; }
+  .author-note p { font-size: 14px; line-height: 1.95; margin: 17px 0; color: var(--muted); }
+  .author-note > a { color: var(--accent); font-size: 14px; font-weight: 650; }
+  .author-note > a span { margin-left: 6px; }
+  .back-to-top { display: inline-flex; gap: 12px; margin: 30px 0 0 20px; font-size: 14px; color: var(--muted); }
+  .back-to-top:hover { color: var(--accent); }
+  .more-button { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; padding: 16px; border: 1px solid var(--line); border-radius: 7px; background: var(--note); font-size: 15px; font-weight: 600; transition: border-color .2s; }
+  .more-button:hover { border-color: var(--accent); }
+  .more-button span { color: var(--accent); }
+  .filter-state { display: flex; align-items: center; justify-content: space-between; padding-bottom: 24px; font-size: 15px; color: var(--accent); }
+  .filter-state button { background: none; border: none; font-size: 14px; color: var(--muted); }
+  .empty-state { color: var(--muted); }
+  .site-footer { max-width: 1048px; margin: 0 auto; border-top: 1px solid var(--line); display: flex; gap: 24px; align-items: center; padding: 30px 0 40px; }
+  .footer-brand { font-weight: 800; font-size: 16px; letter-spacing: -.5px; }
+  .footer-brand span { color: var(--accent); }
+  .site-footer p { margin: 0; color: var(--muted); font-size: 14px; }
+  .site-footer > div { margin-left: auto; display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+  .site-footer > div a:hover { color: var(--accent); }
+  @media (min-width: 1600px) { .hero-content { top: 47%; } }
+  @media (max-width: 1000px) {
+    .content-wrap { gap: 44px; grid-template-columns: minmax(0, 1fr) 235px; }
+    .site-footer { margin-inline: 36px; }
+    .hero-coordinate { display: none; }
+  }
+  @media (max-width: 760px) {
+    .hero-content { top: 46%; left: 18px; right: 18px; }
+    .hero-eyebrow { font-size: 12px; letter-spacing: 1.2px; margin-bottom: 25px; }
+    h1 { font-size: clamp(30px, 7.6vw, 54px); letter-spacing: -1.3px; }
+    .hero-rule { margin-top: 29px; }
+    .hero-wave { height: 100px; }
+    .scroll-cue { bottom: 115px; }
+    .scroll-cue span { font-size: 12px; }
+    .content-wrap { padding: 40px 24px 64px; display: flex; flex-direction: column; gap: 52px; }
+    .main-column, .sidebar { width: 100%; }
+    .section-heading { margin-bottom: 32px; }
+    .section-heading h2, .section-label { font-size: 14px; letter-spacing: 1.7px; }
+    .post { margin-bottom: 32px; }
+    .post h3 { font-size: 21px; }
+    .post-excerpt { font-size: 16px; }
+    .sidebar { border-top: 1px solid var(--line); padding-top: 34px; }
+    .sidebar .section-label { margin-bottom: 20px; }
+    .topic { padding: 9px 12px; font-size: 14px; }
+    .explore-section { margin-top: 34px; }
+    .author-note { margin-top: 38px; }
+    .site-footer { margin-inline: 24px; flex-wrap: wrap; gap: 15px; padding-top: 25px; }
+    .site-footer > div { margin-left: 0; width: 100%; }
+  }
+  @media (max-width: 370px) {
+    .hero-eyebrow { letter-spacing: .8px; }
+    h1 { font-size: 28px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(html) { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>

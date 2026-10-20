@@ -1,0 +1,62 @@
+---
+const baseUrl = import.meta.env.BASE_URL;
+const logVisitorVisits = Boolean(import.meta.env.PUBLIC_SUPABASE_URL && import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+---
+
+    {
+      logVisitorVisits && (
+        <>
+          <script is:inline>
+            (function() {
+              try {
+                // 一次性跳过：访问 ?noslog=1 自动设置 cookie + localStorage，然后清理 URL
+                var urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('noslog') === '1') {
+                  localStorage.setItem("bx_owner_skip_visit_log", "1");
+                  document.cookie = "bx_skip_log=1; path=/; max-age=" + (365*24*60*60) + "; SameSite=Lax";
+                  try {
+                    var url = new URL(window.location);
+                    url.searchParams.delete('noslog');
+                    window.history.replaceState(null, '', url);
+                  } catch (_) {}
+                }
+
+                var ls = localStorage.getItem("bx_owner_skip_visit_log");
+                var ss = sessionStorage.getItem("bx_admin_unlocked_v1");
+                var ck = document.cookie.match(/(?:^|;\s*)bx_skip_log=1/);
+                window.__bx_skip_log = ls === "1" || ss === "1" || !!ck;
+
+              } catch(_) {
+                window.__bx_skip_log = false;
+
+              }
+            })();
+          </script>
+          <script>
+            if (!window.__bx_skip_log) {
+              import("../scripts/visit-logger.ts").then(function(m) {
+                m.runVisitLog({ siteBasePath: import.meta.env.BASE_URL });
+              });
+            }
+          </script>
+        </>
+      )
+    }
+
+    <script is:inline define:vars={{ baseUrl }}>
+      (function () {
+        if (!("serviceWorker" in navigator)) return;
+        var scope = baseUrl || "/";
+        if (scope.slice(-1) !== "/") scope += "/";
+        navigator.serviceWorker.register(scope + "sw.js", { scope: scope }).catch(function () {});
+      })();
+    </script>
+    <script>
+      import { runSitewideCountHit } from "../scripts/sitewide-count-hit.ts";
+      import { countapiHitUrl, getCountapiNamespace, COUNTAPI_KEYS } from "../lib/site-stats";
+
+      runSitewideCountHit({
+        siteBasePath: import.meta.env.BASE_URL,
+        hitUrl: countapiHitUrl(getCountapiNamespace(), COUNTAPI_KEYS.sitePageViews),
+      });
+    </script>

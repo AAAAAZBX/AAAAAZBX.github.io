@@ -1,26 +1,5 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import HomePageShell from "../components/HomePageShell.astro";
-import { getMergedPosts } from "../lib/content-posts";
-import {
-  getHomeTotalPages,
-  sliceHomePostsPage,
-} from "../lib/home-pagination";
-
-const siteTitle = "Boxuan Zhang";
-const merged = await getMergedPosts();
-const totalPages = getHomeTotalPages(merged.length);
-const recentPosts = sliceHomePostsPage(merged, 1);
+import HomePage from '../components/HomePage.astro';
 ---
 
-<Layout
-  title={`${siteTitle} — Home`}
-  overlayNav
-  description="Algorithms, systems, and machine learning notes — Boxuan Zhang."
->
-  <HomePageShell
-    recentPosts={recentPosts}
-    currentPage={1}
-    totalPages={totalPages}
-  />
-</Layout>
+<HomePage />

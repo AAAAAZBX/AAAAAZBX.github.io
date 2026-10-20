@@ -470,6 +470,29 @@ strong {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .page-container {
+    flex-direction: column;
+    padding: 24px 20px;
+    gap: 28px;
+  }
+
+  .page-container .sidebar {
+    width: 100% !important;
+    min-width: 0 !important;
+    position: static !important;
+    max-height: none !important;
+  }
+
+  .main-content-wrapper {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .contributions-container {
+    align-items: stretch;
+    max-width: 100%;
+  }
+
   .statistics-cards {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -481,7 +504,9 @@ strong {
   }
 
   .contributions-graph {
-    overflow-x: scroll;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   .month-labels,

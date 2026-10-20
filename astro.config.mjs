@@ -40,6 +40,7 @@ export default defineConfig({
     sitemap({
       filter: (page) =>
         !page.includes('/search') &&
+        !page.includes('/home-preview') &&
         !page.includes('/404'),
     }),
   ],

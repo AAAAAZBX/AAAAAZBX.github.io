@@ -1,4 +1,7 @@
 ---
+import SiteHeader from "../components/SiteHeader.astro";
+import ThemeInit from "../components/ThemeInit.astro";
+import VisitorScripts from "../components/VisitorScripts.astro";
 import { defaultHeroImage } from "../lib/site-images";
 import { withBase } from "../lib/base-url";
 
@@ -15,9 +18,6 @@ const {
   /** 整页固定为暗色主题令牌（不随顶栏昼夜切换改变控制台样式） */
   lockPageDarkTheme = false,
 } = Astro.props;
-const logVisitorVisits = Boolean(
-  import.meta.env.PUBLIC_SUPABASE_URL && import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
 const year = new Date().getFullYear();
 /** 与 public 资源、Service Worker 注册一致（支持子路径部署） */
 const baseUrl = import.meta.env.BASE_URL;
@@ -63,15 +63,7 @@ const ogImageAbsolute = (() => {
       if (window.__bxHiddenPosts) window.__bxHiddenPosts.catch(function () {});
     </script>
     
-    <!-- 防止夜间模式闪烁的早期脚本 -->
-    <script is:inline>
-      (function() {
-        const theme = localStorage.getItem('preferred-theme') || 'light';
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        }
-      })();
-    </script>
+    <ThemeInit />
 
     <!-- Favicon - 使用头像作为标签栏图标 -->
     <link rel="icon" type="image/png" href={withBase(baseUrl, "logo.png")} />
@@ -100,59 +92,7 @@ const ogImageAbsolute = (() => {
   <body
     class:list={[overlayNav && "home-fluid-index", lockPageDarkTheme && "page-theme-lock-dark"]}
   >
-    {
-      !hideNav && (
-        <header>
-          <div class="nav">
-            <div class="nav-inner">
-            <div class="nav-left">
-              <a href={withBase(baseUrl, "/")}>B.X.Zhang</a>
-            </div>
-            <nav class="nav-links">
-              <a href={withBase(baseUrl, "/")} class="nav-link-iconed">
-                <i class="iconfont icon-home-fill" aria-hidden="true"></i>
-                <span>Home</span>
-              </a>
-              <a href={withBase(baseUrl, "archives")} class="nav-link-iconed">
-                <i class="iconfont icon-archive-fill" aria-hidden="true"></i>
-                <span>Archives</span>
-              </a>
-              <a href={withBase(baseUrl, "categories")} class="nav-link-iconed">
-                <i class="iconfont icon-category-fill" aria-hidden="true"></i>
-                <span>Categories</span>
-              </a>
-              {/** Statistics 页不放入导航，仅自己记 URL `/statistics` 访问 */}
-              <a href={withBase(baseUrl, "about")} class="nav-link-iconed">
-                <i class="iconfont icon-user-fill" aria-hidden="true"></i>
-                <span>About</span>
-              </a>
-              <a href={withBase(baseUrl, "search")} class="nav-search-link" title="Search" aria-label="Search">
-                <i class="iconfont icon-search" aria-hidden="true"></i>
-              </a>
-              <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-                <!-- 太阳图标（亮色模式） -->
-                <svg class="theme-icon theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="5"></circle>
-                  <line x1="12" y1="1" x2="12" y2="3"></line>
-                  <line x1="12" y1="21" x2="12" y2="23"></line>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                  <line x1="1" y1="12" x2="3" y2="12"></line>
-                  <line x1="21" y1="12" x2="23" y2="12"></line>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-                <!-- 月亮图标（暗色模式） -->
-                <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-              </button>
-            </nav>
-            </div>
-          </div>
-        </header>
-      )
-    }
+    {!hideNav && <SiteHeader overlay={overlayNav} />}
 
     {
       lockPageDarkTheme ? (
@@ -168,125 +108,12 @@ const ogImageAbsolute = (() => {
       )
     }
 
-    {
-      logVisitorVisits && (
-        <>
-          <script is:inline>
-            (function() {
-              try {
-                // 一次性跳过：访问 ?noslog=1 自动设置 cookie + localStorage，然后清理 URL
-                var urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('noslog') === '1') {
-                  localStorage.setItem("bx_owner_skip_visit_log", "1");
-                  document.cookie = "bx_skip_log=1; path=/; max-age=" + (365*24*60*60) + "; SameSite=Lax";
-                  try {
-                    var url = new URL(window.location);
-                    url.searchParams.delete('noslog');
-                    window.history.replaceState(null, '', url);
-                  } catch (_) {}
-                }
-
-                var ls = localStorage.getItem("bx_owner_skip_visit_log");
-                var ss = sessionStorage.getItem("bx_admin_unlocked_v1");
-                var ck = document.cookie.match(/(?:^|;\s*)bx_skip_log=1/);
-                window.__bx_skip_log = ls === "1" || ss === "1" || !!ck;
-
-              } catch(_) {
-                window.__bx_skip_log = false;
-
-              }
-            })();
-          </script>
-          <script>
-            if (!window.__bx_skip_log) {
-              import("../scripts/visit-logger.ts").then(function(m) {
-                m.runVisitLog({ siteBasePath: import.meta.env.BASE_URL });
-              });
-            }
-          </script>
-        </>
-      )
-    }
+    <VisitorScripts />
 
     <script>
       import "../scripts/hero-effects";
 
       document.addEventListener("DOMContentLoaded", () => {
-        // 夜间模式切换功能
-        (function() {
-          // 从 localStorage 读取主题偏好，默认为亮色
-          const savedTheme = localStorage.getItem('preferred-theme') || 'light';
-          
-          function setTheme(theme) {
-            // 保存到 localStorage
-            localStorage.setItem('preferred-theme', theme);
-            
-            // 切换 body 的 dark 类
-            if (theme === 'dark') {
-              document.documentElement.classList.add('dark');
-              document.body.classList.add('dark');
-            } else {
-              document.documentElement.classList.remove('dark');
-              document.body.classList.remove('dark');
-            }
-            
-            // 切换图标显示
-            const lightIcon = document.querySelector('.theme-icon-light');
-            const darkIcon = document.querySelector('.theme-icon-dark');
-            if (lightIcon && darkIcon) {
-              if (theme === 'dark') {
-                lightIcon.style.display = 'none';
-                darkIcon.style.display = '';
-              } else {
-                lightIcon.style.display = '';
-                darkIcon.style.display = 'none';
-              }
-            }
-          }
-          
-          // 初始化主题（在页面加载前执行，避免闪烁）
-          setTheme(savedTheme);
-          
-          // 主题切换按钮点击事件
-          const themeToggle = document.getElementById('theme-toggle');
-          if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-              const currentTheme = localStorage.getItem('preferred-theme') || 'light';
-              const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-              setTheme(newTheme);
-            });
-            
-            // 阻止空格键触发按钮点击（避免与小恐龙游戏冲突）
-            themeToggle.addEventListener('keydown', (e) => {
-              if (e.key === ' ' || e.keyCode === 32) {
-                e.preventDefault();
-                e.stopPropagation();
-              }
-            });
-          }
-        })();
-
-        // 仅首页首屏：滑到最上时顶栏更透明，下滚后渐变为实色（不改动条高与链接间距）
-        (function homeNavTransparency() {
-          if (!document.body.classList.contains("home-fluid-index")) return;
-          const header = document.querySelector("header");
-          if (!header) return;
-          let ticking = false;
-          function update() {
-            const st = window.pageYOffset || document.documentElement.scrollTop;
-            if (st > 50) header.classList.add("scrolled");
-            else header.classList.remove("scrolled");
-            ticking = false;
-          }
-          function onScroll() {
-            if (ticking) return;
-            ticking = true;
-            requestAnimationFrame(update);
-          }
-          window.addEventListener("scroll", onScroll, { passive: true });
-          update();
-        })();
-        
         // 平滑滚动
         const scrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
         document.documentElement.style.scrollBehavior = scrollBehavior;
@@ -487,23 +314,6 @@ const ogImageAbsolute = (() => {
             .catch(function () { /* Supabase unreachable, skip client-side filter */ });
         } catch (_) {}
       })();
-    </script>
-    <script is:inline define:vars={{ baseUrl }}>
-      (function () {
-        if (!("serviceWorker" in navigator)) return;
-        var scope = baseUrl || "/";
-        if (scope.slice(-1) !== "/") scope += "/";
-        navigator.serviceWorker.register(scope + "sw.js", { scope: scope }).catch(function () {});
-      })();
-    </script>
-    <script>
-      import { runSitewideCountHit } from "../scripts/sitewide-count-hit.ts";
-      import { countapiHitUrl, getCountapiNamespace, COUNTAPI_KEYS } from "../lib/site-stats";
-
-      runSitewideCountHit({
-        siteBasePath: import.meta.env.BASE_URL,
-        hitUrl: countapiHitUrl(getCountapiNamespace(), COUNTAPI_KEYS.sitePageViews),
-      });
     </script>
   </body>
 </html>
