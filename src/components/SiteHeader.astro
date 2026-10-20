@@ -95,7 +95,19 @@ const base = import.meta.env.BASE_URL;
   :global(html.theme-ripple::view-transition-new(root)) { z-index: 2; }
   :global(html.theme-ripple *), :global(html.theme-ripple *::before), :global(html.theme-ripple *::after) { transition: none !important; }
   header.site-header { position: fixed; inset: 0 0 auto; z-index: 1000; width: 100%; max-width: none; margin: 0; padding: 42px max(36px, calc((100vw - 1120px) / 2)); display: flex; align-items: center; gap: 58px; color: #fff; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; line-height: normal; letter-spacing: normal; transition: padding .25s ease, background-color .25s ease, box-shadow .25s ease; }
-  header.site-header:is(.is-scrolled, .is-solid) { padding-top: 16px; padding-bottom: 16px; background: rgba(20,39,61,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1px 0 rgba(183,207,231,.16), 0 5px 22px rgba(10,24,41,.12); }
+  header.site-header:is(.is-scrolled, .is-solid) { padding-top: 16px; padding-bottom: 16px; color: #20334c; background: rgba(244,248,253,.68); backdrop-filter: blur(22px) saturate(145%); -webkit-backdrop-filter: blur(22px) saturate(145%); box-shadow: 0 1px 0 rgba(92,120,151,.12), 0 4px 20px rgba(20,39,61,.035); }
+  header.site-header:is(.is-scrolled, .is-solid) :is(.wordmark-mark, .wordmark-dot) { color: #52749a; }
+  header.site-header:is(.is-scrolled, .is-solid) nav a::after { background: #52749a; }
+  header.site-header:is(.is-scrolled, .is-solid) .icon-button:hover { color: #284e79; background: rgba(40,78,121,.08); }
+  header.site-header:is(.is-scrolled, .is-solid) :is(a, button):focus-visible { outline-color: #52749a; }
+  :global([data-theme='dark']) header.site-header:is(.is-scrolled, .is-solid) { color: #e4edf7; background: rgba(17,28,43,.62); box-shadow: 0 1px 0 rgba(183,207,231,.12), 0 4px 20px rgba(0,0,0,.06); }
+  :global([data-theme='dark']) header.site-header:is(.is-scrolled, .is-solid) :is(.wordmark-mark, .wordmark-dot) { color: #b7cfe7; }
+  :global([data-theme='dark']) header.site-header:is(.is-scrolled, .is-solid) nav a::after { background: #b7cfe7; }
+  :global([data-theme='dark']) header.site-header:is(.is-scrolled, .is-solid) .icon-button:hover { color: #d5e6f5; background: #ffffff12; }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    header.site-header:is(.is-scrolled, .is-solid) { background: rgba(244,248,253,.96); }
+    :global([data-theme='dark']) header.site-header:is(.is-scrolled, .is-solid) { background: rgba(17,28,43,.96); }
+  }
   .site-header-space { height: var(--header-offset, 152px); }
   .site-header a { color: inherit; text-decoration: none; }
   .site-header :is(a, button):focus-visible { outline: 3px solid #b7cfe7; outline-offset: 5px; border-radius: 3px; }
