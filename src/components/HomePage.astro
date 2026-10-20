@@ -27,11 +27,11 @@ const title = "Welcome to AAAAAZBX's Blog";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     {preview && <meta name="robots" content="noindex, nofollow" />}
-    <meta name="description" content="Boxuan Zhang 的个人博客：算法、机器学习、数学与生活笔记。" />
+    <meta name="description" content="Boxuan Zhang's personal blog: algorithms, machine learning, mathematics, and life." />
     <title>{preview ? 'AAAAAZBX — Homepage Preview' : 'Boxuan Zhang — Home'}</title>
     <link rel="canonical" href={new URL(base, Astro.site ?? 'https://aaaaazbx.github.io').href} />
     <meta property="og:title" content="AAAAAZBX — Boxuan Zhang" />
-    <meta property="og:description" content="算法、机器学习、数学与生活笔记。" />
+    <meta property="og:description" content="Notes on algorithms, machine learning, mathematics, and life." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={new URL(base, Astro.site ?? 'https://aaaaazbx.github.io').href} />
     <meta property="og:image" content={new URL(defaultHeroImage(base), Astro.site ?? 'https://aaaaazbx.github.io').href} />
@@ -40,11 +40,11 @@ const title = "Welcome to AAAAAZBX's Blog";
     <ThemeInit />
   </head>
   <body>
-    <a class="skip-link" href="#notes">跳转到文章</a>
+    <a class="skip-link" href="#notes">Skip to articles</a>
 
     <SiteHeader overlay home />
 
-    <section class="hero" aria-label="欢迎来到我的博客">
+    <section class="hero" aria-label="Welcome to my blog">
       <img class="hero-photo" src={defaultHeroImage(base)} srcset={heroImageSrcSet(base)} sizes="100vw" width="1440" height="1080" alt="" fetchpriority="high" />
       <div class="hero-shade" aria-hidden="true"></div>
 
@@ -71,22 +71,22 @@ const title = "Welcome to AAAAAZBX's Blog";
     >
       <div class="main-column">
         <div class="section-heading"><h2>ARTICLES & NOTES</h2><span class="article-count" aria-live="polite">{posts.length} notes</span></div>
-        <div class="filter-state" hidden><span></span><button type="button">查看全部 ×</button></div>
+        <div class="filter-state" hidden><span></span><button type="button">View all ×</button></div>
         <div class="article-list">
           {posts.map((post, index) => (
             <article class="post" data-topic={post.collection} data-post-id={post.sortId} hidden={index >= 6}>
               <div class="post-meta"><span>{topicLabels[post.collection] ?? post.collection}</span><span class="meta-dot">·</span><time datetime={post.date}>{formatDateIso(post.date)}</time></div>
               <h3><a href={withBase(base, post.href)}>{post.title}</a></h3>
               <p class="post-excerpt">{buildPostExcerpt(post.body)}</p>
-              <a class="read-more" href={withBase(base, post.href)}>继续阅读 <span aria-hidden="true">→</span></a>
+              <a class="read-more" href={withBase(base, post.href)}>Read more <span aria-hidden="true">→</span></a>
             </article>
           ))}
         </div>
-        <p class="empty-state" hidden>这个分类还没有文章。</p>
-        <button class="more-button" type="button" hidden={posts.length <= 6}>更多文章 <span aria-hidden="true">↓</span></button>
+        <p class="empty-state" hidden>No articles in this category yet.</p>
+        <button class="more-button" type="button" hidden={posts.length <= 6}><span class="more-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m7-7-7 7-7-7" /></svg></span><span class="more-label">Show more</span></button>
       </div>
 
-      <aside class="sidebar" aria-label="分类和作者信息">
+      <aside class="sidebar" aria-label="Categories and author information">
         <section class="topic-section">
           <h2 class="section-label">BROWSE BY TOPIC</h2>
           <div class="topic-list">
@@ -104,8 +104,8 @@ const title = "Welcome to AAAAAZBX's Blog";
 
         <section class="author-note">
           <svg class="note-spark" viewBox="0 0 40 40" aria-hidden="true"><path d="m20 1 4.5 14.5L39 20l-14.5 4.5L20 39l-4.5-14.5L1 20l14.5-4.5Z" fill="currentColor" /></svg>
-          <div class="author-heading"><img src={withBase(base, 'logo.png')} alt="" width="46" height="46" loading="lazy" /><div><strong>Hey, I'm Boxuan.</strong><span>也可以叫我 AAAAAZBX</span></div></div>
-          <p>在这里记录算法、机器学习、数学，以及生活中的一些想法。</p>
+          <div class="author-heading"><img src={withBase(base, 'logo.png')} alt="" width="46" height="46" loading="lazy" /><div><strong>Hey, I'm Boxuan.</strong><span>Also known as AAAAAZBX</span></div></div>
+          <p>Notes on AI infrastructure, agents, large language models, testing, and life.</p>
           <a href={withBase(base, 'about/')}>More about me <span aria-hidden="true">↗</span></a>
         </section>
         <a class="back-to-top" href="#">Back to the skyline <span aria-hidden="true">↑</span></a>
@@ -282,9 +282,14 @@ const title = "Welcome to AAAAAZBX's Blog";
   .author-note > a span { margin-left: 6px; }
   .back-to-top { display: inline-flex; gap: 12px; margin: 30px 0 0 20px; font-size: 14px; color: var(--muted); }
   .back-to-top:hover { color: var(--accent); }
-  .more-button { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; padding: 16px; border: 1px solid var(--line); border-radius: 7px; background: var(--note); font-size: 15px; font-weight: 600; transition: border-color .2s; }
-  .more-button:hover { border-color: var(--accent); }
-  .more-button span { color: var(--accent); }
+  .more-button { display: flex; align-items: stretch; width: min(250px, 100%); height: 44px; margin: 8px auto 0; padding: 0; border: 0; border-radius: 4px; background: #284e79; color: #fff; font-size: 16px; font-weight: 500; overflow: hidden; transition: background .2s; }
+  .more-button:hover { background: #203f63; }
+  .more-icon { display: grid; place-items: center; width: 44px; flex-shrink: 0; background: rgba(255,255,255,.09); }
+  .more-icon svg { transition: transform .2s; }
+  .more-button:hover .more-icon svg { transform: translateY(3px); }
+  .more-label { display: flex; align-items: center; justify-content: center; flex: 1; padding: 0 16px; }
+  .more-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) { .more-button, .more-icon svg { transition: none; } .more-button:hover .more-icon svg { transform: none; } }
   .filter-state { display: flex; align-items: center; justify-content: space-between; padding-bottom: 24px; font-size: 15px; color: var(--accent); }
   .filter-state button { background: none; border: none; font-size: 14px; color: var(--muted); }
   .empty-state { color: var(--muted); }

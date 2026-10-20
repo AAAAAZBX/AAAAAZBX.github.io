@@ -1,0 +1,334 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import SiteHeader from './SiteHeader.astro';
+import ThemeInit from './ThemeInit.astro';
+import VisitorScripts from './VisitorScripts.astro';
+import { withBase } from '../lib/base-url';
+
+const { preview = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+type Contribution = { date: string; count: number; level: number };
+let contributions: Contribution[] = [];
+try {
+  const data = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public/data/github-contributions.json'), 'utf8'));
+  contributions = (data.contributions ?? []).filter((day: Contribution) => /^\d{4}-\d{2}-\d{2}$/.test(day.date) && Number.isFinite(day.count)).sort((a: Contribution, b: Contribution) => a.date.localeCompare(b.date));
+} catch { /* The profile link remains available without local contribution data. */ }
+const total = contributions.reduce((sum, day) => sum + day.count, 0);
+const first = contributions[0]?.date;
+const last = contributions.at(-1)?.date;
+const padding = first ? new Date(`${first}T00:00:00Z`).getUTCDay() : 0;
+const cells = [...Array.from({ length: padding }, () => null), ...contributions];
+const weekCount = Math.ceil(cells.length / 7);
+let previousMonth = '';
+const months = Array.from({ length: weekCount }, (_, week) => ({ day: cells.slice(week * 7, week * 7 + 7).find(Boolean), week })).flatMap(({ day, week }) => {
+  if (!day || day.date.slice(0, 7) === previousMonth) return [];
+  previousMonth = day.date.slice(0, 7);
+  return [{ column: week + 1, label: new Date(`${day.date}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }) }];
+});
+const monthYear = (date?: string) => date ? new Date(`${date}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }) : '';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {preview && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="description" content="Boxuan Zhang, a master's student at Nanjing University and a member of ISElab." />
+    <title>{preview ? 'About Preview — Boxuan Zhang' : 'About — Boxuan Zhang'}</title>
+    {!preview && <link rel="canonical" href={new URL(withBase(base, 'about/'), Astro.site ?? 'https://aaaaazbx.github.io').href} />}
+    <link rel="icon" href={withBase(base, 'logo.png')} />
+    <ThemeInit />
+  </head>
+  <body>
+    <a class="skip-link" href="#about">Skip to about me</a>
+    <SiteHeader />
+
+    <main id="about" class="about-page">
+      <section class="profile-hero" aria-labelledby="profile-name">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> ABOUT ME</p>
+          <h1 id="profile-name">Boxuan Zhang<span>.</span></h1>
+          <p class="role-line">Software engineering <span aria-hidden="true">/</span> Nanjing University</p>
+          <p class="hero-intro">Learning in public. Staying curious.<br />Notes on algorithms, machine learning, mathematics, and life.</p>
+          <div class="contact-links" aria-label="Contact me">
+            <a href="https://github.com/AAAAAZBX" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77a5.07 5.07 0 0 0-.09-3.73S18.73.69 16 2.48a13.38 13.38 0 0 0-7 0C6.27.69 5.09 1.04 5.09 1.04A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" /></svg>GitHub<span aria-hidden="true">↗</span></a>
+            <a href="mailto:boxuanzhang@smail.nju.edu.cn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 6 9 7 9-7" /></svg>Email<span aria-hidden="true">↗</span></a>
+            <a href="https://wpa.qq.com/msgrd?v=3&uin=1604815119&site=qq&menu=yes" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3Z" /><path d="M7 8h9M7 12h6" /></svg>QQ<span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+        <div class="portrait-block">
+          <div class="portrait-ring">
+            <svg class="portrait-dino" viewBox="0 0 1201 1198" width="176" height="176" role="img" aria-label="Boxuan Zhang's dinosaur avatar">
+              <defs>
+                <filter id="portrait-cutout" color-interpolation-filters="sRGB">
+                  <feColorMatrix type="luminanceToAlpha" />
+                  <feComponentTransfer><feFuncA type="discrete" tableValues="1 1 0 0" /></feComponentTransfer>
+                  <feComposite in="SourceGraphic" operator="in" />
+                </filter>
+                <mask id="portrait-mask" mask-type="alpha"><image href={withBase(base, 'logo.png')} width="1201" height="1198" filter="url(#portrait-cutout)" /></mask>
+              </defs>
+              <rect width="1201" height="1198" fill="currentColor" mask="url(#portrait-mask)" />
+            </svg>
+          </div>
+          <span class="handle">@AAAAAZBX</span>
+          <span class="location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></svg>Nanjing, China</span>
+        </div>
+      </section>
+
+      <div class="bio-grid">
+        <section class="bio" aria-labelledby="bio-title">
+          <p class="eyebrow">A LITTLE BACKGROUND</p>
+          <h2 id="bio-title">Learning, building, and writing.</h2>
+          <p>I'm a master's student at the <a href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer">Software Institute of Nanjing University</a> and a member of <a href="https://nju-ise.github.io/" target="_blank" rel="noopener noreferrer">ISElab</a>. I earned my bachelor's degree in Data Science and Big Data Technology from Nanjing Agricultural University.</p>
+          <p>I mainly work with Python and C/C++. My interests include AI infrastructure, intelligent agents, large language models, agent-driven testing, and test-driven kernel development. This blog is where I share technical notes, research ideas, and moments from everyday life.</p>
+          <div class="interests" aria-label="Research interests"><span>AI Infra</span><span>Intelligent Agents</span><span>Large Language Models</span><span>Agent-driven Testing</span><span>Test-driven Kernel Development</span></div>
+        </section>
+        <section class="education" aria-labelledby="education-title">
+          <p class="eyebrow" id="education-title">EDUCATION</p>
+          <ol class="timeline">
+            <li><span class="timeline-dot" aria-hidden="true"></span><time>2026 — Present</time><h3><a href="https://software.nju.edu.cn/" target="_blank" rel="noopener noreferrer">Nanjing University <span aria-hidden="true">↗</span></a></h3><p>Master's · Software Engineering</p><span class="school-note">Software Institute</span></li>
+            <li><span class="timeline-dot" aria-hidden="true"></span><time>2022 — 2026</time><h3><a href="https://ai.njau.edu.cn/" target="_blank" rel="noopener noreferrer">Nanjing Agricultural University <span aria-hidden="true">↗</span></a></h3><p>Bachelor's · Data Science and<br class="desktop-break" /> Big Data Technology</p><span class="school-note">Nanjing Agricultural University</span></li>
+          </ol>
+        </section>
+      </div>
+
+      <section class="activity-section" aria-labelledby="activity-title">
+        <div class="activity-heading"><div><p class="eyebrow">ON GITHUB</p><h2 id="activity-title">A year of building.</h2></div><a href="https://github.com/AAAAAZBX" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a></div>
+        <div class="activity-summary"><p><strong>{total.toLocaleString('en-US')}</strong> contributions</p><span>{monthYear(first)} — {monthYear(last)}</span></div>
+        {weekCount > 0 && <div class="calendar-scroll" tabindex="0" role="region" aria-label="GitHub contributions; scroll horizontally on smaller screens">
+          <div class="calendar" style={`--weeks: ${weekCount}`}>
+            <div class="calendar-months" aria-hidden="true">{months.map(month => <span style={`grid-column: ${month.column}`}>{month.label}</span>)}</div>
+            <div class="calendar-body"><div class="calendar-days" aria-hidden="true">{['Sun', '', 'Tue', '', 'Thu', '', 'Sat'].map(day => <span>{day}</span>)}</div><div class="calendar-cells" role="img" aria-label={`${total} GitHub contributions from ${first} to ${last}`}>{cells.map(day => <span class:list={['contribution-square', day ? `level-${Math.min(4, Math.max(0, day.level ?? 0))}` : 'outside-range']} title={day ? `${day.date} · ${day.count} contributions` : undefined}></span>)}</div></div>
+          </div>
+        </div>}
+        <div class="calendar-caption"><span>Small steps, steady progress.</span><div class="calendar-legend" aria-label="Darker colors indicate more contributions"><span>Less</span>{[0, 1, 2, 3, 4].map(level => <i class={`level-${level}`} aria-hidden="true"></i>)}<span>More</span></div></div>
+      </section>
+
+      <section class="play-section" aria-label="Chrome dinosaur game">
+        <p class="game-hint">Space to start · ↑ Jump · ↓ Duck<span> / Or tap the dinosaur to play</span></p>
+        <div class="game-stage" id="preview-dino" tabindex="0" role="application" aria-label="Chrome dinosaur game: Space to start or jump, Down to duck" data-runner-src={withBase(base, 't-rex-runner-gh-pages/index.js')}>
+          <img class="icon icon-offline" src={withBase(base, 'logo.png')} alt="" width="44" height="44" />
+        </div>
+        <p class="game-status" role="status" aria-live="polite"></p>
+        <div id="offline-resources" hidden>
+          <img id="offline-resources-1x" src={withBase(base, 't-rex-runner-gh-pages/assets/default_100_percent/100-offline-sprite.png')} alt="" />
+          <img id="offline-resources-2x" src={withBase(base, 't-rex-runner-gh-pages/assets/default_200_percent/200-offline-sprite.png')} alt="" />
+          <template id="audio-resources" data-muted="true"></template>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><a class="footer-brand" href={base}>AAAAAZBX<span>.</span></a><p>© {new Date().getFullYear()} Boxuan Zhang</p><a class="back-link" href="#about">Back to top <span aria-hidden="true">↑</span></a></footer>
+
+    <script>
+      const stage = document.querySelector<HTMLElement>('.game-stage');
+      const status = document.querySelector<HTMLElement>('.game-status');
+      if (stage) {
+        async function initializeGame() {
+          try {
+            await Promise.all([...document.querySelectorAll<HTMLImageElement>('#offline-resources img')].map(image => image.decode()));
+            await new Promise<void>((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = stage!.dataset.runnerSrc!;
+              script.onload = () => resolve();
+              script.onerror = () => reject(new Error('Game unavailable'));
+              document.body.append(script);
+            });
+            const Runner = (window as unknown as { Runner: any }).Runner;
+            // Keep the original game inside its own track, with input local to this panel.
+            Runner.prototype.setArcadeMode = function () {};
+            Runner.prototype.setArcadeModeContainerScale = function () {};
+            Runner.prototype.startListening = function () {};
+            Runner.prototype.stopListening = function () {};
+            Runner.prototype.createTouchController = function () {};
+            // The original runner caps its canvas at 600px; fill this page's track.
+            Runner.prototype.adjustDimensions = function () {
+              clearInterval(this.resizeTimerId_);
+              this.resizeTimerId_ = null;
+              this.dimensions.WIDTH = this.outerContainerEl.clientWidth;
+              if (!this.canvas) return;
+              this.canvas.width = this.dimensions.WIDTH;
+              this.canvas.height = this.dimensions.HEIGHT;
+              Runner.updateCanvasScaling(this.canvas);
+              this.containerEl.style.width = `${this.dimensions.WIDTH}px`;
+              this.distanceMeter.calcXPos(this.dimensions.WIDTH);
+              this.clearCanvas();
+              this.horizon.update(0, 0, true);
+              this.tRex.update(0);
+              this.distanceMeter.update(0, Math.ceil(this.distanceRan));
+              if (this.playing) this.stop();
+              if (this.crashed && this.gameOverPanel) {
+                this.gameOverPanel.updateDimensions(this.dimensions.WIDTH);
+                this.gameOverPanel.draw();
+              }
+            };
+            const runner = new Runner('#preview-dino');
+            const ground = runner.horizon.horizonLine;
+            const drawGround = ground.draw;
+            ground.draw = function () {
+              drawGround.call(this);
+              for (let x = Math.max(...this.xPos) + this.dimensions.WIDTH; x < runner.dimensions.WIDTH; x += this.dimensions.WIDTH) {
+                this.canvasCtx.drawImage(Runner.imageSprite, this.sourceXPos[0], this.spritePos.y,
+                  this.sourceDimensions.WIDTH, this.sourceDimensions.HEIGHT,
+                  x, this.yPos, this.dimensions.WIDTH, this.dimensions.HEIGHT);
+              }
+            };
+            runner.adjustDimensions();
+            runner.canvas?.setAttribute('aria-label', 'Dinosaur game track');
+            const keyEvent = (type: string) => ({ type, keyCode: 32, target: stage, preventDefault() {} });
+            const isTyping = (target: EventTarget | null) => target instanceof HTMLElement && !!target.closest('input, textarea, select, button, a, [contenteditable="true"]');
+            document.addEventListener('keydown', event => {
+              if (![32, 38, 40, 13].includes(event.keyCode) || isTyping(event.target)) return;
+              if (event.keyCode !== 32 && document.activeElement !== stage) return;
+              event.preventDefault();
+              stage!.focus({ preventScroll: true });
+              runner.onKeyDown(event);
+            });
+            document.addEventListener('keyup', event => {
+              if (![32, 38, 40, 13].includes(event.keyCode) || isTyping(event.target)) return;
+              if (document.activeElement !== stage) return;
+              event.preventDefault();
+              runner.onKeyUp(event);
+            });
+            stage!.addEventListener('pointerdown', event => {
+              if (event.button !== 0) return;
+              event.preventDefault();
+              stage!.focus({ preventScroll: true });
+              runner.onKeyDown(keyEvent('keydown'));
+            });
+            stage!.addEventListener('pointerup', () => runner.onKeyUp(keyEvent('keyup')));
+            stage!.addEventListener('blur', () => { if (runner.playing) runner.stop(); });
+            document.addEventListener('visibilitychange', () => { if (document.hidden) runner.stop(); });
+            if (status) status.textContent = '';
+          } catch (error) {
+            console.error('Unable to initialize dinosaur game:', error);
+            if (status) status.textContent = 'The game could not load. Please refresh to try again.';
+          }
+        }
+        void initializeGame();
+      }
+    </script>
+    {!preview && <VisitorScripts />}
+  </body>
+</html>
+
+<style>
+  :global(html) { --paper: #fff; --ink: #20334c; --muted: #566b82; --accent: #284e79; --soft: #f3f7fb; --chip: #e8eff6; --line: #dce5ee; color-scheme: light; scroll-behavior: smooth; scroll-padding-top: var(--header-offset, 152px); background: var(--paper); }
+  :global(html[data-theme='dark']) { --paper: #111c2b; --ink: #e4edf7; --muted: #a9bbd0; --accent: #9bc1e5; --soft: #192a40; --chip: #21364f; --line: #2d425b; color-scheme: dark; }
+  :global(body) { margin: 0; color: var(--ink); background: var(--paper); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; -webkit-font-smoothing: antialiased; }
+  :global(*) { box-sizing: border-box; }
+  :global([hidden]) { display: none !important; }
+  :global(astro-dev-toolbar) { display: none; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; }
+  :is(a, button, [tabindex]):focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; border-radius: 4px; }
+  .skip-link { position: fixed; top: -80px; left: 16px; z-index: 1100; padding: 12px 18px; border-radius: 6px; background: var(--paper); }
+  .skip-link:focus { top: 12px; }
+  .about-page { max-width: 1120px; margin: 0 auto; padding: 58px 36px 0; }
+  .profile-hero { display: grid; grid-template-columns: minmax(0, 1fr) 230px; align-items: center; gap: 72px; padding-bottom: 54px; border-bottom: 1px solid var(--line); }
+  .eyebrow { display: flex; align-items: center; gap: 10px; margin: 0 0 20px; color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: 1.8px; line-height: 1.6; }
+  .eyebrow-line { display: inline-block; width: 26px; height: 1px; background: var(--accent); }
+  h1 { margin: 0 0 15px; font-size: clamp(38px, 4.4vw, 58px); font-weight: 750; letter-spacing: -2px; line-height: 1.15; }
+  h1 > span { color: var(--accent); }
+  .role-line { margin: 0; font-size: 16px; font-weight: 500; color: var(--muted); line-height: 1.75; }
+  .role-line > span { margin: 0 7px; color: #a4b3c3; }
+  .hero-intro { margin: 24px 0 23px; color: var(--muted); font-size: 16px; line-height: 1.95; }
+  .contact-links { display: flex; flex-wrap: wrap; gap: 26px; }
+  .contact-links a { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; transition: color .2s; }
+  .contact-links svg { width: 17px; height: 17px; }
+  .contact-links a > span { margin-left: 1px; color: var(--muted); }
+  .contact-links a:hover, .text-link:hover, .back-link:hover { color: var(--accent); }
+  .portrait-block { display: flex; align-items: center; flex-direction: column; gap: 13px; padding-top: 12px; }
+  .portrait-ring { display: grid; place-items: center; width: 200px; height: 200px; border: 1px solid var(--line); border-radius: 50%; }
+  .portrait-dino { display: block; width: 156px; height: 156px; color: var(--ink); }
+  .handle { margin-top: 3px; font-size: 14px; font-weight: 650; color: var(--accent); }
+  .location { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; color: var(--muted); }
+  .location svg { width: 14px; height: 14px; }
+  .bio-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 88px; padding-top: 48px; }
+  h2 { margin: 0; font-size: 27px; font-weight: 700; letter-spacing: -.6px; line-height: 1.4; }
+  .bio .eyebrow { margin-bottom: 13px; }
+  .bio p:not(.eyebrow) { margin: 19px 0 0; font-size: 16px; line-height: 1.95; color: var(--muted); }
+  .bio p a { color: var(--accent); text-decoration: underline; text-decoration-color: #a1b7cf; text-underline-offset: 4px; }
+  .interests { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .interests span { padding: 7px 10px; background: var(--chip); color: var(--accent); font-size: 13px; line-height: 1.4; border-radius: 5px; }
+  .education { padding-top: 1px; }
+  .education .eyebrow { margin-bottom: 24px; }
+  .timeline { list-style: none; margin: 0; padding: 0 0 0 21px; border-left: 1px solid var(--line); }
+  .timeline li { position: relative; padding-bottom: 27px; }
+  .timeline li:last-child { padding-bottom: 0; }
+  .timeline-dot { position: absolute; top: 5px; left: -26px; width: 9px; height: 9px; border: 2px solid var(--paper); border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1px var(--line); }
+  .timeline time { display: block; font-size: 13px; color: var(--muted); margin-bottom: 9px; }
+  .timeline h3 { margin: 0 0 8px; font-size: 16px; font-weight: 650; line-height: 1.6; }
+  .timeline h3 span { font-size: 14px; margin-left: 3px; color: var(--muted); }
+  .timeline p { font-size: 14px; line-height: 1.7; color: var(--muted); margin: 0 0 7px; }
+  .school-note { font-size: 13px; color: var(--muted); }
+  .activity-section { margin-top: 56px; --green-0: #ebedf0; --green-1: #9be9a8; --green-2: #40c463; --green-3: #30a14e; --green-4: #216e39; }
+  :global([data-theme='dark']) .activity-section { --green-0: #24364b; --green-1: #0e4429; --green-2: #006d32; --green-3: #26a641; --green-4: #39d353; }
+  .activity-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 26px; flex-wrap: wrap; }
+  .activity-heading .eyebrow { margin-bottom: 8px; }
+  .activity-heading > a { font-size: 14px; color: var(--muted); }
+  .activity-summary { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+  .activity-summary p { margin: 0; font-size: 14px; }
+  .activity-summary strong { color: var(--ink); font-size: 23px; margin-right: 5px; }
+  .calendar-scroll { overflow-x: auto; padding: 3px 2px 7px; scrollbar-width: thin; }
+  .calendar { min-width: 754px; }
+  .calendar-months { display: grid; grid-template-columns: repeat(var(--weeks), minmax(11px, 1fr)); gap: 4px; margin: 0 0 9px 38px; font-size: 12px; color: var(--muted); }
+  .calendar-body { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; }
+  .calendar-days { display: grid; grid-template-rows: repeat(7, 1fr); gap: 4px; font-size: 11px; color: var(--muted); }
+  .calendar-days span { display: flex; align-items: center; }
+  .calendar-cells { display: grid; grid-auto-flow: column; grid-template-columns: repeat(var(--weeks), minmax(11px, 1fr)); grid-template-rows: repeat(7, 1fr); gap: 4px; }
+  .contribution-square { aspect-ratio: 1; border-radius: 3px; }
+  .outside-range { visibility: hidden; }
+  .level-0 { background: var(--green-0); } .level-1 { background: var(--green-1); } .level-2 { background: var(--green-2); } .level-3 { background: var(--green-3); } .level-4 { background: var(--green-4); }
+  .calendar-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 15px; color: var(--muted); font-size: 13px; }
+  .calendar-legend { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+  .calendar-legend i { width: 11px; height: 11px; border-radius: 2px; }
+  .play-section { position: relative; height: 210px; margin-top: 38px; border-bottom: 1px solid var(--line); }
+  .game-hint { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.8; }
+  .game-stage { position: absolute; width: 100%; height: 150px; left: 0; bottom: -19px; touch-action: manipulation; }
+  .game-stage:focus-visible { outline: none; }
+  .game-stage > .icon { position: absolute; left: 0; bottom: 22px; object-fit: contain; }
+  :global(.game-stage .runner-container) { position: relative; width: 100%; height: 150px; overflow: hidden; }
+  :global(.game-stage .runner-canvas) { display: block; max-width: 100%; image-rendering: pixelated; }
+  :global([data-theme='dark'] .game-stage .runner-canvas) { filter: invert(.82) brightness(1.15); }
+  .game-status { margin: 10px 0; font-size: 14px; color: var(--muted); }
+  .site-footer { max-width: 1048px; margin: 0 auto; padding: 25px 0 35px; display: flex; align-items: center; gap: 24px; }
+  .footer-brand { font-size: 16px; font-weight: 800; letter-spacing: -.5px; }
+  .footer-brand span { color: var(--accent); }
+  .site-footer p { margin: 0; color: var(--muted); font-size: 13px; }
+  .back-link { margin-left: auto; color: var(--muted); font-size: 14px; }
+  .back-link > span { margin-left: 9px; }
+  @media (max-width: 1000px) {
+    .profile-hero { gap: 32px; grid-template-columns: minmax(0, 1fr) 180px; }
+    .bio-grid { gap: 44px; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+    .site-footer { margin-inline: 36px; }
+  }
+  @media (max-width: 760px) {
+    .about-page { padding: 35px 24px 0; }
+    .profile-hero { display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 26px; padding-bottom: 32px; }
+    .portrait-block { flex-direction: row; flex-wrap: wrap; gap: 8px 13px; padding: 0; }
+    .portrait-ring { width: 80px; height: 80px; grid-row: span 2; }
+    .portrait-dino { width: 62px; height: 62px; }
+    .handle { font-size: 14px; margin-top: 0; }
+    .location { font-size: 13px; }
+    .eyebrow { font-size: 12px; margin-bottom: 14px; }
+    h1 { font-size: 40px; letter-spacing: -1.4px; }
+    .role-line { font-size: 15px; }
+    .hero-intro { margin: 18px 0; font-size: 16px; }
+    .contact-links { gap: 24px; }
+    .bio-grid { display: flex; flex-direction: column; gap: 35px; padding-top: 32px; }
+    h2 { font-size: 24px; }
+    .interests span { font-size: 13px; }
+    .education .eyebrow { margin-bottom: 20px; }
+    .timeline { margin-left: 4px; }
+    .desktop-break { display: none; }
+    .play-section { height: 200px; margin-top: 35px; }
+    .game-hint span { display: block; }
+    .site-footer { margin-inline: 24px; padding: 23px 0 30px; flex-wrap: wrap; gap: 13px 20px; }
+    .back-link { font-size: 13px; }
+  }
+  @media (max-width: 370px) { .about-page { padding-inline: 20px; } h1 { font-size: 36px; } .contact-links { gap: 20px; } .location { width: 100%; padding-left: 93px; margin-top: -20px; } .portrait-ring { flex-shrink: 0; } }
+  @media (prefers-reduced-motion: reduce) { :global(html) { scroll-behavior: auto; } * { transition: none !important; } }
+</style>
