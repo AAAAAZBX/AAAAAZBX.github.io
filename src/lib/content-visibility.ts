@@ -22,7 +22,7 @@ function readLocalHidden(): string[] {
   }
 }
 
-export async function readHiddenPostIds(): Promise<string[]> {
+async function loadHiddenPostIds(): Promise<string[]> {
   const localHidden = readLocalHidden();
   const supabase = getSupabase();
   if (supabase) {
@@ -31,6 +31,7 @@ export async function readHiddenPostIds(): Promise<string[]> {
         .from("content_visibility")
         .select("hidden_posts")
         .eq("id", 1)
+        .abortSignal(AbortSignal.timeout(5000))
         .single();
       if (!error && data && Array.isArray(data.hidden_posts)) {
         // A stale remote row must not republish posts hidden in the deployed source.
@@ -41,6 +42,15 @@ export async function readHiddenPostIds(): Promise<string[]> {
     }
   }
   return localHidden;
+}
+
+// One snapshot per production build; dev/admin reads must reflect edits immediately.
+let buildSnapshot: Promise<string[]> | undefined;
+export async function readHiddenPostIds(): Promise<string[]> {
+  const ids = await (import.meta.env.DEV
+    ? loadHiddenPostIds()
+    : (buildSnapshot ??= loadHiddenPostIds()));
+  return [...ids];
 }
 
 export async function fetchHiddenPostKeys(): Promise<Set<string>> {

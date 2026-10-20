@@ -1,28 +1,19 @@
-export const DEFAULT_SITE_AUTHOR = "Boxuan Zhang";
+import { defaultHeroImage } from "./site-images";
+import { withBase } from "./base-url";
 
-/** 规范化 Astro base，保证 public 资源为根路径，避免嵌套 URL（如 /ai/xxx、/tools/xxx）下相对路径解析错误 */
-function joinPublicPath(baseUrl: string, path: string): string {
-  const base =
-    !baseUrl || baseUrl === "/"
-      ? "/"
-      : baseUrl.endsWith("/")
-        ? baseUrl
-        : `${baseUrl}/`;
-  const rel = path.startsWith("/") ? path.slice(1) : path;
-  return `${base}${rel}`.replace(/\/{2,}/g, "/");
-}
+export const DEFAULT_SITE_AUTHOR = "Boxuan Zhang";
 
 /** 顶图 URL：`heroImage` 可为绝对链接或站內相对 `public/` 的路径 */
 export function resolveHeroImageUrl(
   heroImage: string | undefined,
   baseUrl: string,
 ): string {
-  const fallback = joinPublicPath(baseUrl, "site-profile.png");
+  const fallback = defaultHeroImage(baseUrl);
   const h = heroImage?.trim();
   if (!h) return fallback;
   if (h.startsWith("http://") || h.startsWith("https://")) return h;
   const path = h.startsWith("/") ? h.slice(1) : h;
-  return joinPublicPath(baseUrl, path);
+  return withBase(baseUrl, path);
 }
 
 /** 为字数 / 阅读时长统计剥离 Markdown（与首页摘要逻辑一致） */

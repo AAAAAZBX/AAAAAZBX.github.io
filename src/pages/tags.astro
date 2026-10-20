@@ -1,10 +1,11 @@
 ---
+import { defaultHeroImage } from "../lib/site-images";
 import Layout from "../layouts/Layout.astro";
 import { getMergedPosts } from "../lib/content-posts";
 
 const merged = await getMergedPosts();
 const baseUrl = import.meta.env.BASE_URL;
-const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
+const heroImageUrl = defaultHeroImage(import.meta.env.BASE_URL);
 const bannerTypedText = "Tags";
 
 function baseJoin(path: string): string {
@@ -50,7 +51,7 @@ const tags = Array.from(byTag.entries()).sort((a, b) => {
         <div class="fluid-banner-mask">
           <div class="fluid-banner-text">
             <h1 class="fluid-banner-title" lang="en" aria-label={bannerTypedText}>
-              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}></span>
+              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}>{bannerTypedText}</span>
             </h1>
           </div>
           <a href="#fluid-board" class="fluid-scroll-down" aria-label="Scroll to tags">
@@ -112,76 +113,4 @@ const tags = Array.from(byTag.entries()).sort((a, b) => {
     color: var(--fluid-link-hover-color);
   }
 </style>
-
-<script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
-<script is:inline>
-  (function () {
-    function fluidHeroTyping() {
-      if (typeof window.Typed === "undefined") return;
-      var el = document.getElementById("fluid-hero-typed");
-      if (!el) return;
-      var text = el.getAttribute("data-typed-text");
-      if (!text) return;
-      el.textContent = "";
-      new window.Typed("#fluid-hero-typed", {
-        strings: ["  ", text],
-        typeSpeed: 50,
-        cursorChar: "_",
-        loop: false,
-        showCursor: true,
-      });
-    }
-
-    function fluidBoardScrollLiftTags() {
-      var hero = document.querySelector(
-        ".fluid-index-header-inner.fluid-header-inner-compact"
-      );
-      var board = document.querySelector(
-        "main.fluid-tags-main #board.fluid-board-surface"
-      );
-      if (!hero || !board) return;
-
-      var maxExtraPx = 88;
-      var ticking = false;
-
-      function scrollBlendSpan() {
-        var h = hero.clientHeight || 1;
-        return Math.max(h * 0.85, 120);
-      }
-
-      function update() {
-        var y = window.pageYOffset || document.documentElement.scrollTop || 0;
-        var span = scrollBlendSpan();
-        var t = span > 0 ? y / span : 0;
-        if (t > 1) t = 1;
-        if (t < 0) t = 0;
-        var u = t * t * (3 - 2 * t);
-        var lift = Math.round(u * maxExtraPx);
-        board.style.transform = "translate3d(0," + -lift + "px,0)";
-        ticking = false;
-      }
-
-      function requestUpdate() {
-        if (!ticking) {
-          ticking = true;
-          window.requestAnimationFrame(update);
-        }
-      }
-
-      window.addEventListener("scroll", requestUpdate, { passive: true });
-      window.addEventListener("resize", requestUpdate);
-      update();
-    }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function () {
-        fluidHeroTyping();
-        fluidBoardScrollLiftTags();
-      });
-    } else {
-      fluidHeroTyping();
-      fluidBoardScrollLiftTags();
-    }
-  })();
-</script>
 

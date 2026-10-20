@@ -1,80 +1,36 @@
-/**
- * 轻量 Service Worker：预缓存全站常用顶图，并对同站图片请求使用 cache-first，
- * 减轻多页跳转时背景图重复下载（需 HTTPS 或 localhost）。
- */
-const CACHE_NAME = 'tremendous-assets-v2';
-const swUrl = self.location.href;
+// Versioned covers are immutable; other images refresh in the background.
+const CACHE_NAME = 'tremendous-assets-v3';
+const MAX_IMAGES = 80;
 
-function resolveAsset(name) {
-  return new URL(name, swUrl).href;
-}
-
-const PRECACHE_URLS = [resolveAsset('site-profile.png'), resolveAsset('logo.png')];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      Promise.all(
-        PRECACHE_URLS.map((url) =>
-          fetch(url, { mode: 'cors', credentials: 'same-origin' })
-            .then((res) => {
-              if (res.ok) return cache.put(url, res);
-            })
-            .catch(() => {})
-        )
-      )
-    )
-  );
-  self.skipWaiting();
-});
-
+self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME && key.startsWith('tremendous-assets-')) {
-            return caches.delete(key);
-          }
-          return Promise.resolve();
-        })
-      ).then(() => self.clients.claim())
-    )
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((key) => key.startsWith('tremendous-assets-') && key !== CACHE_NAME)
+      .map((key) => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
-
-function isSameOriginImageRequest(request, url) {
-  if (request.method !== 'GET') return false;
-  if (url.origin !== self.location.origin) return false;
-  if (request.destination === 'image') return true;
-  return /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(url.pathname);
-}
 
 self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  let url;
-  try {
-    url = new URL(req.url);
-  } catch {
-    return;
-  }
-  if (!isSameOriginImageRequest(req, url)) return;
-
-  event.respondWith(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      const hit = await cache.match(req, { ignoreSearch: false });
-      if (hit) return hit;
-      try {
-        const res = await fetch(req);
-        if (res.ok && res.type === 'basic') {
-          try {
-            cache.put(req, res.clone());
-          } catch (_) {}
-        }
-        return res;
-      } catch (e) {
-        return cache.match(req);
-      }
-    })
-  );
+  const request = event.request;
+  const url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== self.location.origin || request.destination !== 'image') return;
+  const cachePromise = caches.open(CACHE_NAME);
+  const cachedPromise = cachePromise.then((cache) => cache.match(request));
+  const immutable = /site-profile-\d+-[a-f0-9]{12}\.webp$/.test(url.pathname);
+  const refresh = (async () => {
+    const cached = await cachedPromise;
+    if (immutable && cached) return cached;
+    const response = await fetch(request);
+    if (response.ok && response.type === 'basic') {
+      const cache = await cachePromise;
+      await cache.put(request, response.clone());
+      const keys = await cache.keys();
+      await Promise.all(keys.slice(0, Math.max(0, keys.length - MAX_IMAGES)).map((key) => cache.delete(key)));
+    }
+    return response;
+  })();
+  event.waitUntil(refresh.catch(() => {}));
+  event.respondWith((async () => (await cachedPromise) || refresh)());
 });

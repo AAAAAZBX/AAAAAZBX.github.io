@@ -1,4 +1,5 @@
 ---
+import { defaultHeroImage } from "../../../lib/site-images";
 import Layout from "../../../layouts/Layout.astro";
 import { formatDateIso } from "../../../lib/content-posts";
 import {
@@ -44,7 +45,7 @@ const breadcrumb = segments.map((_, idx) => {
 });
 
 const pageTitle = `${current.displayName} Archives`;
-const heroImageUrl = `${baseUrl}site-profile.png`;
+const heroImageUrl = defaultHeroImage(baseUrl);
 const bannerTypedText = current.displayName;
 ---
 
@@ -61,7 +62,7 @@ const bannerTypedText = current.displayName;
         <div class="fluid-banner-mask">
           <div class="fluid-banner-text">
             <h1 class="fluid-banner-title" aria-label={bannerTypedText}>
-              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}></span>
+              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}>{bannerTypedText}</span>
             </h1>
           </div>
           <a href="#fluid-board" class="fluid-scroll-down" aria-label="Scroll to category archive">
@@ -114,76 +115,4 @@ const bannerTypedText = current.displayName;
       </div>
     </div>
   </main>
-
-  <script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
-  <script is:inline>
-    (function () {
-      function fluidHeroTyping() {
-        if (typeof window.Typed === "undefined") return;
-        var el = document.getElementById("fluid-hero-typed");
-        if (!el) return;
-        var text = el.getAttribute("data-typed-text");
-        if (!text) return;
-        el.textContent = "";
-        new window.Typed("#fluid-hero-typed", {
-          strings: ["  ", text],
-          typeSpeed: 50,
-          cursorChar: "_",
-          loop: false,
-          showCursor: true,
-        });
-      }
-
-      function fluidBoardScrollLiftCategoryIndex() {
-        var hero = document.querySelector(
-          ".fluid-index-header-inner.fluid-header-inner-compact"
-        );
-        var board = document.querySelector(
-          "main.fluid-category-index-main #board.fluid-board-surface"
-        );
-        if (!hero || !board) return;
-
-        var maxExtraPx = 88;
-        var ticking = false;
-
-        function scrollBlendSpan() {
-          var h = hero.clientHeight || 1;
-          return Math.max(h * 0.85, 120);
-        }
-
-        function update() {
-          var y = window.pageYOffset || document.documentElement.scrollTop || 0;
-          var span = scrollBlendSpan();
-          var t = span > 0 ? y / span : 0;
-          if (t > 1) t = 1;
-          if (t < 0) t = 0;
-          var u = t * t * (3 - 2 * t);
-          var lift = Math.round(u * maxExtraPx);
-          board.style.transform = "translate3d(0," + -lift + "px,0)";
-          ticking = false;
-        }
-
-        function requestUpdate() {
-          if (!ticking) {
-            ticking = true;
-            window.requestAnimationFrame(update);
-          }
-        }
-
-        window.addEventListener("scroll", requestUpdate, { passive: true });
-        window.addEventListener("resize", requestUpdate);
-        update();
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", function () {
-          fluidHeroTyping();
-          fluidBoardScrollLiftCategoryIndex();
-        });
-      } else {
-        fluidHeroTyping();
-        fluidBoardScrollLiftCategoryIndex();
-      }
-    })();
-  </script>
 </Layout>

@@ -13,7 +13,7 @@ const model = "deepseek-v4";
 
 {
   (
-    <div class="article-prompt-card" aria-label="文章摘要">
+    <div class="article-prompt-card" aria-label="文章摘要" data-pagefind-ignore>
       <span class="article-prompt-card__emoji" aria-hidden="true">💬</span>
       <div class="article-prompt-card__content">
         <b class="article-prompt-card__prompt">{promptLine}</b><br />
@@ -67,12 +67,11 @@ const model = "deepseek-v4";
   .article-prompt-card {
     margin: 0 0 1.75rem;
     padding: 16px;
-    background: #faf5ff;
-    border-radius: 12px;
-    color: #334155;
-    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    border: 1px solid #d8b4fe;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: var(--font-family-sans-serif);
+    border: 1px solid var(--border-color);
     overflow: hidden; /* clearfix for float */
   }
 
@@ -85,21 +84,21 @@ const model = "deepseek-v4";
   }
 
   .article-prompt-card__content {
-    font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", serif;
+    font-family: inherit;
   }
 
   .article-prompt-card__prompt {
     font-size: 0.98rem;
     line-height: 1.55;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
   }
 
   .article-prompt-card__model-line {
     font-size: 0.98rem;
     line-height: 1.58;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
   }
 
   .article-prompt-card__trigger {
@@ -114,15 +113,15 @@ const model = "deepseek-v4";
   .article-prompt-card__body {
     margin: 0;
     font-weight: 400;
-    color: #334155;
+    color: var(--text-primary);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
 
   .article-prompt-card__body--placeholder {
     white-space: normal;
-    color: #475569;
-    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text-secondary);
+    font-family: inherit;
     font-weight: 400;
   }
 </style>

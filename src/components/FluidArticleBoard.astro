@@ -21,8 +21,8 @@ const updatedLine = formatPostMetaDateLine(updated);
     <div class="col-lg-8 nopadding-x-md fluid-board-center">
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
-          <article class="post-content mx-auto">
-            <h1 id="seo-header">{seoTitle}</h1>
+          <article class="post-content mx-auto" data-pagefind-body>
+            <h1 id="seo-header" data-pagefind-meta="title">{seoTitle}</h1>
             {updatedLine && (
               <p id="updated-time" class="note note-info">
                 Last updated on {updatedLine}

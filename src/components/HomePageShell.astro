@@ -1,4 +1,5 @@
 ---
+import { defaultHeroImage, heroImageSrcSet } from "../lib/site-images";
 import visibility from "../content-visibility.json";
 import type { MergedPost } from "../lib/content-posts";
 import { buildPostExcerpt, formatDateIso } from "../lib/content-posts";
@@ -15,22 +16,10 @@ interface Props {
   totalPages: number;
 }
 
-type RuntimeHomePost = {
-  sortId: string;
-  title: string;
-  date: string;
-  dateFormatted: string;
-  href: string;
-  excerpt: string;
-  crumbs: Array<{ label: string; href: string }>;
-  tags: Array<{ label: string; href: string }>;
-};
-
 const { recentPosts, currentPage, totalPages } = Astro.props;
 
-const heroTypedText = "Training judgment under uncertainty.";
-const heroIntro = "betting";
-const heroImageUrl = `${import.meta.env.BASE_URL}site-profile.png`;
+const heroTypedText = "Welcome to AAAAAZBX's Blog";
+const heroImageUrl = defaultHeroImage(import.meta.env.BASE_URL);
 const folderDisplayMap = buildContentFolderDisplayMap();
 const baseUrl = import.meta.env.BASE_URL;
 
@@ -69,23 +58,6 @@ function categoryArchiveCrumbs(collection: string, slug: string): Array<{ label:
   return crumbs;
 }
 
-function toRuntimePost(post: MergedPost): RuntimeHomePost {
-  return {
-    sortId: post.sortId,
-    title: post.title,
-    date: post.date ?? "",
-    dateFormatted: formatDateIso(post.date),
-    href: post.href,
-    excerpt: buildPostExcerpt(post.body),
-    crumbs: categoryArchiveCrumbs(post.collection, post.slug),
-    tags: (post.tags ?? []).map((tag) => ({
-      label: tag,
-      href: `${baseJoin("tags")}/${encodeURIComponent(tagSlug(tag))}`,
-    })),
-  };
-}
-
-const initialRuntimePosts = recentPosts.map(toRuntimePost);
 const showPagination = totalPages > 1;
 // The endpoint is statically generated. Include the current page's post IDs so
 // a browser cannot reuse an older cached catalog after a new article is deployed.
@@ -102,6 +74,8 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
       <img
         class="fluid-banner-photo"
         src={heroImageUrl}
+        srcset={heroImageSrcSet(baseUrl)}
+        sizes="100vw"
         alt=""
         width="1440"
         height="1080"
@@ -116,13 +90,9 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
             class="fluid-banner-title"
             lang="en"
             aria-label={heroTypedText}
-            aria-describedby="fluid-hero-intro"
           >
-            <span id="fluid-hero-typed" data-typed-text={heroTypedText}></span>
+            <span id="fluid-hero-typed" data-typed-text={heroTypedText}>{heroTypedText}</span>
           </h1>
-          <p class="fluid-banner-subtitle" id="fluid-hero-intro">
-            {heroIntro}
-          </p>
         </div>
         <a
           href="#fluid-board"
@@ -162,8 +132,6 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
               data-home-total-pages={totalPages}
               data-home-posts-per-page={HOME_POSTS_PER_PAGE}
               data-home-runtime-endpoint={runtimeEndpoint}
-              data-home-supabase-url={import.meta.env.PUBLIC_SUPABASE_URL ?? ""}
-              data-home-supabase-key={import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? ""}
               data-home-base-url={baseUrl}
             >
               <ul class="home-post-list">
@@ -254,83 +222,8 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
     </div>
   </div>
 </main>
-
-<script is:inline src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
 <script is:inline define:vars={{ currentPage, homePostsPerPage: HOME_POSTS_PER_PAGE }}>
   (function () {
-    function fluidHeroTyping() {
-      if (typeof window.Typed === "undefined") return;
-      var el = document.getElementById("fluid-hero-typed");
-      if (!el) return;
-      var text = el.getAttribute("data-typed-text");
-      if (!text) return;
-      el.textContent = "";
-      new window.Typed("#fluid-hero-typed", {
-        strings: ["  ", text],
-        typeSpeed: 50,
-        cursorChar: "_",
-        loop: false,
-        showCursor: true,
-      });
-    }
-
-    function fluidHeroParallax() {
-      var hero = document.querySelector(".fluid-index-header-inner");
-      var bg = document.querySelector(".fluid-banner.fluid-banner-photo-mode .fluid-banner-bg");
-      if (!hero || !bg) return;
-
-      var ticking = false;
-      function update() {
-        var top = window.pageYOffset || document.documentElement.scrollTop || 0;
-        var heroH = hero.clientHeight || 1;
-        var progress = Math.min(Math.max(top / heroH, 0), 1);
-        var y = Math.round(top * 0.28);
-        var scale = (1 + progress * 0.04).toFixed(3);
-        bg.style.transform = "translate3d(0," + y + "px,0) scale(" + scale + ")";
-        ticking = false;
-      }
-
-      function requestUpdate() {
-        if (!ticking) {
-          window.requestAnimationFrame(update);
-          ticking = true;
-        }
-      }
-
-      window.addEventListener("scroll", requestUpdate, { passive: true });
-      window.addEventListener("resize", requestUpdate);
-      update();
-    }
-
-    function fluidBoardLift() {
-      var hero = document.querySelector(".fluid-index-header-inner");
-      var board = document.querySelector("#board.fluid-board-home");
-      if (!hero || !board) return;
-
-      var scrollSpanFactor = 0.52;
-      var maxLiftPx = 112;
-      var ticking = false;
-      function update() {
-        var top = window.pageYOffset || document.documentElement.scrollTop || 0;
-        var heroH = hero.clientHeight || 1;
-        var span = Math.max(heroH * scrollSpanFactor, 72);
-        var progress = Math.min(Math.max(top / span, 0), 1);
-        var lift = Math.round(progress * maxLiftPx);
-        board.style.transform = "translate3d(0," + -lift + "px,0)";
-        ticking = false;
-      }
-
-      function requestUpdate() {
-        if (!ticking) {
-          window.requestAnimationFrame(update);
-          ticking = true;
-        }
-      }
-
-      window.addEventListener("scroll", requestUpdate, { passive: true });
-      window.addEventListener("resize", requestUpdate);
-      update();
-    }
 
     function escapeHtml(value) {
       return String(value).replace(/[&<>"']/g, function (ch) {
@@ -389,22 +282,21 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
       if (!list || !empty) return;
 
       var endpoint = feed.getAttribute('data-home-runtime-endpoint') || '';
-      var supabaseUrl = feed.getAttribute('data-home-supabase-url') || '';
-      var supabaseKey = feed.getAttribute('data-home-supabase-key') || '';
       var page = Number(feed.getAttribute('data-home-page') || currentPage || 1) || 1;
       var perPage = Number(feed.getAttribute('data-home-posts-per-page') || homePostsPerPage) || homePostsPerPage;
+      var base = feed.getAttribute('data-home-base-url') || '/';
+      function homePageHref(number) {
+        var root = base.endsWith('/') ? base : base + '/';
+        return number <= 1 ? root : root + 'page/' + number;
+      }
 
       if (!endpoint) return;
       // Without Supabase client config we cannot fetch runtime hidden list; keep SSR (matches getMergedPosts JSON).
-      if (!supabaseUrl || !supabaseKey) return;
+      if (!window.__bxHiddenPosts) return;
 
       Promise.all([
         fetch(endpoint, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
-        (supabaseUrl && supabaseKey)
-          ? fetch(supabaseUrl + '/rest/v1/content_visibility?select=hidden_posts&id=eq.1', {
-              headers: { apikey: supabaseKey, Authorization: 'Bearer ' + supabaseKey }
-            }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-          : Promise.resolve([])
+        window.__bxHiddenPosts
       ]).then(function (results) {
         var catalogRows = results[0];
         var hiddenRows = results[1];
@@ -440,15 +332,11 @@ const nextHref = currentPage < totalPages ? homePageHref(currentPage + 1) : null
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", function () {
-        fluidHeroTyping();
-        fluidHeroParallax();
-        fluidBoardLift();
+
         renderRuntimeHome();
       });
     } else {
-      fluidHeroTyping();
-      fluidHeroParallax();
-      fluidBoardLift();
+
       renderRuntimeHome();
     }
   })();

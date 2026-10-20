@@ -1,4 +1,5 @@
 ---
+import { defaultHeroImage } from "../lib/site-images";
 import { withBase } from "../lib/base-url";
 
 const {
@@ -10,6 +11,7 @@ const {
   overlayNav = false,
   hideNav = false,
   noindex = false,
+  hasMath = false,
   /** 整页固定为暗色主题令牌（不随顶栏昼夜切换改变控制台样式） */
   lockPageDarkTheme = false,
 } = Astro.props;
@@ -22,7 +24,7 @@ const baseUrl = import.meta.env.BASE_URL;
 const siteOrigin = Astro.site ?? new URL(import.meta.env.SITE || "https://aaaaazbx.github.io");
 const canonicalUrl = new URL(Astro.url.pathname, siteOrigin).href;
 const ogImageAbsolute = (() => {
-  if (!ogImage) return new URL(withBase(baseUrl, "site-profile.png"), siteOrigin).href;
+  if (!ogImage) return new URL(defaultHeroImage(baseUrl), siteOrigin).href;
   if (ogImage.startsWith("http")) return ogImage;
   return new URL(withBase(baseUrl, ogImage.replace(/^\/+/, "")), siteOrigin).href;
 })();
@@ -45,6 +47,21 @@ const ogImageAbsolute = (() => {
     <meta name="twitter:description" content={metaDescription} />
     <meta name="twitter:image" content={ogImageAbsolute} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <script is:inline define:vars={{ visibilityUrl: import.meta.env.PUBLIC_SUPABASE_URL, visibilityKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
+      // Share one request between the homepage and the site-wide visibility filter.
+      window.__bxHiddenPosts = visibilityUrl && visibilityKey
+        ? fetch(visibilityUrl + '/rest/v1/content_visibility?select=hidden_posts&id=eq.1', {
+            headers: { apikey: visibilityKey, Authorization: 'Bearer ' + visibilityKey },
+            signal: AbortSignal.timeout(5000)
+          }).then(function (response) {
+            if (!response.ok) throw new Error('Visibility unavailable');
+            return response.json();
+          })
+        : null;
+      // Consumers retain their server-rendered fallback on failure.
+      if (window.__bxHiddenPosts) window.__bxHiddenPosts.catch(function () {});
+    </script>
     
     <!-- 防止夜间模式闪烁的早期脚本 -->
     <script is:inline>
@@ -71,101 +88,13 @@ const ogImageAbsolute = (() => {
     />
     <link rel="stylesheet" href={withBase(baseUrl, "styles/global.css")} />
 
-    <!-- 顶图 / 头像：预连接 + 预加载，首屏略快；后续页由 Service Worker 复用缓存 -->
-    <link rel="preload" as="image" href={`${baseUrl}site-profile.png`} fetchpriority="high" />
-    <link rel="preload" as="image" href={`${baseUrl}logo.png`} />
-
     <!-- Fluid 顶栏图标（与 Lynx Li Hexo Fluid iconfont 一致） -->
     <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css" />
     <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_1736178_k526ubmyhba.css" />
 
-    <!-- 内联样式：确保 Markdown 内部链接样式生效 -->
-    <style>
-      /* 确保侧边栏 sticky 定位生效 */
-      main .sidebar,
-      .page-container .sidebar,
-      aside.sidebar {
-        position: sticky !important;
-        top: var(--sticky-top-offset) !important;
-        align-self: flex-start !important;
-      }
-
-      /* Fluid 正文区：与 global.css 一致，!important 兜底 */
-      #board .markdown-body h1,
-      #board .markdown-body h2,
-      #board .markdown-body h3,
-      #board .markdown-body h4,
-      #board .markdown-body h5,
-      #board .markdown-body h6 {
-        font-weight: 600 !important;
-      }
-
-      #board .markdown-body strong,
-      #board .markdown-body b {
-        font-weight: 600 !important;
-      }
-
-      #board .markdown-body a[href^="#"] {
-        color: #8590a6 !important;
-        text-decoration: none !important;
-      }
-      #board .markdown-body a[href^="#"]:link,
-      #board .markdown-body a[href^="#"]:visited,
-      #board .markdown-body a[href^="#"]:active {
-        color: #8590a6 !important;
-        text-decoration: none !important;
-      }
-      #board .markdown-body a[href^="#"]:hover {
-        color: #8590a6 !important;
-        text-decoration: none !important;
-      }
-      #board .markdown-body a[href^="#"].active,
-      #board .markdown-body a[href^="#"].active:link,
-      #board .markdown-body a[href^="#"].active:visited,
-      #board .markdown-body a[href^="#"].active:hover,
-      #board .markdown-body a[href^="#"].active:active {
-        color: #1890ff !important;
-        font-weight: 500 !important;
-        text-decoration: none !important;
-      }
-      #board .markdown-body a[href^="http://"],
-      #board .markdown-body a[href^="https://"],
-      #board .markdown-body a[href^="//"],
-      #board .markdown-body a[href^="/"]:not([href^="#"]) {
-        color: #0969da !important;
-        text-decoration: none !important;
-      }
-      #board .markdown-body a[href^="http://"]:link,
-      #board .markdown-body a[href^="http://"]:visited,
-      #board .markdown-body a[href^="https://"]:link,
-      #board .markdown-body a[href^="https://"]:visited,
-      #board .markdown-body a[href^="//"]:link,
-      #board .markdown-body a[href^="//"]:visited,
-      #board .markdown-body a[href^="/"]:not([href^="#"]):link,
-      #board .markdown-body a[href^="/"]:not([href^="#"]):visited {
-        color: #0969da !important;
-        text-decoration: none !important;
-      }
-      #board .markdown-body a[href^="http://"]:hover,
-      #board .markdown-body a[href^="https://"]:hover,
-      #board .markdown-body a[href^="//"]:hover,
-      #board .markdown-body a[href^="/"]:not([href^="#"]):hover {
-        color: #0550ae !important;
-        text-decoration: none !important;
-      }
-    </style>
-
     <!-- KaTeX 样式，用于渲染公式 -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css"
-    />
+    {hasMath && <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" />}
 
-    <!-- Fira Code 字体 -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap"
-    />
   </head>
 
   <body
@@ -261,23 +190,18 @@ const ogImageAbsolute = (() => {
                 var ss = sessionStorage.getItem("bx_admin_unlocked_v1");
                 var ck = document.cookie.match(/(?:^|;\s*)bx_skip_log=1/);
                 window.__bx_skip_log = ls === "1" || ss === "1" || !!ck;
-                console.log("[visit-log] inline check: localStorage=" + ls + " sessionStorage=" + ss + " cookie=" + !!ck + " skip=" + window.__bx_skip_log);
+
               } catch(_) {
                 window.__bx_skip_log = false;
-                console.log("[visit-log] inline check: error, skip=false");
+
               }
             })();
           </script>
           <script>
-            console.log("[visit-log] module script: __bx_skip_log=" + window.__bx_skip_log);
             if (!window.__bx_skip_log) {
-              console.log("[visit-log] loading visit-logger module...");
               import("../scripts/visit-logger.ts").then(function(m) {
-                console.log("[visit-log] module loaded, calling runVisitLog");
                 m.runVisitLog({ siteBasePath: import.meta.env.BASE_URL });
               });
-            } else {
-              console.log("[visit-log] skipped: owner flag detected");
             }
           </script>
         </>
@@ -285,6 +209,8 @@ const ogImageAbsolute = (() => {
     }
 
     <script>
+      import "../scripts/hero-effects";
+
       document.addEventListener("DOMContentLoaded", () => {
         // 夜间模式切换功能
         (function() {
@@ -362,7 +288,8 @@ const ogImageAbsolute = (() => {
         })();
         
         // 平滑滚动
-        document.documentElement.style.scrollBehavior = 'smooth';
+        const scrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+        document.documentElement.style.scrollBehavior = scrollBehavior;
 
         // 移除当前页面链接的高亮（用户要求：只有悬停时才显示蓝色）
         // 不再添加 active 类和 aria-current 属性
@@ -496,7 +423,7 @@ const ogImageAbsolute = (() => {
             const targetId = link.getAttribute("href")?.substring(1);
             const target = document.getElementById(targetId || "");
             if (target) {
-              target.scrollIntoView({ behavior: "smooth", block: "start" });
+              target.scrollIntoView({ behavior: scrollBehavior, block: "start" });
               // 使用 replaceState 避免在历史记录中留下锚点
               const url = window.location.pathname + (targetId ? `#${targetId}` : "");
               window.history.replaceState(null, "", url);
@@ -516,7 +443,7 @@ const ogImageAbsolute = (() => {
           if (hash) {
             const target = document.getElementById(hash.substring(1));
             if (target) {
-              target.scrollIntoView({ behavior: "smooth", block: "start" });
+              target.scrollIntoView({ behavior: scrollBehavior, block: "start" });
             }
           }
         });
@@ -524,16 +451,11 @@ const ogImageAbsolute = (() => {
     </script>
 
     <!-- Client-side visibility filter: reads hidden IDs from Supabase and hides posts -->
-    <script is:inline define:vars={{ supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL, supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
+    <script is:inline>
       (function () {
-        var url = supabaseUrl;
-        var key = supabaseAnonKey;
-        if (!url || !key) return;
+        if (!window.__bxHiddenPosts) return;
         try {
-          fetch(url + "/rest/v1/content_visibility?select=hidden_posts&id=eq.1", {
-            headers: { apikey: key, Authorization: "Bearer " + key }
-          })
-            .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          window.__bxHiddenPosts
             .then(function (rows) {
               var hidden = (Array.isArray(rows) && rows[0] && Array.isArray(rows[0].hidden_posts))
                 ? rows[0].hidden_posts.map(function (s) { return String(s).trim().toLowerCase(); })

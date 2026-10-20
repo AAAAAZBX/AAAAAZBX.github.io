@@ -31,26 +31,16 @@ import Layout from "../layouts/Layout.astro";
           type="text" 
           id="search-input" 
           placeholder="Search posts…" 
-          style="width: 100%; padding: 12px 16px; font-size: 16px; border: 1px solid #d0d7de; border-radius: 6px; outline: none; transition: border-color 0.2s;"
+          style="width: 100%; padding: 12px 16px; font-size: 16px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; transition: border-color 0.2s;"
         />
       </div>
-      <div id="search-status" style="color: #57606a; padding: 16px; text-align: center; font-size: 14px;">Loading search…</div>
+      <div id="search-status" style="color: var(--text-secondary); padding: 16px; text-align: center; font-size: 14px;">Loading search…</div>
       <div id="search-results"></div>
     `;
     
     const searchInput = document.getElementById("search-input");
     const resultsContainer = document.getElementById("search-results");
     const statusContainer = document.getElementById("search-status");
-    
-    // 输入框样式
-    if (searchInput) {
-      searchInput.addEventListener("focus", function() {
-        this.style.borderColor = "#0969da";
-      });
-      searchInput.addEventListener("blur", function() {
-        this.style.borderColor = "#d0d7de";
-      });
-    }
     
     let searchInstance = null;
     
@@ -354,17 +344,17 @@ import Layout from "../layouts/Layout.astro";
         
         if (error.message.includes("Could not load Pagefind")) {
           errorDetails = `
-            <p style="margin: 0 0 8px 0; color: #57606a; font-size: 14px;">Pagefind assets were not found. Make sure that:</p>
-            <ol style="margin: 8px 0 0 0; padding-left: 20px; color: #57606a; font-size: 14px; line-height: 1.8;">
-              <li>You ran <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run build</code></li>
-              <li>The build produced <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">dist/pagefind</code></li>
-              <li>You are using <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run preview</code> (not <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run dev</code>) to test search</li>
+            <p style="margin: 0 0 8px 0; color: var(--text-secondary); font-size: 14px;">Pagefind assets were not found. Make sure that:</p>
+            <ol style="margin: 8px 0 0 0; padding-left: 20px; color: var(--text-secondary); font-size: 14px; line-height: 1.8;">
+              <li>You ran <code style="background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run build</code></li>
+              <li>The build produced <code style="background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-family: monospace;">dist/pagefind</code></li>
+              <li>You are using <code style="background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run preview</code> (not <code style="background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-family: monospace;">npm run dev</code>) to test search</li>
             </ol>
           `;
         } else {
           errorDetails = `
-            <p style="margin: 0 0 8px 0; color: #57606a; font-size: 14px;">Details: ${escapeHtml(error.message)}</p>
-            <p style="margin: 8px 0 0 0; color: #57606a; font-size: 13px;">Open the browser console (F12) for more information.</p>
+            <p style="margin: 0 0 8px 0; color: var(--text-secondary); font-size: 14px;">Details: ${escapeHtml(error.message)}</p>
+            <p style="margin: 8px 0 0 0; color: var(--text-secondary); font-size: 13px;">Open the browser console (F12) for more information.</p>
           `;
         }
         
@@ -372,7 +362,7 @@ import Layout from "../layouts/Layout.astro";
           <div style="padding: 24px; background: #fff4e6; border: 1px solid #ffd89b; border-radius: 6px;">
             <p style="margin: 0 0 12px 0; color: #d1242f; font-weight: 500;">${errorMessage}</p>
             ${errorDetails}
-            ${isPreview ? '<p style="margin: 12px 0 0 0; color: #57606a; font-size: 13px;">You are on localhost preview; if issues persist, check the console.</p>' : ''}
+            ${isPreview ? '<p style="margin: 12px 0 0 0; color: var(--text-secondary); font-size: 13px;">You are on localhost preview; if issues persist, check the console.</p>' : ''}
           </div>
         `;
       }
@@ -393,7 +383,7 @@ import Layout from "../layouts/Layout.astro";
     if (!container) return;
     
     if (!results || !results.results || results.results.length === 0) {
-      container.innerHTML = `<p style="color: #57606a; padding: 24px; text-align: center;">No matching posts.</p>`;
+      container.innerHTML = `<p style="color: var(--text-secondary); padding: 24px; text-align: center;">No matching posts.</p>`;
       return;
     }
     
@@ -405,21 +395,21 @@ import Layout from "../layouts/Layout.astro";
       const excerpt = result.excerpt || '';
       
       return `
-        <div style="padding: 16px; border: 1px solid #d0d7de; border-radius: 6px; margin-bottom: 12px; transition: all 0.2s; cursor: pointer;"
+        <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 12px; transition: all 0.2s; cursor: pointer;"
              onmouseover="this.style.borderColor='#0969da'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'"
              onmouseout="this.style.borderColor='#d0d7de'; this.style.boxShadow='none'"
              onclick="window.location.href='${url}'">
           <h3 style="margin: 0 0 8px 0; font-size: 1.25rem; font-weight: 600;">
-            <a href="${url}" style="color: #0969da; text-decoration: none;">${escapeHtml(title)}</a>
+            <a href="${url}" style="color: var(--text-link); text-decoration: none;">${escapeHtml(title)}</a>
           </h3>
-          <p class="search-excerpt" style="margin: 0; color: #57606a; font-size: 14px; line-height: 1.6;">${excerpt}</p>
-          <p style="margin: 8px 0 0 0; color: #8c959f; font-size: 12px;">${escapeHtml(url)}</p>
+          <p class="search-excerpt" style="margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.6;">${excerpt}</p>
+          <p style="margin: 8px 0 0 0; color: var(--text-secondary); font-size: 12px;">${escapeHtml(url)}</p>
         </div>
       `;
     }).join('');
     
     container.innerHTML = `
-      <p style="color: #57606a; margin-bottom: 16px; font-size: 14px;">找到 ${results.results.length} 个结果</p>
+      <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">找到 ${results.results.length} 个结果</p>
       ${html}
     `;
   }

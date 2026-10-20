@@ -93,6 +93,7 @@ const aiModelLabel = "deepseek-v4";
   title={`${post.data.title} | ${sectionTitle}`}
   overlayNav
   isArticle
+  hasMath={/\$/.test(post.body ?? "")}
   description={metaDesc}
   ogImage={ogHero?.startsWith("http") ? ogHero : ogHero?.replace(/^\/+/, "")}
 >
@@ -113,6 +114,7 @@ const aiModelLabel = "deepseek-v4";
       <div
         slot="after"
         class="fluid-article-comment-wrap"
+        data-pagefind-ignore
         style="margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--line-color);"
       >
         <WalineComment />
