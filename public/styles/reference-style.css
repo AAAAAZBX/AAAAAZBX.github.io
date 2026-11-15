@@ -1,8 +1,6 @@
 /* Adapted from website's fixed ink-black theme and translucent reading surfaces. */
 html[data-theme='dark'] { --paper:#0d0f12; --ink:#eceef1; --muted:#a9afb9; --accent:#d4d8df; --heading:#eceef1; --chip:#22262c; --line:#ffffff14; --note:#1a1d22; color-scheme:dark; background:#0d0f12; }
 html[data-theme='dark'] body { background:#0d0f12; color:#eceef1; }
-html[data-theme='dark'] header.site-header { color:#d4d8df; }
-html[data-theme='dark'] header.site-header:is(.is-solid,.is-scrolled) { background:#0d0f12b8; box-shadow:0 1px 0 #ffffff0a; }
 html[data-theme='dark'] .hero { height:90svh; min-height:620px; max-height:1080px; }
 html[data-theme='dark'] .hero-shade { background:linear-gradient(180deg,#0d0f124d,#0d0f1217 32%,#0d0f1242 61%,#0d0f12cc 88%,#0d0f12); }
 html[data-theme='dark'] .hero h1 { font-size:clamp(36px,5.2vw,72px); font-weight:500; letter-spacing:-.045em; }
@@ -54,9 +52,6 @@ html[data-theme='dark'], html[data-theme='dark'] body, html[data-theme='dark'] .
  --code-bg:#13161b; --code-inline-bg:#ffffff12; --table-bg:#1a1d22; --table-stripe-bg:#ffffff03; --table-header-bg:#ffffff06;
  --header-offset:80px; --sticky-top-offset:80px;
 }
-html[data-theme='dark'] body header.site-header { height:64px; padding:0 max(24px,calc((100% - 1060px)/2)); color:#dedfe3; background:rgba(13,15,18,.5); box-shadow:none; }
-html[data-theme='dark'] body header.site-header:is(.is-solid,.is-scrolled) { background:rgba(13,15,18,.92); }
-html[data-theme='dark'] body header.site-header .wordmark-dot { color:#c4c8d0; }
 html[data-theme='dark'] body .content-wrap { display:block; max-width:920px; padding:46px 44px 44px; }
 html[data-theme='dark'] body .section-heading h2 { font-size:24px; font-weight:500; letter-spacing:.03em; }
 html[data-theme='dark'] body .topic-section { margin:0 0 30px; }
@@ -75,8 +70,6 @@ html[data-theme='dark'] body .category-list .category-collapse .category .catego
 html[data-theme='dark'] body .about-page { max-width:1060px; margin-top:64px; }
 html[data-theme='dark'] body .site-footer { max-width:1060px; border:0; font-size:11px; }
 @media(max-width:760px) {
- html[data-theme='dark'] body header.site-header { height:auto; min-height:56px; padding:0 20px; }
- html[data-theme='dark'] body header.site-header.is-enhanced { height:56px; }
  html[data-theme='dark'] body .content-wrap { padding:30px 24px; }
  html[data-theme='dark'] body .fluid-board-page #board { padding:30px 24px; width:calc(100% - 36px); }
 }

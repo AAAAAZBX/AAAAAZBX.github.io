@@ -1,10 +1,10 @@
 ---
 import { withBase } from '../lib/base-url';
-import '../../public/vendor/icons/font_1749284_5i9bdhy70f8.css';
 const { overlay = false, home = false } = Astro.props;
 const base = import.meta.env.BASE_URL;
-const links = [[withBase(base, '#notes'), 'Articles'], [withBase(base, 'categories/'), 'Categories'], [withBase(base, 'archives/'), 'Archives'], [withBase(base, 'about/'), 'About']];
-const icons: Record<string, string> = { Articles: 'icon-home-fill', Categories: 'icon-category-fill', Archives: 'icon-archive-fill', About: 'icon-user-fill' };
+const links = [[withBase(base, '#notes'), 'Articles'], [withBase(base, 'archives/'), 'Archives'], [withBase(base, 'categories/'), 'Categories'], [withBase(base, 'about/'), 'About']];
+// Original Fluid glyphs, isolated from page-level iconfont rules.
+const icons: Record<string, string> = { Articles: '\uf017', Archives: '\uef1c', Categories: '\ue60d', About: '\uf12c' };
 const pathname = Astro.url.pathname;
 const activeUrl = pathname;
 ---
@@ -16,14 +16,21 @@ const activeUrl = pathname;
     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h12M4 13h12" /></svg>
   </button>
   <nav id="primary-navigation" aria-label="Main navigation">
-    {links.map(([url, label]) => <a href={url} aria-current={activeUrl === url ? (pathname === url ? 'page' : 'location') : undefined}><i class:list={["nav-icon", "iconfont", icons[label]]} aria-hidden="true"></i><span>{label}</span></a>)}
+    {links.map(([url, label]) => <a href={url} aria-current={activeUrl === url ? (pathname === url ? 'page' : 'location') : undefined}><span class="nav-icon" aria-hidden="true">{icons[label]}</span><span>{label}</span></a>)}
   </nav>
 </header>
 {!overlay && <div class="site-header-space" aria-hidden="true"></div>}
 
 <style is:global>
+  @font-face {
+    font-family: 'SiteNavIcons';
+    src: url('../assets/fonts/fluid-nav-icons.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+  }
   body .site-header nav a { gap: 7px; }
-  body .site-header .nav-icon { width: 16px; height: 16px; flex-shrink: 0; margin: 0; }
+  body .site-header .nav-icon { display: inline-block; width: 16px; height: 16px; flex-shrink: 0; margin: 0; font: normal 16px/1 'SiteNavIcons'; text-align: center; letter-spacing: normal; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   body .site-header .wordmark .nav-avatar { width: 30px; height: 30px; flex-shrink: 0; object-fit: cover; border-radius: 50%; margin: 0 5px 0 0; }
   html { --site-header-height: 64px; }
   html[data-theme] body header.site-header {
