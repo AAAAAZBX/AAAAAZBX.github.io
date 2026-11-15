@@ -38,7 +38,7 @@ const monthYear = (date?: string) => date ? new Date(`${date}T00:00:00Z`).toLoca
     <meta name="description" content="Boxuan Zhang, a master's student at Nanjing University and a member of ISElab." />
     <title>{preview ? 'About Preview — Boxuan Zhang' : 'About — Boxuan Zhang'}</title>
     {!preview && <link rel="canonical" href={new URL(withBase(base, 'about/'), Astro.site ?? 'https://aaaaazbx.github.io').href} />}
-    <link rel="icon" href={withBase(base, 'logo.png')} />
+    <link rel="icon" type="image/png" sizes="64x64" href={withBase(base, 'favicon-profile.png')} />
     <ThemeInit />
   <link rel="stylesheet" href={withBase(base, 'styles/reference-style.css?v=20261116-7')} />
   </head>

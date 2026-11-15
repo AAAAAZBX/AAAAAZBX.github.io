@@ -66,9 +66,9 @@ const ogImageAbsolute = (() => {
 
     <ThemeInit />
 
-    <!-- Favicon - 使用头像作为标签栏图标 -->
-    <link rel="icon" type="image/png" href={withBase(baseUrl, "logo.png")} />
-    <link rel="shortcut icon" type="image/png" href={withBase(baseUrl, "logo.png")} />
+    <!-- Favicon uses the current profile photo; logo.png remains the game sprite. -->
+    <link rel="icon" type="image/png" sizes="64x64" href={withBase(baseUrl, "favicon-profile.png")} />
+    <link rel="shortcut icon" type="image/png" href={withBase(baseUrl, "favicon-profile.png")} />
 
     <!-- 与 lynx-li.github.io 文章页一致：Bootstrap 栅格 + GitHub Markdown 底座，再由 global 覆盖主题 -->
     <link
