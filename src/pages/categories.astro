@@ -1,6 +1,6 @@
 ﻿---
-import { defaultHeroImage } from "../lib/site-images";
 import Layout from "../layouts/Layout.astro";
+import IndexCover from "../components/IndexCover.astro";
 import { getCollectionKeys, getCollectionLabel, getMergedPosts } from "../lib/content-posts";
 import {
   buildCategoryPathTree,
@@ -52,33 +52,11 @@ if (investIndex !== -1) {
   sections.splice(insertIndex, 0, investSection);
 }
 
-const heroImageUrl = defaultHeroImage(import.meta.env.BASE_URL);
 const bannerTypedText = "Categories";
 ---
 
-<Layout title="Categories - Boxuan Zhang" overlayNav>
-  <div class="fluid-index-header-inner fluid-header-inner-compact">
-    <div
-      id="banner"
-      class="fluid-banner"
-      style={{
-        backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
-      }}
-    >
-      <div class="fluid-banner-inner">
-        <div class="fluid-banner-mask">
-          <div class="fluid-banner-text">
-            <h1 class="fluid-banner-title" lang="en" aria-label={bannerTypedText}>
-              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}>{bannerTypedText}</span>
-            </h1>
-          </div>
-          <a href="#fluid-board" class="fluid-scroll-down" aria-label="Scroll to categories">
-            <i class="iconfont icon-arrowdown" aria-hidden="true"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+<Layout title="Categories - Boxuan Zhang" overlayNav photoIndex>
+  <IndexCover title={bannerTypedText} />
 
   <main id="fluid-board" class="fluid-index-main fluid-board-page fluid-categories-main">
     <div class="fluid-container fluid-nopadding-x-md">

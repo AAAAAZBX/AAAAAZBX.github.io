@@ -38,7 +38,7 @@ const title = "AAAAAZBX's Blog";
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href={withBase(base, 'logo.png')} />
     <ThemeInit />
-  <link rel="stylesheet" href={withBase(base, 'styles/reference-style.css?v=20261116-3')} />
+  <link rel="stylesheet" href={withBase(base, 'styles/reference-style.css?v=20261116-6')} />
   </head>
   <body>
     <a class="skip-link" href="#notes">Skip to articles</a>
@@ -81,10 +81,12 @@ const title = "AAAAAZBX's Blog";
         <div class="article-list">
           {posts.map((post, index) => (
             <article class="post" data-topic={post.collection} data-post-id={post.sortId} hidden={index >= 6}>
-              <div class="post-meta"><span>{topicLabels[post.collection] ?? post.collection}</span><span class="meta-dot">·</span><time datetime={post.date}>{formatDateIso(post.date)}</time></div>
-              <h3><a href={withBase(base, post.href)}>{post.title}</a></h3>
-              <p class="post-excerpt">{buildPostExcerpt(post.body)}</p>
-              <a class="read-more" href={withBase(base, post.href)}>Read more <span aria-hidden="true">→</span></a>
+              <a class="post-link" href={withBase(base, post.href)} aria-labelledby={`post-title-${index}`}>
+                <div class="post-meta"><span>{topicLabels[post.collection] ?? post.collection}</span><span class="meta-dot">·</span><time datetime={post.date}>{formatDateIso(post.date)}</time></div>
+                <h3 id={`post-title-${index}`}>{post.title}</h3>
+                <p class="post-excerpt">{buildPostExcerpt(post.body)}</p>
+                <span class="read-more">Read more <span aria-hidden="true">→</span></span>
+              </a>
             </article>
           ))}
         </div>
@@ -233,8 +235,8 @@ const title = "AAAAAZBX's Blog";
   .post-meta > span:first-child { color: var(--accent); font-weight: 600; }
   .meta-dot { opacity: .5; }
   .post h3 { margin: 0 0 17px; font-size: 23px; font-weight: 750; line-height: 1.5; letter-spacing: -.45px; }
-  .post h3 a { transition: color .2s; text-decoration: none; }
-  .post h3 a:hover { color: var(--accent); }
+  .post-link { display: block; border-radius: inherit; text-decoration: none; }
+  .post-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; border-radius: inherit; }
   .post-excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; margin: 0 0 14px; font-size: 16px; line-height: 1.85; overflow-wrap: anywhere; color: var(--ink); opacity: .85; }
   .read-more { display: inline-flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; }
   .read-more span { font-size: 18px; line-height: 1; color: var(--accent); transition: transform .2s; }

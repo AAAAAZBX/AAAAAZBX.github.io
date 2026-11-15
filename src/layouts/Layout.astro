@@ -12,6 +12,7 @@ const {
   ogImage,
   isArticle = false,
   overlayNav = false,
+  photoIndex = false,
   hideNav = false,
   noindex = false,
   hasMath = false,
@@ -87,11 +88,11 @@ const ogImageAbsolute = (() => {
     <!-- KaTeX 样式，用于渲染公式 -->
     {hasMath && <link rel="stylesheet" href={withBase(baseUrl, "vendor/katex/katex.min.css")} />}
 
-  <link rel="stylesheet" href={withBase(baseUrl, 'styles/reference-style.css?v=20261116-3')} />
+  <link rel="stylesheet" href={withBase(baseUrl, 'styles/reference-style.css?v=20261116-6')} />
   </head>
 
   <body
-    class:list={[overlayNav && "home-fluid-index", lockPageDarkTheme && "page-theme-lock-dark"]}
+    class:list={[overlayNav && !photoIndex && "home-fluid-index", photoIndex && "photo-index-page", lockPageDarkTheme && "page-theme-lock-dark"]}
   >
     {!hideNav && <SiteHeader overlay={overlayNav} />}
 

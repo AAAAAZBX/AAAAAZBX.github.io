@@ -1,6 +1,6 @@
 ﻿---
-import { defaultHeroImage } from "../lib/site-images";
 import Layout from "../layouts/Layout.astro";
+import IndexCover from "../components/IndexCover.astro";
 import { formatDateIso, getMergedPosts } from "../lib/content-posts";
 
 const merged = await getMergedPosts();
@@ -25,50 +25,11 @@ for (const p of merged) {
 
 const yearsDesc = Array.from(byYear.keys()).sort((a, b) => b - a);
 
-const heroImageUrl = defaultHeroImage(import.meta.env.BASE_URL);
 const bannerTypedText = "Archives";
 ---
 
-<Layout title="Archives - Boxuan Zhang" overlayNav>
-  <div class="fluid-index-header-inner fluid-header-inner-compact">
-    <div
-      id="banner"
-      class="fluid-banner"
-      style={{
-        backgroundImage: `url(${JSON.stringify(heroImageUrl)})`,
-      }}
-    >
-      <div class="fluid-banner-inner">
-        <div class="fluid-banner-mask">
-          <div class="fluid-banner-text">
-            <h1 class="fluid-banner-title" lang="en" aria-label={bannerTypedText}>
-              <span id="fluid-hero-typed" data-typed-text={bannerTypedText}>{bannerTypedText}</span>
-            </h1>
-          </div>
-          <a
-            href="#fluid-board"
-            class="fluid-scroll-down"
-            aria-label="Scroll to archives"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M6 9l6 6 6-6"></path>
-            </svg>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+<Layout title="Archives - Boxuan Zhang" overlayNav photoIndex>
+  <IndexCover title={bannerTypedText} />
 
   <main id="fluid-board" class="fluid-index-main fluid-board-page fluid-archives-main">
     <div class="fluid-container fluid-nopadding-x-md">
