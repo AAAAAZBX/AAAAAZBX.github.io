@@ -106,7 +106,7 @@ aside.sidebar {
 
 .contact-item a:hover {
   color: var(--text-link);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 /* 右侧 Main Content 样式 */

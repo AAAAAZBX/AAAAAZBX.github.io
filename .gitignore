@@ -13,3 +13,5 @@ quant_backend
 *.parquet
 src/content-visibility.json
 content-visibility.local.json
+# Local performance verification output
+/build-check/

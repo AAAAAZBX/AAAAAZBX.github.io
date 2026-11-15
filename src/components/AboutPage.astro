@@ -40,6 +40,7 @@ const monthYear = (date?: string) => date ? new Date(`${date}T00:00:00Z`).toLoca
     {!preview && <link rel="canonical" href={new URL(withBase(base, 'about/'), Astro.site ?? 'https://aaaaazbx.github.io').href} />}
     <link rel="icon" href={withBase(base, 'logo.png')} />
     <ThemeInit />
+  <link rel="stylesheet" href={withBase(base, 'styles/reference-style.css?v=20261116-3')} />
   </head>
   <body>
     <a class="skip-link" href="#about">Skip to about me</a>
@@ -60,17 +61,7 @@ const monthYear = (date?: string) => date ? new Date(`${date}T00:00:00Z`).toLoca
         </div>
         <div class="portrait-block">
           <div class="portrait-ring">
-            <svg class="portrait-dino" viewBox="0 0 1201 1198" width="176" height="176" role="img" aria-label="Boxuan Zhang's dinosaur avatar">
-              <defs>
-                <filter id="portrait-cutout" color-interpolation-filters="sRGB">
-                  <feColorMatrix type="luminanceToAlpha" />
-                  <feComponentTransfer><feFuncA type="discrete" tableValues="1 1 0 0" /></feComponentTransfer>
-                  <feComposite in="SourceGraphic" operator="in" />
-                </filter>
-                <mask id="portrait-mask" mask-type="alpha"><image href={withBase(base, 'logo.png')} width="1201" height="1198" filter="url(#portrait-cutout)" /></mask>
-              </defs>
-              <rect width="1201" height="1198" fill="currentColor" mask="url(#portrait-mask)" />
-            </svg>
+            <img class="portrait-dino" src={withBase(base, 'profile-avatar.webp')} width="176" height="176" alt="南京窗外城市风景，Boxuan Zhang 的头像" style="object-fit: cover; border-radius: 50%;" />
           </div>
           <span class="handle">@AAAAAZBX</span>
           <span class="location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></svg>Nanjing, China</span>
@@ -250,7 +241,7 @@ const monthYear = (date?: string) => date ? new Date(`${date}T00:00:00Z`).toLoca
   h2 { margin: 0; font-size: 27px; font-weight: 700; letter-spacing: -.6px; line-height: 1.4; }
   .bio .eyebrow { margin-bottom: 13px; }
   .bio p:not(.eyebrow) { margin: 19px 0 0; font-size: 16px; line-height: 1.95; color: var(--muted); }
-  .bio p a { color: var(--accent); text-decoration: underline; text-decoration-color: #a1b7cf; text-underline-offset: 4px; }
+  .bio p a { color: var(--accent); text-decoration: none; text-decoration-color: #a1b7cf; text-underline-offset: 4px; }
   .interests { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
   .interests span { padding: 7px 10px; background: var(--chip); color: var(--accent); font-size: 13px; line-height: 1.4; border-radius: 5px; }
   .education { padding-top: 1px; }

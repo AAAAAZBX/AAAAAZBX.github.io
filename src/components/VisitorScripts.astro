@@ -33,11 +33,13 @@ const logVisitorVisits = Boolean(import.meta.env.PUBLIC_SUPABASE_URL && import.m
             })();
           </script>
           <script>
-            if (!window.__bx_skip_log) {
+            const startVisitLog = () => { if (!window.__bx_skip_log) {
               import("../scripts/visit-logger.ts").then(function(m) {
                 m.runVisitLog({ siteBasePath: import.meta.env.BASE_URL });
               });
-            }
+            }};
+            if (document.readyState === "complete") startVisitLog();
+            else window.addEventListener("load", startVisitLog, { once: true });
           </script>
         </>
       )

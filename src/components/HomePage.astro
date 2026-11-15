@@ -18,7 +18,7 @@ const topicLabels: Record<string, string> = {
   Invest: 'Investing', Tools: 'Tools', 'Life Moments': 'Life Moments',
 };
 const explorations = posts.filter(post => ['LLM', 'Math', 'Algorithms'].includes(post.collection)).slice(0, 4);
-const title = "Welcome to AAAAAZBX's Blog";
+const title = "AAAAAZBX's Blog";
 ---
 
 <!doctype html>
@@ -38,24 +38,23 @@ const title = "Welcome to AAAAAZBX's Blog";
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href={withBase(base, 'logo.png')} />
     <ThemeInit />
+  <link rel="stylesheet" href={withBase(base, 'styles/reference-style.css?v=20261116-3')} />
   </head>
   <body>
     <a class="skip-link" href="#notes">Skip to articles</a>
 
     <SiteHeader overlay home />
 
-    <section class="hero" aria-label="Welcome to my blog">
+    <section class="hero" aria-label="Blog introduction">
       <img class="hero-photo" src={defaultHeroImage(base)} srcset={heroImageSrcSet(base)} sizes="100vw" width="1440" height="1080" alt="" fetchpriority="high" />
       <div class="hero-shade" aria-hidden="true"></div>
 
       <div class="hero-content">
-        <p class="hero-eyebrow"><span></span> A LITTLE CORNER OF THE INTERNET</p>
-        <h1 aria-label={title}>Welcome to<br /><span class="hero-name">AAAAAZBX's Blog<span class="hero-period">.</span></span></h1>
-        <div class="hero-rule" aria-hidden="true"><span></span><svg viewBox="0 0 24 24" fill="none"><path d="m12 1 2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6Z" fill="currentColor" /></svg><span></span></div>
+        <h1 aria-label={title}><span class="hero-name">AAAAAZBX's Blog<span class="hero-period">.</span></span></h1>
+
       </div>
 
-      <a class="scroll-cue" href="#notes"><span>SCROLL TO EXPLORE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3v17m-6-6 6 6 6-6" /></svg></a>
-      <div class="hero-coordinate" aria-hidden="true">NOTES, IDEAS & THE IN-BETWEEN</div>
+      <a class="scroll-cue" href="#notes" aria-label="浏览文章"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3v17m-6-6 6 6 6-6" /></svg></a>
       <svg class="hero-wave" viewBox="0 0 1440 180" preserveAspectRatio="none" aria-hidden="true">
         <path class="wave-back" d="M0 100C170 35 235 125 385 72S610 23 785 95s205-60 350-45 225 50 305-15V180H0Z" />
         <path class="wave-middle" d="M0 130C180 65 310 65 475 126s185 2 350-49 250-12 365 40 180-80 250-50V180H0Z" />
@@ -72,6 +71,13 @@ const title = "Welcome to AAAAAZBX's Blog";
       <div class="main-column">
         <div class="section-heading"><h2>ARTICLES & NOTES</h2><span class="article-count" aria-live="polite">{posts.length} notes</span></div>
         <div class="filter-state" hidden><span></span><button type="button">View all ×</button></div>
+        <section class="topic-section">
+          <h2 class="section-label">BROWSE BY TOPIC</h2>
+          <div class="topic-list">
+            <button class="topic active" type="button" data-filter="" aria-pressed="true">All notes <span>{posts.length}</span></button>
+            {topics.map(topic => <button class="topic" type="button" data-filter={topic} aria-pressed="false">{topicLabels[topic] ?? topic}<span>{posts.filter(post => post.collection === topic).length}</span></button>)}
+          </div>
+        </section>
         <div class="article-list">
           {posts.map((post, index) => (
             <article class="post" data-topic={post.collection} data-post-id={post.sortId} hidden={index >= 6}>
@@ -86,30 +92,7 @@ const title = "Welcome to AAAAAZBX's Blog";
         <button class="more-button" type="button" hidden={posts.length <= 6}><span class="more-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m7-7-7 7-7-7" /></svg></span><span class="more-label">Show more</span></button>
       </div>
 
-      <aside class="sidebar" aria-label="Categories and author information">
-        <section class="topic-section">
-          <h2 class="section-label">BROWSE BY TOPIC</h2>
-          <div class="topic-list">
-            <button class="topic active" type="button" data-filter="" aria-pressed="true">All notes <span>{posts.length}</span></button>
-            {topics.map(topic => <button class="topic" type="button" data-filter={topic} aria-pressed="false">{topicLabels[topic] ?? topic}<span>{posts.filter(post => post.collection === topic).length}</span></button>)}
-          </div>
-        </section>
 
-        <section class="explore-section">
-          <h2 class="section-label">START EXPLORING</h2>
-          <ol class="explore-list">
-            {explorations.map(post => <li data-post-id={post.sortId}><a href={withBase(base, post.href)}><span aria-hidden="true">↗</span>{post.title}</a></li>)}
-          </ol>
-        </section>
-
-        <section class="author-note">
-          <svg class="note-spark" viewBox="0 0 40 40" aria-hidden="true"><path d="m20 1 4.5 14.5L39 20l-14.5 4.5L20 39l-4.5-14.5L1 20l14.5-4.5Z" fill="currentColor" /></svg>
-          <div class="author-heading"><img src={withBase(base, 'logo.png')} alt="" width="46" height="46" loading="lazy" /><div><strong>Hey, I'm Boxuan.</strong><span>Also known as AAAAAZBX</span></div></div>
-          <p>Notes on AI infrastructure, agents, large language models, testing, and life.</p>
-          <a href={withBase(base, 'about/')}>More about me <span aria-hidden="true">↗</span></a>
-        </section>
-        <a class="back-to-top" href="#">Back to the skyline <span aria-hidden="true">↑</span></a>
-      </aside>
     </main>
 
     <footer class="site-footer"><a class="footer-brand" href={withBase(base, '')}>AAAAAZBX<span>.</span></a><p>© {new Date().getFullYear()} Boxuan Zhang</p><div><a href="https://github.com/AAAAAZBX" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href={withBase(base, 'rss.xml')}>RSS ↗</a></div></footer>
@@ -250,8 +233,8 @@ const title = "Welcome to AAAAAZBX's Blog";
   .post-meta > span:first-child { color: var(--accent); font-weight: 600; }
   .meta-dot { opacity: .5; }
   .post h3 { margin: 0 0 17px; font-size: 23px; font-weight: 750; line-height: 1.5; letter-spacing: -.45px; }
-  .post h3 a { transition: color .2s; background-image: linear-gradient(var(--accent), var(--accent)); background-size: 0 1px; background-position: left bottom; background-repeat: no-repeat; }
-  .post h3 a:hover { color: var(--accent); background-size: 100% 1px; }
+  .post h3 a { transition: color .2s; text-decoration: none; }
+  .post h3 a:hover { color: var(--accent); }
   .post-excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; margin: 0 0 14px; font-size: 16px; line-height: 1.85; overflow-wrap: anywhere; color: var(--ink); opacity: .85; }
   .read-more { display: inline-flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; }
   .read-more span { font-size: 18px; line-height: 1; color: var(--accent); transition: transform .2s; }
@@ -282,12 +265,12 @@ const title = "Welcome to AAAAAZBX's Blog";
   .author-note > a span { margin-left: 6px; }
   .back-to-top { display: inline-flex; gap: 12px; margin: 30px 0 0 20px; font-size: 14px; color: var(--muted); }
   .back-to-top:hover { color: var(--accent); }
-  .more-button { display: flex; align-items: stretch; width: min(250px, 100%); height: 44px; margin: 8px auto 0; padding: 0; border: 0; border-radius: 4px; background: #284e79; color: #fff; font-size: 16px; font-weight: 500; overflow: hidden; transition: background .2s; }
-  .more-button:hover { background: #203f63; }
-  .more-icon { display: grid; place-items: center; width: 44px; flex-shrink: 0; background: rgba(255,255,255,.09); }
+  .more-button { display: flex; align-items: center; justify-content: center; gap: 8px; width: fit-content; min-height: 44px; margin: 24px auto 0; padding: 0 18px; border: 1px solid #ffffff14; border-radius: 24px; background: transparent; color: #a9afb9; font-size: 13px; font-weight: 400; transition: color .2s, background .2s; }
+  .more-button:hover { background: #ffffff06; color: #eceef1; }
+  .more-icon { display: grid; place-items: center; width: 18px; flex-shrink: 0; }
   .more-icon svg { transition: transform .2s; }
   .more-button:hover .more-icon svg { transform: translateY(3px); }
-  .more-label { display: flex; align-items: center; justify-content: center; flex: 1; padding: 0 16px; }
+  .more-label { padding: 0; }
   .more-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   @media (prefers-reduced-motion: reduce) { .more-button, .more-icon svg { transition: none; } .more-button:hover .more-icon svg { transform: none; } }
   .filter-state { display: flex; align-items: center; justify-content: space-between; padding-bottom: 24px; font-size: 15px; color: var(--accent); }

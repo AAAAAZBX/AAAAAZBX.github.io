@@ -579,7 +579,7 @@ body.home-fluid-index.dark footer {
 
 .post-list a:hover {
   color: var(--text-link);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 
@@ -2361,7 +2361,7 @@ main.fluid-board-page .cat-main-link.fluid-cat-link {
 
 main.fluid-board-page .cat-main-link.fluid-cat-link:hover {
   color: var(--fluid-link-hover-color);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 main.fluid-board-page .cat-sub.fluid-cat-sub a {
@@ -2392,7 +2392,7 @@ main.fluid-category-index-main .category-index-breadcrumb a {
 main.fluid-category-index-main .category-index-breadcrumb a:hover,
 main.fluid-category-index-main .category-index-breadcrumb a:focus {
   color: var(--fluid-link-hover-color);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 main.fluid-category-index-main .category-index-head {

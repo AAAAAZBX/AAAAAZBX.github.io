@@ -62,7 +62,7 @@ const ogImageAbsolute = (() => {
       // Consumers retain their server-rendered fallback on failure.
       if (window.__bxHiddenPosts) window.__bxHiddenPosts.catch(function () {});
     </script>
-    
+
     <ThemeInit />
 
     <!-- Favicon - 使用头像作为标签栏图标 -->
@@ -72,21 +72,22 @@ const ogImageAbsolute = (() => {
     <!-- 与 lynx-li.github.io 文章页一致：Bootstrap 栅格 + GitHub Markdown 底座，再由 global 覆盖主题 -->
     <link
       rel="stylesheet"
-      href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css"
+      href={withBase(baseUrl, "vendor/bootstrap.min.css")}
     />
     <link
       rel="stylesheet"
-      href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css"
+      href={withBase(baseUrl, "vendor/github-markdown.min.css")}
     />
     <link rel="stylesheet" href={withBase(baseUrl, "styles/global.css")} />
 
     <!-- Fluid 顶栏图标（与 Lynx Li Hexo Fluid iconfont 一致） -->
-    <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css" />
-    <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_1736178_k526ubmyhba.css" />
+    <link rel="stylesheet" href={withBase(baseUrl, "vendor/icons/font_1749284_5i9bdhy70f8.css")} />
+    <link rel="stylesheet" href={withBase(baseUrl, "vendor/icons/font_1736178_k526ubmyhba.css")} />
 
     <!-- KaTeX 样式，用于渲染公式 -->
-    {hasMath && <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" />}
+    {hasMath && <link rel="stylesheet" href={withBase(baseUrl, "vendor/katex/katex.min.css")} />}
 
+  <link rel="stylesheet" href={withBase(baseUrl, 'styles/reference-style.css?v=20261116-3')} />
   </head>
 
   <body
@@ -227,7 +228,7 @@ const ogImageAbsolute = (() => {
                 // 更新 URL（不创建历史记录）
                 const url = window.location.pathname + `#${id}`;
                 window.history.replaceState(null, "", url);
-                
+
                 // 更新激活的链接
                 anchorLinks.forEach((link) => {
                   link.classList.remove("active");

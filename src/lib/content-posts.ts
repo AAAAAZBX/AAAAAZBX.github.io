@@ -56,8 +56,7 @@ export async function getAllMergedPosts(): Promise<MergedPost[]> {
 }
 
 export async function getMergedPosts(): Promise<MergedPost[]> {
-  const hiddenKeys = await fetchHiddenPostKeys();
-  const posts = await getAllMergedPosts();
+  const [hiddenKeys, posts] = await Promise.all([fetchHiddenPostKeys(), getAllMergedPosts()]);
   return posts.filter((post) => isPostVisible(post.sortId, hiddenKeys));
 }
 

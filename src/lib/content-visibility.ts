@@ -31,7 +31,7 @@ async function loadHiddenPostIds(): Promise<string[]> {
         .from("content_visibility")
         .select("hidden_posts")
         .eq("id", 1)
-        .abortSignal(AbortSignal.timeout(5000))
+        .abortSignal(AbortSignal.timeout(import.meta.env.DEV ? 1200 : 5000))
         .single();
       if (!error && data && Array.isArray(data.hidden_posts)) {
         // A stale remote row must not republish posts hidden in the deployed source.
@@ -46,9 +46,22 @@ async function loadHiddenPostIds(): Promise<string[]> {
 
 // One snapshot per production build; dev/admin reads must reflect edits immediately.
 let buildSnapshot: Promise<string[]> | undefined;
+let devSnapshot: Promise<string[]> | undefined;
+let devSnapshotAt = 0;
+let devLocalSignature = '';
+function readDevSnapshot(): Promise<string[]> {
+  // Share in-flight requests; local admin edits invalidate the snapshot immediately.
+  const signature = JSON.stringify(readLocalHidden());
+  if (!devSnapshot || signature !== devLocalSignature || Date.now() - devSnapshotAt > 30_000) {
+    devLocalSignature = signature;
+    devSnapshotAt = Date.now();
+    devSnapshot = loadHiddenPostIds();
+  }
+  return devSnapshot;
+}
 export async function readHiddenPostIds(): Promise<string[]> {
   const ids = await (import.meta.env.DEV
-    ? loadHiddenPostIds()
+    ? readDevSnapshot()
     : (buildSnapshot ??= loadHiddenPostIds()));
   return [...ids];
 }
